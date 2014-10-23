@@ -93,6 +93,8 @@ class VMUtilsV2(vmutils.VMUtils):
         # Don't start automatically on host boot
         vs_data.AutomaticStartupAction = self._AUTOMATIC_STARTUP_ACTION_NONE
 
+        vs_data.VirtualNumaEnabled = False
+
         (job_path,
          vm_path,
          ret_val) = vs_man_svc.DefineSystem(ResourceSettings=[],
