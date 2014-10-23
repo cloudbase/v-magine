@@ -39,6 +39,8 @@ class VMUtilsV2(vmutils.VMUtils):
     _IDE_DVD_RES_SUB_TYPE = 'Microsoft:Hyper-V:Virtual CD/DVD Disk'
     _IDE_CTRL_RES_SUB_TYPE = 'Microsoft:Hyper-V:Emulated IDE Controller'
     _SCSI_CTRL_RES_SUB_TYPE = 'Microsoft:Hyper-V:Synthetic SCSI Controller'
+    _VFD_DRIVE_RES_SUB_TYPE = 'Microsoft:Hyper-V:Synthetic Diskette Drive'
+    _VFD_DISK_RES_SUB_TYPE = "Microsoft:Hyper-V:Virtual Floppy Disk"
     _SERIAL_PORT_RES_SUB_TYPE = 'Microsoft:Hyper-V:Serial Port'
 
     _VIRTUAL_SYSTEM_TYPE_REALIZED = 'Microsoft:Hyper-V:System:Realized'
@@ -140,6 +142,27 @@ class VMUtilsV2(vmutils.VMUtils):
             res_sub_type, self._STORAGE_ALLOC_SETTING_DATA_CLASS)
 
         res.Parent = drive_path
+        res.HostResource = [path]
+
+        self._add_virt_resource(res, vm.path_())
+
+    def attach_floppy_drive(self, vm_name, path, ctrller_addr, drive_addr):
+        """Create an IDE drive and attach it to the vm."""
+
+        vm = self._lookup_vm_check(vm_name)
+
+        vmsettings = vm.associators(
+            wmi_result_class=self._VIRTUAL_SYSTEM_SETTING_DATA_CLASS)
+        rasds = vmsettings[0].associators(
+            wmi_result_class=self._RESOURCE_ALLOC_SETTING_DATA_CLASS)
+        drive = ([r for r in rasds if
+                  r.ResourceSubType == self._VFD_DRIVE_RES_SUB_TYPE][0])
+
+        res = self._get_new_resource_setting_data(
+            self._VFD_DISK_RES_SUB_TYPE,
+            self._STORAGE_ALLOC_SETTING_DATA_CLASS)
+
+        res.Parent = drive.path_()
         res.HostResource = [path]
 
         self._add_virt_resource(res, vm.path_())
