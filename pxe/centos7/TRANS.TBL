@@ -1,0 +1,3 @@
+F INITRD.IMG;1                                                                                                                                                                                                    	initrd.img
+F UPGRADE.IMG;1                                                                                                                                                                                                   	upgrade.img
+F VMLINUZ.;1                                                                                                                                                                                                      	vmlinuz
