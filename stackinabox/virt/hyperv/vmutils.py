@@ -71,6 +71,8 @@ class VMUtils(object):
     _STORAGE_ALLOC_SETTING_DATA_CLASS = _RESOURCE_ALLOC_SETTING_DATA_CLASS
     _SYNTHETIC_ETHERNET_PORT_SETTING_DATA_CLASS = \
     'Msvm_SyntheticEthernetPortSettingData'
+    _EMULATED_ETHERNET_PORT_SETTING_DATA_CLASS = \
+    'Msvm_EmulatedEthernetPortSettingData'
     _AFFECTED_JOB_ELEMENT_CLASS = "Msvm_AffectedJobElement"
 
     _SHUTDOWN_COMPONENT = "Msvm_ShutdownComponent"
@@ -419,20 +421,35 @@ class VMUtils(object):
         self._modify_virt_resource(nic_data, vm.path_())
 
     def _get_nic_data_by_name(self, name):
-        return self._conn.Msvm_SyntheticEthernetPortSettingData(
-            ElementName=name)[0]
+        nic_data = self._conn.Msvm_SyntheticEthernetPortSettingData(
+            ElementName=name)
+        if nic_data:
+            return nic_data[0]
+        else:
+            return self._conn.Msvm_EmulatedEthernetPortSettingData(
+                ElementName=name)[0]
 
-    def create_nic(self, vm_name, nic_name, mac_address):
+    def create_nic(self, vm_name, nic_name, mac_address, is_legacy=False):
         """Create a (synthetic) nic and attach it to the vm."""
+
+        if is_legacy:
+            class_name = self._EMULATED_ETHERNET_PORT_SETTING_DATA_CLASS
+        else:
+            class_name = self._SYNTHETIC_ETHERNET_PORT_SETTING_DATA_CLASS
+
         # Create a new nic
-        new_nic_data = self._get_new_setting_data(
-            self._SYNTHETIC_ETHERNET_PORT_SETTING_DATA_CLASS)
+        new_nic_data = self._get_new_setting_data(class_name)
 
         # Configure the nic
         new_nic_data.ElementName = nic_name
-        new_nic_data.Address = mac_address.replace(':', '')
-        new_nic_data.StaticMacAddress = 'True'
-        new_nic_data.VirtualSystemIdentifiers = ['{' + str(uuid.uuid4()) + '}']
+
+        if mac_address:
+            new_nic_data.Address = mac_address.replace(':', '')
+        new_nic_data.StaticMacAddress = mac_address is not None
+
+        if not is_legacy:
+            new_nic_data.VirtualSystemIdentifiers = [
+                '{' + str(uuid.uuid4()) + '}']
 
         # Add the new nic to the vm
         vm = self._lookup_vm_check(vm_name)
