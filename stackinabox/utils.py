@@ -14,7 +14,13 @@
 #    under the License.
 
 import os
+import random
 
 def get_resources_dir():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_dir, "resources")
+
+def get_random_ipv4_subnet():
+    # 24 bit only for now
+    return ("10." + str(random.randint(1, 254)) + "." +
+            str(random.randint(1, 254)) + ".0")
