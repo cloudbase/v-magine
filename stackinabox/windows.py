@@ -29,8 +29,8 @@ class WindowsUtils(object):
     _NET_FW_ACTION_ALLOW = 1
 
     def firewall_create_rule(self, rule_name, local_ports, protocol,
-                             interface_names, allow=True, description=None,
-                             grouping=None):
+                             interface_names, allow=True, description="",
+                             grouping=""):
 
         protocol_map = {PROTOCOL_TCP: self._FW_IP_PROTOCOL_TCP,
                         PROTOCOL_UDP: self._FW_IP_PROTOCOL_UDP}
