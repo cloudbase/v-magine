@@ -15,10 +15,24 @@
 
 import os
 import random
+import subprocess
+
+
+def execute_process(args, shell=False):
+    p = subprocess.Popen(args,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         shell=shell)
+    (out, err) = p.communicate()
+    if p.returncode:
+        raise Exception("Command failed: %s" % err)
+    return (out, err)
+
 
 def get_resources_dir():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_dir, "resources")
+
 
 def get_random_ipv4_subnet():
     # 24 bit only for now

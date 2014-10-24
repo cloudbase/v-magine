@@ -1,0 +1,34 @@
+install
+url --url="http://mirror.centos.org/centos/7/os/x86_64/"
+
+lang en_US.UTF-8
+keyboard --vckeymap=us --xlayouts='us'
+
+network --device eth0 --bootproto dhcp --ipv6=auto --activate --hostname rdo.cloudbase
+network --device=enp0s10f0 --bootproto=static --ip=10.10.10.10 --netmask=255.255.255.0 --onboot=off --nodefroute
+
+text
+
+rootpw  –iscrypted <%encrypted_password%>
+
+firewall --service=ssh
+authconfig --enableshadow --passalgo=sha512 --enablefingerprint --enablemd5
+selinux --enforcing
+timezone --utc Europe/Bucharest
+
+zerombr
+ignoredisk --only-use=sda
+bootloader --location=mbr --boot-drive=sda
+autopart --type=lvm
+clearpart --none --initlabel
+
+reboot
+%packages
+@Core
+wget
+%end
+%post --log=/root/post.log --nochroot --erroronfail
+sed -i "s/^ACTIVE_CONSOLES=\/dev\/tty\[1-6\]/ACTIVE_CONSOLES=\/dev\/tty1/" /mnt/sysimage/etc/sysconfig/init
+sed -i 's/rhgb quiet/quiet console=tty0 console=ttyS0,115200n8/g' /boot/grub/grub.conf
+sed -i 's/^hiddenmenu$/hiddenmenu\nserial\ --unit=0\ --speed=115200\ --word=8\ --parity=no\ --stop=1\nterminal\ --timeout=5\ console\ serial/g' /boot/grub/grub.conf
+%end

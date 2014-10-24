@@ -1,5 +1,4 @@
 # Copyright 2014 Cloudbase Solutions Srl
-# All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -13,22 +12,25 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import os
-
-from stackinabox import utils
+from stackinabox import mtools
 
 
-def _get_mtools_dir():
-    return os.path.join(utils.get_resources_dir(), "mtools")
+class BaseVFDManager(object):
+    def create_vfd(self, vfd_path, label):
+        raise NotImplementedError()
+
+    def copy_to_vfd(self, vfd_path, src_path, target_path='/'):
+        raise NotImplementedError()
 
 
-def create_vfd(vfd_path, size_kb=1440, label="stackinabox"):
-    mformat = os.path.join(_get_mtools_dir(), "mformat.exe")
-    utils.execute_process([mformat, "-C", "-f", str(size_kb), "-v", label,
-                           "-i", vfd_path, "::"])
+class MToolsVFDManager(BaseVFDManager):
+    def create_vfd(self, vfd_path, label):
+        mtools.create_vfd(vfd_path, label=label)
+
+    def copy_to_vfd(self, vfd_path, src_path, target_path='/'):
+        mtools.copy_to_vfd(vfd_path, src_path, target_path)
 
 
-def copy_to_vfd(vfd_path, src_path, target_path='/'):
-    mcopy = os.path.join(_get_mtools_dir(), "mcopy.exe")
-    utils.execute_process([mcopy, "-i", vfd_path, src_path,
-                          "::" + target_path])
+def get_vfd_manager():
+    # TODO(alexpilotti): Add support for other OSs
+    return MToolsVFDManager()
