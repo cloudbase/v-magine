@@ -1,0 +1,98 @@
+﻿<html>
+    <head>
+        <script src="./scripts/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="main.css">
+
+        <script language="javascript" type="text/javascript">
+
+            function handleError(msg) {
+                alert(msg);
+            }
+
+            function statusChanged(msg) {
+                $('#status').text(msg);
+            }
+
+            function escapeVT100(data) {
+                RED = 31;
+                GREEN = 32;
+                YELLOW = 33;
+
+                var colorscss = {};
+                colorscss[RED] = 'vt100red';
+                colorscss[GREEN] = 'vt100green';
+                colorscss[YELLOW] = 'vt100yellow';
+
+                for (var color in colorscss) {
+                    data = data.replace(new RegExp('\u001B\\[(?:0;)?' + color +
+                                                   'm(.*?)\u001B\\[0m', 'gm'),
+                                        '<span class="' + colorscss[color] +
+                                        '">$1</span>')
+                }
+
+                return data;
+            }
+
+            function escapeSpaces(data) {
+                return data.replace(/ /gm, '&nbsp;');
+            }
+
+            function escapeNewLines(data) {
+                return data.replace(/(\r\n|\n|\r)/gm,
+                                    '<span class="newline"><span/>');
+            }
+
+            function appendLogAndScroll(data, cssclass) {
+                var log = $('#log');
+                escapedData = '<span class="' + cssclass + '">' +
+                           escapeVT100(escapeNewLines(escapeSpaces(data))) +
+                           '</span>';
+                log.append(escapedData);
+                log[0].scrollTop = log[0].scrollHeight;
+            }
+
+            function gotStdOutData(data){
+                appendLogAndScroll(data, 'stdout');
+            }
+
+            function gotStdErrData(data){
+                appendLogAndScroll(data, 'stderr');
+            }
+
+            function startInstall() {
+                console.log("startInstall!");
+                try {
+                    $('#stdout').text('');
+                    $('#stderr').text('');
+                    controller.install();
+                }
+                catch(ex)
+                {
+                    handleError(ex);
+                }
+            }
+
+            function ApplicationIsReady(){
+                try {
+                    console.log("ApplicationIsReady!");
+                    controller.on_status_changed_event.connect(statusChanged);
+                    controller.on_stdout_data_event.connect(gotStdOutData);
+                    controller.on_stderr_data_event.connect(gotStdErrData);
+                    controller.on_error_event.connect(handleError);
+                 }
+                catch(ex)
+                {
+                    handleError(msg);
+                }
+            }
+
+        </script>
+    </head>
+    <body>
+        <div id="outer">
+            <div id="status"></div>
+            <div id="log"></div>
+            <button onclick=startInstall()>Install!</button>
+        </div>
+    </body>
+</html>

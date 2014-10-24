@@ -1,0 +1,49 @@
+body {
+    font-family: "Arial", "Verdana";
+}
+
+#log {
+    background-color: black;
+    text-align: left;
+    color: white;
+    margin: 10px;
+    height: 400px;
+    overflow: auto;
+    font-family: "Lucida Console";
+}
+
+.stderr {
+    color: red;
+    display: block
+}
+
+.newline {
+    display: block
+}
+
+.stdout {
+    display: block
+}
+
+.vt100green {
+    color: green;
+    display: inline;
+}
+
+.vt100yellow {
+    color: yellow;
+}
+
+.vt100red {
+    color: red;
+}
+
+#outer {
+    margin: 5px;
+}
+
+#status {
+    text-align: center;
+    margin: 10px;
+    height: 40px;
+}
