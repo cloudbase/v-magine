@@ -15,12 +15,15 @@
 
 import os
 
+from stackinabox.virt import base
 from stackinabox.virt.hyperv import constants
 from stackinabox.virt.hyperv import netutilsv2
 from stackinabox.virt.hyperv import vhdutilsv2
 from stackinabox.virt.hyperv import vmutilsv2
+from stackinabox import windows
 
-class HyperVDriver(object):
+
+class HyperVDriver(base.BaseDriver):
     def __init__(self):
         self._vmutils = vmutilsv2.VMUtilsV2()
         self._vhdutils = vhdutilsv2.VHDUtilsV2()
@@ -58,3 +61,25 @@ class HyperVDriver(object):
                     self._netutils.set_vswitch_port_vlan_id(
                         access_vlan_id, vmnic_name, trunk_vlan_ids,
                         private_vlan_id)
+
+    def vswitch_exists(self, vswitch_name):
+        raise NotImplementedError()
+
+    def create_vswitch(self, vswitch_name, vswitch_type=base.VSWITCH_PRIVATE):
+        raise NotImplementedError()
+
+    def add_vswitch_host_firewall_rule(self, vswitch_name, rule_name,
+                                       local_ports, protocol=base.TCP,
+                                       allow=True, description=''):
+        protocol_map = {base.TCP: windows.PROTOCOL_TCP,
+                        base.UDP: windows.PROTOCOL_UDP}
+        interface_name = "vEthernet (%s)" % vswitch_name
+
+        windows_utils = windows.WindowsUtils()
+        if windows_utils.firewall_rule_exists(rule_name):
+            windows_utils.firewall_remove_rule(rule_name)
+
+        windows_utils.firewall_create_rule(rule_name, local_ports,
+                                           protocol_map[protocol],
+                                           [interface_name],
+                                           allow, description)
