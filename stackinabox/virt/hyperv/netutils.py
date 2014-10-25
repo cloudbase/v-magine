@@ -207,8 +207,19 @@ class NetworkUtils(object):
                                   vswitch_name)
         return vswitch[0]
 
-    def get_vswitch_path(self, vswitch_name):
-        return self._get_vswitch(vswitch_name).path_()
+    def vswitch_exists(self, vswitch_name):
+        try:
+            self._get_vswitch(vswitch_name)
+            return True
+        except vmutils.HyperVException as e:
+            return False
+
+    def create_vswitch(self, vswitch_name, external_port_name=None,
+                       create_internal_port=False):
+        raise NotImplementedError()
+
+    def remove_vswitch(self, vswitch_name):
+        raise NotImplementedError()
 
     def _get_vswitch_external_port(self, vswitch):
         vswitch_ports = vswitch.associators(

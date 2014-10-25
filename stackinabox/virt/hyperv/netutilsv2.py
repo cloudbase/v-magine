@@ -15,6 +15,7 @@
 
 from stackinabox.i18n import _
 from stackinabox.virt.hyperv import netutils
+from stackinabox.virt.hyperv import vmutils
 
 
 class NetworkUtilsV2(netutils.NetworkUtils):
@@ -30,6 +31,8 @@ class NetworkUtilsV2(netutils.NetworkUtils):
     _STATE_DISABLED = 3
     _OPERATION_MODE_ACCESS = 1
     _OPERATION_MODE_TRUNK = 2
+
+    _ETH_CONN_RES_SUB_TYPE = 'Microsoft:Hyper-V:Ethernet Connection'
 
     _VIRTUAL_SYSTEM_SETTING_DATA = 'Msvm_VirtualSystemSettingData'
     _VM_SUMMARY_ENABLED_STATE = 100
@@ -151,6 +154,54 @@ class NetworkUtilsV2(netutils.NetworkUtils):
                     if ext_port:
                         return vswitch_port
 
+    def create_vswitch(self, vswitch_name, external_port_name=None,
+                       create_internal_port=False):
+        svc = self._conn.Msvm_VirtualEthernetSwitchManagementService()[0]
+        vswitch_data = self._conn.Msvm_VirtualEthernetSwitchSettingData.new()
+        vswitch_data.ElementName = vswitch_name
+
+        resource_settings = []
+
+        if external_port_name:
+            ext_port_list = self._conn.Msvm_ExternalEthernetPort(
+                Name=external_port_name)
+            if not ext_port_list:
+                raise vmutils.HyperVException(_('External port not found: %s')
+                                              % external_port_name)
+            ext_port = ext_port_list[0]
+
+            port_alloc_ext = self._get_default_setting_data(
+                self._PORT_ALLOC_SET_DATA, self._ETH_CONN_RES_SUB_TYPE)
+            port_alloc_ext.HostResource = [ext_port.path_()]
+            port_alloc_ext.ElementName = vswitch_name
+
+            resource_settings.append(port_alloc_ext.GetText_(1))
+
+        if create_internal_port:
+            port_alloc_int = self._get_default_setting_data(
+                self._PORT_ALLOC_SET_DATA, self._ETH_CONN_RES_SUB_TYPE)
+
+            host = self._conn.Msvm_ComputerSystem(
+                Description='Microsoft Hosting Computer System')[0]
+            port_alloc_int.HostResource = [host.path_()]
+            port_alloc_int.ElementName = vswitch_name
+
+            if external_port_name:
+                port_alloc_int.Address = ext_port.PermanentAddress
+
+            resource_settings.append(port_alloc_int.GetText_(1))
+
+        (job_path, out_res_system, ret_val) = svc.DefineSystem(
+            SystemSettings=vswitch_data.GetText_(1),
+            ResourceSettings=resource_settings)
+        self._check_job_status(ret_val, job_path)
+
+    def remove_vswitch(self, vswitch_name):
+        vswitch = self._get_vswitch(vswitch_name)
+        svc = self._conn.Msvm_VirtualEthernetSwitchManagementService()[0]
+        (job_path, ret_val) = svc.DestroySystem(vswitch.path_())
+        self._check_job_status(ret_val, job_path)
+
     def set_vnic_port_security(self, switch_port_name,
                                allow_mac_spoofing=False,
                                enable_dhcp_guard=False,
@@ -248,9 +299,12 @@ class NetworkUtilsV2(netutils.NetworkUtils):
             data.ElementName = element_name
         return data, found
 
-    def _get_default_setting_data(self, class_name):
-        return self._conn.query("SELECT * FROM %s WHERE InstanceID "
-                                "LIKE '%%\\Default'" % class_name)[0]
+    def _get_default_setting_data(self, class_name, res_sub_type=None):
+        query = ("SELECT * FROM %s WHERE InstanceID "
+                 "LIKE '%%\\Default'" % class_name)
+        if res_sub_type:
+            query += " AND ResourceSubType = '%s'" % res_sub_type
+        return self._conn.query(query)[0]
 
     def _get_first_item(self, obj):
         if obj:
