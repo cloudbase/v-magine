@@ -34,15 +34,61 @@ class NetworkUtils(object):
     _ETHERNET_SWITCH_PORT = 'Msvm_SwitchPort'
 
     _wmi_namespace = '//./root/virtualization'
+    _wmi_cimv2_namespace = '//./root/cimv2'
 
     def __init__(self):
         self._wmi_conn = None
+        self._wmi_conn_cimv2 = None
 
     @property
     def _conn(self):
         if self._wmi_conn is None:
             self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
         return self._wmi_conn
+
+    @property
+    def _conn_cimv2(self):
+        if self._wmi_conn_cimv2 is None:
+            self._wmi_conn_cimv2 = wmi.WMI(moniker=self._wmi_cimv2_namespace)
+        return self._wmi_conn_cimv2
+
+    def set_host_nic_ip_address(self, nic_name, dhcp=False, ip_list=None,
+                                netmask_list=None, gateway_list=None,
+                                gateway_metrics_list=None):
+        net_adapter_list = self._conn_cimv2.Win32_NetworkAdapter(
+            NetConnectionID=nic_name)
+        if not net_adapter_list:
+            raise vmutils.HyperVException(_('Nic not found: %s') %
+                                          nic_name)
+        net_adapter = net_adapter_list[0]
+        net_adapter_config = net_adapter.associators(
+            wmi_result_class='Win32_NetworkAdapterConfiguration')[0]
+
+        if dhcp:
+            (ret_val,) = net_adapter_config.EnableDHCP()
+            if ret_val not in [0, 1]:
+                raise vmutils.HyperVException(
+                    _('Enabling DHCP failed with error: %s') % ret_val)
+        else:
+            (ret_val,) = net_adapter_config.EnableStatic(
+                IPAddress=ip_list,
+                SubnetMask=netmask_list)
+            if ret_val not in [0, 1]:
+                raise vmutils.HyperVException(
+                    _('Setting static IP addresses %(ip_list)s with netmasks '
+                      '%(netmask_list)s on interface %(nic_name)s failed with '
+                      'error: %(ret_val)s') %
+                    {'ip_list': ip_list, 'nic_name': nic_name,
+                     'netmask_list': netmask_list, 'ret_val': ret_val})
+
+            if gateway_list:
+                (ret_val,) = net_adapter_config.EnableGateways(
+                    DefaultIPGateway=gateway_list,
+                    GatewayCostMetric=netmask_list)
+                if ret_val not in [0, 1]:
+                    raise vmutils.HyperVException(
+                        _('Setting a gateway failed with error: %s') %
+                        ret_val)
 
     def get_switch_ports(self, vswitch_name):
         vswitch = self._get_vswitch(vswitch_name)
@@ -61,7 +107,7 @@ class NetworkUtils(object):
         return set(
             p.ElementName
             for p in self._conn.Msvm_SyntheticEthernetPortSettingData() +
-                     self._conn.Msvm_EmulatedEthernetPortSettingData()
+            self._conn.Msvm_EmulatedEthernetPortSettingData()
             if p.ElementName is not None)
 
     def _get_vnic_settings(self, vnic_name):
@@ -204,7 +250,7 @@ class NetworkUtils(object):
         vswitch = self._conn.Msvm_VirtualSwitch(ElementName=vswitch_name)
         if not vswitch:
             raise vmutils.HyperVException(_('VSwitch not found: %s') %
-                                  vswitch_name)
+                                          vswitch_name)
         return vswitch[0]
 
     def vswitch_exists(self, vswitch_name):
