@@ -5,3 +5,4 @@ netifaces
 pybootd
 psutil
 oslo.utils
+PySide
