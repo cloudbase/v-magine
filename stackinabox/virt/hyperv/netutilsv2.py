@@ -166,8 +166,11 @@ class NetworkUtilsV2(netutils.NetworkUtils):
             ext_port_list = self._conn.Msvm_ExternalEthernetPort(
                 Name=external_port_name)
             if not ext_port_list:
-                raise vmutils.HyperVException(_('External port not found: %s')
-                                              % external_port_name)
+                ext_port_list = self._conn.Msvm_WiFiPort(
+                    Name=external_port_name)
+                if not ext_port_list:
+                    raise vmutils.HyperVException(_('External port not found: '
+                                                    '%s') % external_port_name)
             ext_port = ext_port_list[0]
 
             port_alloc_ext = self._get_default_setting_data(
