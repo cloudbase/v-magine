@@ -47,7 +47,7 @@ class WindowsUtils(object):
         fw_rule.Interfaces = interface_names
         fw_rule.Grouping = grouping
         fw_rule.Action = action_map[allow]
-        #fw_rule.Profiles = fw_policy2.CurrentProfileTypes
+        # fw_rule.Profiles = fw_policy2.CurrentProfileTypes
         fw_rule.Enabled = True
 
         fw_policy2.Rules.Add(fw_rule)

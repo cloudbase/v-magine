@@ -16,6 +16,7 @@
 import os
 import random
 import subprocess
+import tempfile
 
 
 def execute_process(args, shell=False):
@@ -29,12 +30,30 @@ def execute_process(args, shell=False):
     return (out, err)
 
 
+def copy_to_temp_file(src_file):
+    (fd, temp_file_path) = tempfile.mkstemp()
+    with open(src_file, 'rb') as f:
+        os.write(fd, f.read())
+    os.close(fd)
+    return temp_file_path
+
+
 def get_resources_dir():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_dir, "resources")
 
+def get_pxe_files_dir():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_dir, "pxe")
 
 def get_random_ipv4_subnet():
     # 24 bit only for now
     return ("10." + str(random.randint(1, 254)) + "." +
             str(random.randint(1, 254)) + ".0")
+
+def get_random_mac_address():
+    mac = [0xfa, 0x16, 0x3e,
+           random.randint(0x00, 0xff),
+           random.randint(0x00, 0xff),
+           random.randint(0x00, 0xff)]
+    return '-'.join(map(lambda x: "%02x" % x, mac))
