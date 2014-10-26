@@ -1,4 +1,7 @@
 pywin32
 wmi
 iniparse
+netifaces
 pybootd
+psutil
+oslo.utils
