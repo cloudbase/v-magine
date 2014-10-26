@@ -234,10 +234,6 @@ class VMUtilsV2(vmutils.VMUtils):
         (job_path, ret_val) = vs_man_svc.RemoveResourceSettings(res_path)
         self.check_ret_val(ret_val, job_path)
 
-    def get_vm_state(self, vm_name):
-        settings = self.get_vm_summary_info(vm_name)
-        return settings['EnabledState']
-
     def take_vm_snapshot(self, vm_name):
         vm = self._lookup_vm_check(vm_name)
         vs_snap_svc = self._conn.Msvm_VirtualSystemSnapshotService()[0]

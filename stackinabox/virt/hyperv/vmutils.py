@@ -444,7 +444,7 @@ class VMUtils(object):
         new_nic_data.ElementName = nic_name
 
         if mac_address:
-            new_nic_data.Address = mac_address.replace(':', '')
+            new_nic_data.Address = mac_address.replace('-', '')
         new_nic_data.StaticMacAddress = mac_address is not None
 
         if not is_legacy:
@@ -696,6 +696,10 @@ class VMUtils(object):
         vm_names = self.list_instances()
         vms = [self._lookup_vm(vm_name) for vm_name in vm_names]
         active_vm_names = [v.ElementName for v in vms
-            if v.EnabledState == constants.HYPERV_VM_STATE_ENABLED]
+                           if v.EnabledState ==
+                           constants.HYPERV_VM_STATE_ENABLED]
 
         return active_vm_names
+
+    def get_vm_state(self, vm_name):
+        return self._enabled_states_map[self._lookup_vm(vm_name).EnabledState]
