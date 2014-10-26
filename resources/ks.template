@@ -9,7 +9,7 @@ network --device=enp0s10f0 --bootproto=static --ip=10.10.10.10 --netmask=255.255
 
 text
 
-rootpw  –iscrypted <%encrypted_password%>
+rootpw --iscrypted <%encrypted_password%>
 
 firewall --service=ssh
 authconfig --enableshadow --passalgo=sha512 --enablefingerprint --enablemd5
