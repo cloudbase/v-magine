@@ -82,6 +82,25 @@ function rdo_cleanup() {
     vgremove -f cinder-volumes || true
 }
 
+function generate_ssh_key() {
+    local SSH_KEY_PATH=$1
+    local SSH_KEY_PATH_PUB="$SSH_KEY_PATH.pub"
+
+    if [ ! -d ~/.ssh ]; then
+        /bin/mkdir ~/.ssh
+        /bin/chmod 700 ~/.ssh
+    fi
+    if [ -f "$SSH_KEY_PATH" ]; then
+        /bin/rm -f $SSH_KEY_PATH
+    fi
+    if [ -f "$SSH_KEY_PATH_PUB" ]; then
+        /bin/rm -f $SSH_KEY_PATH_PUB
+    fi
+    /bin/ssh-keygen -t rsa -b 2048 -N '' -C "packstack" -f $SSH_KEY_PATH
+    /bin/cat $SSH_KEY_PATH_PUB >> ~/.ssh/authorized_keys
+}
+
+
 rdo_cleanup
 
 if ! /usr/bin/rpm -q epel-release > /dev/null
@@ -96,6 +115,10 @@ EXT_IFACE=eth3
 OVS_DATA_BRIDGE=br-data
 OVS_EXT_BRIDGE=br-ex
 NTP_HOSTS=0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
+# NOTE: use the default key path as otherwise packstack asks for the user's
+# password when ssh-ing into the localhost
+# TODO: check if we can use ssh-add
+SSH_KEY_PATH=~/.ssh/id_rsa
 
 set_interface_static_ipv4_from_dhcp $MGMT_IFACE
 /usr/sbin/ifup $MGMT_IFACE
@@ -115,6 +138,8 @@ fi
 
 exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack
 exec_with_retry 5 0 /usr/bin/yum install openstack-utils -y
+
+generate_ssh_key $SSH_KEY_PATH
 
 /usr/bin/packstack --gen-answer-file=$ANSWER_FILE
 
@@ -139,6 +164,8 @@ openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_VLAN_RANGES physn
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS physnet1:$OVS_DATA_BRIDGE
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_OVS_BRIDGE_IFACES $OVS_DATA_BRIDGE:$DATA_IFACE
 openstack-config --set $ANSWER_FILE general CONFIG_NTP_SERVERS $NTP_HOSTS
+
+openstack-config --set $ANSWER_FILE general CONFIG_SSH_KEY "$SSH_KEY_PATH.pub"
 
 exec_with_retry 5 0 /usr/bin/yum install -y openvswitch
 /bin/systemctl start openvswitch.service
