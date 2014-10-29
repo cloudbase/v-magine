@@ -20,7 +20,7 @@ import threading
 import time
 
 from oslo.utils import units
-from PySide import QtCore
+from PyQt4 import QtCore
 
 from stackinabox import actions
 from stackinabox import rdo
@@ -50,11 +50,11 @@ class _VMConsoleThread(threading.Thread):
 
 
 class Worker(QtCore.QObject):
-    finished = QtCore.Signal()
-    stdout_data_ready = QtCore.Signal(str)
-    stderr_data_ready = QtCore.Signal(str)
-    status_changed = QtCore.Signal(str)
-    error = QtCore.Signal(Exception)
+    finished = QtCore.pyqtSignal()
+    stdout_data_ready = QtCore.pyqtSignal(str)
+    stderr_data_ready = QtCore.pyqtSignal(str)
+    status_changed = QtCore.pyqtSignal(str)
+    error = QtCore.pyqtSignal(Exception)
 
     def __init__(self):
         super(Worker, self).__init__()
@@ -76,7 +76,7 @@ class Worker(QtCore.QObject):
         self._term_cols = cols
         self._term_rows = rows
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def started(self):
         LOG.info("Started")
 
@@ -218,7 +218,7 @@ class Worker(QtCore.QObject):
         r.check_hyperv_compute_services(platform.node())
         self.status_changed.emit('Your OpenStack deployment is ready!')
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def deploy_openstack(self):
         pythoncom.CoInitializeEx(pythoncom.COINIT_APARTMENTTHREADED)
         dep_actions = actions.DeploymentActions()

@@ -17,9 +17,9 @@ import logging
 import os
 import sys
 
-from PySide import QtCore
-from PySide import QtGui
-from PySide import QtWebKit
+from PyQt4 import QtCore
+from PyQt4 import QtGui
+from PyQt4 import QtWebKit
 
 import stackinabox
 from stackinabox import utils
@@ -29,10 +29,10 @@ LOG = logging
 
 
 class Controller(QtCore.QObject):
-    on_status_changed_event = QtCore.Signal(str)
-    on_stdout_data_event = QtCore.Signal(str)
-    on_stderr_data_event = QtCore.Signal(str)
-    on_error_event = QtCore.Signal(str)
+    on_status_changed_event = QtCore.pyqtSignal(str)
+    on_stdout_data_event = QtCore.pyqtSignal(str)
+    on_stderr_data_event = QtCore.pyqtSignal(str)
+    on_error_event = QtCore.pyqtSignal(str)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -54,11 +54,11 @@ class Controller(QtCore.QObject):
     def _error(self, ex):
         self.on_error_event.emit(ex.message)
 
-    @QtCore.Slot(str, int, int)
+    @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):
         self._worker.set_term_info(term_type, cols, rows)
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def install(self):
         LOG.info("Install called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'deploy_openstack',
@@ -86,7 +86,7 @@ class MainWindow(QtGui.QMainWindow):
         self._init_worker()
         self._controller = Controller(self._worker)
 
-        self._web.load("www/index.html")
+        self._web.load(QtCore.QUrl("www/index.html"))
 
         self._web.show()
 
@@ -120,7 +120,7 @@ class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
     def __init__(self, parent = None):
         super(QWebPageWithoutJsWarning, self).__init__(parent)
 
-    @QtCore.Slot()
+    @QtCore.pyqtSlot()
     def shouldInterruptJavaScript(self):
         LOG.debug("shouldInterruptJavaScript")
         return False
