@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import os
 import psutil
 import sys
@@ -22,8 +23,11 @@ from oslo.utils import units
 from stackinabox import kickstart
 from stackinabox import pybootd
 from stackinabox import utils
+from stackinabox import windows
 from stackinabox.virt import base as base_virt_driver
 from stackinabox.virt import factory as virt_factory
+
+LOG = logging
 
 VSWITCH_INTERNAL_NAME = "stackinabox-internal"
 VSWITCH_DATA_NAME = "stackinabox-data"
@@ -41,12 +45,90 @@ OPENSTACK_VM_VHD_MAX_SIZE = 60 * units.Gi
 
 DATA_VLAN_RANGE = range(500, 2000)
 
+HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
+HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V Nova Compute'
+HYPERV_MSI_URL = "https://www.cloudbase.it/downloads/HyperVNovaCompute_Icehouse_2014_1_3.msi"
+
+OPENSTACK_INSTANCES_PATH = "C:\\OpenStack\\Instances"
+OPENSTACK_LOGDIR = "C:\\OpenStack\\Log"
 
 class DeploymentActions(object):
 
     def __init__(self):
         self._pybootd_manager = pybootd.PyBootdManager()
         self._virt_driver = virt_factory.get_virt_driver()
+        self._windows_utils = windows.WindowsUtils()
+        self._vm_name = None
+
+    def check_hyperv_compute_installed(self):
+        products = self._windows_utils.get_installed_products(
+            HYPERV_MSI_VENDOR)
+        for (product_id, caption) in products:
+            if caption.startswith(HYPERV_MSI_CAPTION_PREFIX):
+                return (product_id, caption)
+
+    def uninstall_product(self, product_id):
+        self._windows_utils.uninstall_product(product_id, "nova_uninstall.log")
+
+    def download_hyperv_compute_msi(self, target_path):
+        utils.retry_action(
+            lambda: utils.download_file(HYPERV_MSI_URL, target_path),
+            lambda ex: LOG.info(ex))
+
+    def install_hyperv_compute(self, msi_path, nova_config):
+
+        features = ["HyperVNovaCompute", "NeutronHyperVAgent",
+                    "iSCSISWInitiator", "FreeRDP"]
+
+        properties = {}
+        properties["RPCBACKEND"] = "RabbitMQ"
+
+        properties["INSTANCESPATH"] = OPENSTACK_INSTANCES_PATH
+
+        rabbit_hosts = nova_config["DEFAULT"]["rabbit_hosts"]
+        (rabbit_host, rabbit_port) = rabbit_hosts.split(",")[0].split(':')
+
+        properties["RPCBACKENDHOST"] = rabbit_host
+        properties["RPCBACKENDPORT"] = rabbit_port
+
+        glance_hosts = nova_config["DEFAULT"]["glance_api_servers"]
+        (glance_host, glance_port) = glance_hosts.split(",")[0].split(':')
+
+        properties["GLANCEHOST"] = glance_host
+        properties["GLANCEPORT"] = glance_port
+
+        properties["INSTANCESPATH"] = OPENSTACK_INSTANCES_PATH
+        properties["OPENSTACK_LOGDIR"] = OPENSTACK_LOGDIR
+
+        properties["RDPCONSOLEURL"] = "http://localhost:8000"
+
+        properties["ADDVSWITCH"] = "0"
+        properties["VSWITCHNAME"] = VSWITCH_DATA_NAME
+
+        properties["USECOWIMAGES"] = "1"
+        properties["FORCECONFIGDRIVE"] = "1"
+        properties["CONFIGDRIVEINJECTPASSWORD"] = "1"
+        properties["DYNAMICMEMORYRATIO"] = "1"
+        properties["ENABLELOGGING"] = "1"
+        properties["VERBOSELOGGING"] = "1"
+
+        properties["NEUTRONURL"] = nova_config["DEFAULT"]["neutron_url"]
+        properties["NEUTRONADMINTENANTNAME"] = nova_config["DEFAULT"][
+            "neutron_admin_tenant_name"]
+        properties["NEUTRONADMINUSERNAME"] = nova_config["DEFAULT"][
+            "neutron_admin_username"]
+        properties["NEUTRONADMINPASSWORD"] = nova_config["DEFAULT"][
+            "neutron_admin_password"]
+        properties["NEUTRONADMINAUTHURL"] = nova_config["DEFAULT"][
+            "neutron_admin_auth_url"]
+
+        if not os.path.exists(OPENSTACK_LOGDIR):
+            os.makedirs(OPENSTACK_LOGDIR)
+
+        LOG.info("Installing Nova compute")
+        self._windows_utils.install_msi(msi_path, features, properties,
+                                        "nova_install.log")
+        LOG.info("Nova compute installed")
 
     def _get_openstack_vm_memory_mb(self):
         mem_info = psutil.virtual_memory()
@@ -54,6 +136,9 @@ class DeploymentActions(object):
         max_mem_mb = min(mem_info.total / units.Mi - MIN_OS_FREE_MEMORY_MB,
                          OPENSTACK_VM_RECOMMENDED_MEM_MB)
         return max_mem_mb
+
+    def check_platform_requirements(self):
+        self._virt_driver.check_platform()
 
     def start_pxe_service(self, listen_address, reservations, pxe_os_id):
         pxe_base_dir = utils.get_pxe_files_dir()
@@ -69,17 +154,17 @@ class DeploymentActions(object):
         self._pybootd_manager.start(listen_address, tftp_root_url,
                                     reservations[0][1], reservations)
 
-    def stop_pxe_service(self, pybootd_manager):
+    def stop_pxe_service(self):
         self._pybootd_manager.stop()
 
-    def check_remove_openstack_vm(self, vm_name):
+    def check_remove_vm(self, vm_name):
         if self._virt_driver.vm_exists(vm_name):
             if not self._virt_driver.vm_is_stopped(vm_name):
                 self._virt_driver.power_off_vm(vm_name)
             self._virt_driver.destroy_vm(vm_name)
 
     def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
-                            external_vswitch_name):
+                            external_vswitch_name, console_named_pipe):
         min_mem_mb = OPENSTACK_VM_MIN_MEM_MB
         if not max_mem_mb:
             max_mem_mb = self._get_openstack_vm_memory_mb()
@@ -109,12 +194,16 @@ class DeploymentActions(object):
 
         self._virt_driver.create_vm(vm_name, vm_dir, vhd_max_size,
                                     max_mem_mb, min_mem_mb, vcpu_count,
-                                    vm_network_config, vfd_path)
-
+                                    vm_network_config, vfd_path,
+                                    console_named_pipe)
+        self._vm_name = vm_name
         return vm_network_config
 
-    def start_openstack_vm(self, vm_name):
-        self._virt_driver.start_vm(vm_name)
+    def start_openstack_vm(self):
+        self._virt_driver.start_vm(self._vm_name)
+
+    def reboot_openstack_vm(self):
+        self._virt_driver.reboot_vm(self._vm_name)
 
     def get_internal_network_config(self):
         subnet = utils.get_random_ipv4_subnet()
@@ -128,17 +217,24 @@ class DeploymentActions(object):
     def get_openstack_vm_ip_info(self, vm_network_config, subnet):
         """
         Assigns an IPv4 to every vnic with a static mac address.
-        Returns a list o f tuples (vnic_name, mac_address, ipv4)
+        Returns a list of tuples (vnic_name, mac_address, ipv4)
         """
         vnic_ip_info = []
         base_addr = subnet[:-1]
         last_octet = 2
-        for vnic_name, mac_address in [(vif_config[1], vif_config[2])
-                                       for vif_config in vm_network_config
-                                       if vif_config[2]]:
-            vnic_ip_info.append((vnic_name, mac_address, base_addr +
-                                 str(last_octet)))
-            last_octet += 1
+
+        [vnic_ip_info.append((vif_config[1], vif_config[2],
+                              base_addr + str(last_octet)))
+            for vif_config in vm_network_config
+         if vif_config[1] == "%s-pxe" % self._vm_name]
+
+        last_octet += 1
+
+        [vnic_ip_info.append((vif_config[1], vif_config[2],
+                              base_addr + str(last_octet)))
+            for vif_config in vm_network_config
+         if vif_config[1] == "%s-mgmt-int" % self._vm_name]
+
         return vnic_ip_info
 
     def create_kickstart_vfd(self, vfd_path, encrypted_password):

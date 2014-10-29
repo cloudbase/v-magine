@@ -13,13 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import atexit
 import iniparse
 import os
 import subprocess
 import sys
 
 from stackinabox import utils
-
+from stackinabox import windows
 
 class PyBootdManager(object):
     def __init__(self):
@@ -71,6 +72,10 @@ class PyBootdManager(object):
                                               #stdout=subprocess.PIPE,
                                               #stderr=subprocess.PIPE,
                                               shell=False)
+
+        # Make sure we terminate the process before exiting
+        # TODO(alexpilotti): Platform independence
+        atexit.register(windows.kill_process, self._pybootd_proc.pid)
 
     def stop(self):
         if self._pybootd_proc:

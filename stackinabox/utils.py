@@ -13,11 +13,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import os
 import random
 import subprocess
 import tempfile
+import time
 
+from six.moves.urllib import request
+
+LOG = logging
 
 def execute_process(args, shell=False):
     p = subprocess.Popen(args,
@@ -28,6 +33,32 @@ def execute_process(args, shell=False):
     if p.returncode:
         raise Exception("Command failed: %s" % err)
     return (out, err)
+
+
+def download_file(url, target_path, report_hook=None):
+    class URLopenerWithException(request.FancyURLopener):
+      def http_error_default(self, url, fp, errcode, errmsg, headers):
+        raise Exception("Download failed with error: %s" % errcode)
+    return URLopenerWithException().retrieve(url, target_path,
+        reporthook=report_hook)
+
+
+def retry_action(action, error_action=None, max_attempts=10, interval=0):
+    i = 0
+    while True:
+        try:
+            return action()
+            break
+        except Exception as ex:
+            i += 1
+            if i < max_attempts:
+                if error_action:
+                    error_action(ex)
+                if interval:
+                    LOG.debug("Sleeping for %s seconds" % interval)
+                    time.sleep(interval)
+            else:
+                raise
 
 
 def copy_to_temp_file(src_file):
@@ -42,14 +73,17 @@ def get_resources_dir():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_dir, "resources")
 
+
 def get_pxe_files_dir():
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_dir, "pxe")
+
 
 def get_random_ipv4_subnet():
     # 24 bit only for now
     return ("10." + str(random.randint(1, 254)) + "." +
             str(random.randint(1, 254)) + ".0")
+
 
 def get_random_mac_address():
     mac = [0xfa, 0x16, 0x3e,

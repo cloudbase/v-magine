@@ -5,14 +5,17 @@ config_network_adapter () {
     local IFACE=$1
     local IPADDR=$2
     local NETMASK=$3
+    local ZONE=$4
 
     cat << EOF > /etc/sysconfig/network-scripts/ifcfg-$IFACE
 DEVICE="$IFACE"
+NM_CONTROLLED="no"
 BOOTPROTO="none"
 MTU="1500"
 ONBOOT="yes"
 IPADDR="$IPADDR"
 NETMASK="$NETMASK"
+ZONE="$ZONE"
 EOF
 }
 
@@ -23,6 +26,7 @@ get_interface_ipv4 () {
 
 set_interface_static_ipv4_from_dhcp () {
     local IFACE=$1
+    local ZONE=$2
     local IPADDR
     local PREFIX
     local NETMASK
@@ -31,7 +35,7 @@ set_interface_static_ipv4_from_dhcp () {
     read IPADDR PREFIX BCAST <<< `get_interface_ipv4 $IFACE`
     NETMASK=`/usr/bin/ipcalc -4 --netmask $IPADDR/$PREFIX | /usr/bin/sed -n  's/^\NETMASK=\(.*\).*$/\1/p'`
 
-    config_network_adapter $SSHUSER_HOST $IFACE $IPADDR $NETMASK
+    config_network_adapter $SSHUSER_HOST $IFACE $IPADDR $NETMASK $ZONE
 }
 
 config_ovs_network_adapter () {
@@ -39,6 +43,7 @@ config_ovs_network_adapter () {
 
     cat << EOF > /etc/sysconfig/network-scripts/ifcfg-$ADAPTER
 DEVICE="$ADAPTER"
+NM_CONTROLLED="no"
 BOOTPROTO="none"
 MTU="1500"
 ONBOOT="yes"
@@ -108,6 +113,7 @@ then
     exec_with_retry 5 0 /usr/bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
 fi
 
+ADMIN_PASSWORD=$1
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=eth1
 DATA_IFACE=eth2
@@ -119,8 +125,9 @@ NTP_HOSTS=0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
 # password when ssh-ing into the localhost
 # TODO: check if we can use ssh-add
 SSH_KEY_PATH=~/.ssh/id_rsa
+MGMT_ZONE=management
 
-set_interface_static_ipv4_from_dhcp $MGMT_IFACE
+set_interface_static_ipv4_from_dhcp $MGMT_IFACE $MGMT_ZONE
 /usr/sbin/ifup $MGMT_IFACE
 config_ovs_network_adapter $DATA_IFACE
 /usr/sbin/ifup $DATA_IFACE
@@ -131,9 +138,12 @@ read HOST_IP NETMASK_BITS BCAST  <<< `get_interface_ipv4 $MGMT_IFACE`
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 
+RDO_RELEASE_RPM="https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm"
+#RDO_RELEASE_RPM="https://rdo.fedorapeople.org/rdo-release.rpm"
+
 if ! /usr/bin/rpm -q rdo-release > /dev/null
 then
-    exec_with_retry 5 0 /usr/bin/yum install -y https://rdo.fedorapeople.org/rdo-release.rpm
+    exec_with_retry 5 0 /usr/bin/yum install -y $RDO_RELEASE_RPM
 fi
 
 exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack
@@ -156,6 +166,10 @@ openstack-config --set $ANSWER_FILE general CONFIG_HEAT_INSTALL y
 #openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CFN_INSTALL y
 #openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CLOUDWATCH_INSTALL y
 
+openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST y
+
+openstack-config --set $ANSWER_FILE general CONFIG_CEILOMETER_INSTALL n
+
 openstack-config --set $ANSWER_FILE general CONFIG_NOVA_NETWORK_PUBIF $EXT_IFACE
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_TYPE_DRIVERS vlan
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_TENANT_NETWORK_TYPES vlan
@@ -166,6 +180,9 @@ openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_OVS_BRIDGE_IFACES $OV
 openstack-config --set $ANSWER_FILE general CONFIG_NTP_SERVERS $NTP_HOSTS
 
 openstack-config --set $ANSWER_FILE general CONFIG_SSH_KEY "$SSH_KEY_PATH.pub"
+
+openstack-config --set $ANSWER_FILE general CONFIG_KEYSTONE_ADMIN_PW "$ADMIN_PASSWORD"
+openstack-config --set $ANSWER_FILE general CONFIG_KEYSTONE_DEMO_PW "$ADMIN_PASSWORD"
 
 exec_with_retry 5 0 /usr/bin/yum install -y openvswitch
 /bin/systemctl start openvswitch.service
@@ -186,18 +203,19 @@ fi
 /usr/bin/ovs-vsctl add-br $OVS_EXT_BRIDGE
 /usr/bin/ovs-vsctl add-port $OVS_EXT_BRIDGE $EXT_IFACE
 
-exec_with_retry 5 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
+exec_with_retry 20 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
 # Disable nova-compute on this host
 source /root/keystonerc_admin
 exec_with_retry 5 0 /usr/bin/nova service-disable $(hostname) nova-compute
 /bin/systemctl disable openstack-nova-compute.service
 
-/usr/sbin/iptables -I INPUT -i $MGMT_IFACE -p tcp --dport 3260 -j ACCEPT
-/usr/sbin/iptables -I INPUT -i $MGMT_IFACE -p tcp --dport 5672 -j ACCEPT
-/usr/sbin/iptables -I INPUT -i $MGMT_IFACE -p tcp --dport 9696 -j ACCEPT
-/usr/sbin/iptables -I INPUT -i $MGMT_IFACE -p tcp --dport 9292 -j ACCEPT
-/usr/sbin/iptables -I INPUT -i $MGMT_IFACE -p tcp --dport 8776 -j ACCEPT
+# TODO: limit access to: -i $MGMT_IFACE
+/usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
+/usr/sbin/iptables -I INPUT -p tcp --dport 5672 -j ACCEPT
+/usr/sbin/iptables -I INPUT -p tcp --dport 9696 -j ACCEPT
+/usr/sbin/iptables -I INPUT -p tcp --dport 9292 -j ACCEPT
+/usr/sbin/iptables -I INPUT -p tcp --dport 8776 -j ACCEPT
 /usr/sbin/service iptables save
 
 echo "Done!"

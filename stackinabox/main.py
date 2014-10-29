@@ -13,6 +13,7 @@
 #    under the License.
 
 import ctypes
+import logging
 import os
 import sys
 
@@ -21,8 +22,10 @@ from PySide import QtGui
 from PySide import QtWebKit
 
 import stackinabox
+from stackinabox import utils
+from stackinabox import worker as deployment_worker
 
-from stackinabox.rdo import install
+LOG = logging
 
 
 class Controller(QtCore.QObject):
@@ -51,52 +54,15 @@ class Controller(QtCore.QObject):
     def _error(self, ex):
         self.on_error_event.emit(ex.message)
 
+    @QtCore.Slot(str, int, int)
+    def set_term_info(self, term_type, cols, rows):
+        self._worker.set_term_info(term_type, cols, rows)
+
     @QtCore.Slot()
     def install(self):
-        print "install"
-
-        QtCore.QMetaObject.invokeMethod(self._worker, 'install_rdo',
+        LOG.info("Install called")
+        QtCore.QMetaObject.invokeMethod(self._worker, 'deploy_openstack',
                                         QtCore.Qt.QueuedConnection)
-
-
-class Worker(QtCore.QObject):
-    finished = QtCore.Signal()
-    stdout_data_ready = QtCore.Signal(str)
-    stderr_data_ready = QtCore.Signal(str)
-    status_changed = QtCore.Signal(str)
-    error = QtCore.Signal(Exception)
-
-    @QtCore.Slot()
-    def started(self):
-        print "Started"
-
-    @QtCore.Slot()
-    def install_rdo(self):
-        print "install_rdo"
-
-        def stdout_callback(data):
-            self.stdout_data_ready.emit(data)
-
-        def stderr_callback(data):
-            self.stderr_data_ready.emit(data)
-
-        rdo_installer = install.RDOInstaller(stdout_callback, stderr_callback)
-        try:
-            self.status_changed.emit(
-                'Enstablishing SSH connection with RDO VM...')
-            rdo_installer.connect()
-
-            self.status_changed.emit('Updating RDO VM...')
-            rdo_installer.update_os()
-
-            self.status_changed.emit('Installing RDO...')
-            rdo_installer.install_rdo()
-
-            self.status_changed.emit('Done!')
-        except Exception as ex:
-            self.error.emit(ex);
-        finally:
-            rdo_installer.disconnect()
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -104,10 +70,13 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
 
-        self.setWindowIcon(QtGui.QIcon('app.ico'))
+        app_icon_path = os.path.join(utils.get_resources_dir(), "app.ico")
+        self.setWindowIcon(QtGui.QIcon(app_icon_path))
         self.setWindowTitle('Stack in a Box - OpenStack Installer')
 
         self._web = QtWebKit.QWebView()
+
+        self._web.setPage(QWebPageWithoutJsWarning(self._web))
 
         self.resize(1024, 768)
         self.setCentralWidget(self._web)
@@ -123,7 +92,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def _init_worker(self):
         self._thread = QtCore.QThread()
-        self._worker = Worker()
+        self._worker = deployment_worker.Worker()
         self._worker.moveToThread(self._thread)
 
         self._worker.finished.connect(self._thread.quit)
@@ -133,7 +102,7 @@ class MainWindow(QtGui.QMainWindow):
     def onLoad(self):
         page = self._web.page()
         page.settings().setAttribute(
-            QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
+            QtWebKit.QWebSettings.DeveloperExtrasEnabled, False)
 
         frame = page.mainFrame()
         page.setViewportSize(frame.contentsSize())
@@ -147,7 +116,19 @@ class MainWindow(QtGui.QMainWindow):
         frame.evaluateJavaScript("ApplicationIsReady()")
 
 
+class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
+    def __init__(self, parent = None):
+        super(QWebPageWithoutJsWarning, self).__init__(parent)
+
+    @QtCore.Slot()
+    def shouldInterruptJavaScript(self):
+        LOG.debug("shouldInterruptJavaScript")
+        return False
+
+
 def main():
+    logging.basicConfig(filename='stackinabox.log', level=logging.DEBUG)
+
     app = QtGui.QApplication(sys.argv)
 
     main_window = MainWindow()

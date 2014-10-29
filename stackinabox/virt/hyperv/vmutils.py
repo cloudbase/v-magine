@@ -89,12 +89,25 @@ class VMUtils(object):
     def __init__(self, host='.'):
         self._enabled_states_map = dict((v, k) for k, v in
                                         self._vm_power_states_map.iteritems())
-        if sys.platform == 'win32':
-            self._init_hyperv_wmi_conn(host)
-            self._conn_cimv2 = wmi.WMI(moniker='//%s/root/cimv2' % host)
+        self._wmi_conn = None
+        self._wmi_conn_cimv2 = None
+        self._wmi_cimv2_namespace = '//%s/root/cimv2' % host
+        self._init_hyperv_wmi_conn(host)
 
     def _init_hyperv_wmi_conn(self, host):
-        self._conn = wmi.WMI(moniker='//%s/root/virtualization' % host)
+        self._wmi_namespace = '//%s/root/virtualization' % host
+
+    @property
+    def _conn(self):
+        if self._wmi_conn is None:
+            self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
+        return self._wmi_conn
+
+    @property
+    def _conn_cimv2(self):
+        if self._wmi_conn_cimv2 is None:
+            self._wmi_conn_cimv2 = wmi.WMI(moniker=self._wmi_cimv2_namespace)
+        return self._wmi_conn_cimv2
 
     def list_instance_notes(self):
         instance_notes = []
@@ -673,21 +686,25 @@ class VMUtils(object):
         raise NotImplementedError(_("Metrics collection is not supported on "
                                     "this version of Hyper-V"))
 
-    def get_vm_serial_port_connection(self, vm_name, update_connection=None):
+    def _get_vm_serial_port_connection(self, vm_name, name):
         vm = self._lookup_vm_check(vm_name)
 
         vmsettings = vm.associators(
             wmi_result_class=self._VIRTUAL_SYSTEM_SETTING_DATA_CLASS)
         rasds = vmsettings[0].associators(
             wmi_result_class=self._RESOURCE_ALLOC_SETTING_DATA_CLASS)
-        serial_port = (
-            [r for r in rasds if
-             r.ResourceSubType == self._SERIAL_PORT_RES_SUB_TYPE][0])
+        return (vm, [r for r in rasds if
+                     r.ResourceSubType == self._SERIAL_PORT_RES_SUB_TYPE and
+                     r.ElementName == name][0])
 
-        if update_connection:
-            serial_port.Connection = [update_connection]
-            self._modify_virt_resource(serial_port, vm.path_())
+    def set_vm_serial_port_connection(self, vm_name,
+                                      named_pipe_path, name="COM 1"):
+        (vm, serial_port) = self._get_vm_serial_port_connection(vm_name, name)
+        serial_port.Connection = [named_pipe_path]
+        self._modify_virt_resource(serial_port, vm.path_())
 
+    def get_vm_serial_port_connection(self, vm_name, name="COM 1"):
+        (vm, serial_port) = self._get_vm_serial_port_connection(vm_name, name)
         if len(serial_port.Connection) > 0:
             return serial_port.Connection[0]
 

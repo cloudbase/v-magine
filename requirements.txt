@@ -1,3 +1,5 @@
+six
+paramiko
 pywin32
 wmi
 iniparse

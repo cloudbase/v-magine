@@ -53,9 +53,9 @@ class VHDUtilsV2(vhdutils.VHDUtils):
     }
 
     def __init__(self):
+        self._wmi_namespace = '//./root/virtualization/v2'
+        self._wmi_conn = None
         self._vmutils = vmutilsv2.VMUtilsV2()
-        if sys.platform == 'win32':
-            self._conn = wmi.WMI(moniker='//./root/virtualization/v2')
 
     def create_dynamic_vhd(self, path, max_internal_size, format):
         vhd_format = self._vhd_format_map.get(format)

@@ -1,5 +1,6 @@
 install
-url --url="http://mirror.centos.org/centos/7/os/x86_64/"
+#url --url="http://mirror.centos.org/centos/7/os/x86_64/"
+url --url="http://10.14.0.142/centos/7.0/os/x86_64/"
 
 lang en_US.UTF-8
 keyboard --vckeymap=us --xlayouts='us'
@@ -10,6 +11,7 @@ network --device=enp0s10f0 --bootproto=static --ip=10.10.10.10 --netmask=255.255
 text
 
 rootpw --iscrypted <%encrypted_password%>
+#rootpw Passw0rd
 
 firewall --service=ssh
 authconfig --enableshadow --passalgo=sha512 --enablefingerprint --enablemd5
@@ -27,8 +29,6 @@ reboot
 @Core
 wget
 %end
-%post --log=/root/post.log --nochroot --erroronfail
-sed -i "s/^ACTIVE_CONSOLES=\/dev\/tty\[1-6\]/ACTIVE_CONSOLES=\/dev\/tty1/" /mnt/sysimage/etc/sysconfig/init
-sed -i 's/rhgb quiet/quiet console=tty0 console=ttyS0,115200n8/g' /boot/grub/grub.conf
-sed -i 's/^hiddenmenu$/hiddenmenu\nserial\ --unit=0\ --speed=115200\ --word=8\ --parity=no\ --stop=1\nterminal\ --timeout=5\ console\ serial/g' /boot/grub/grub.conf
+%post --log=/root/post.log --erroronfail
+#/sbin/grubby --update-kernel=ALL --args="console=ttyS0,115200n8 console=tty0 consoleblank=0"
 %end

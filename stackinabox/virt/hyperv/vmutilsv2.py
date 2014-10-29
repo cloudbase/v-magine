@@ -67,7 +67,7 @@ class VMUtilsV2(vmutils.VMUtils):
         super(VMUtilsV2, self).__init__(host)
 
     def _init_hyperv_wmi_conn(self, host):
-        self._conn = wmi.WMI(moniker='//%s/root/virtualization/v2' % host)
+        self._wmi_namespace = '//%s/root/virtualization/v2' % host
 
     def list_instance_notes(self):
         instance_notes = []

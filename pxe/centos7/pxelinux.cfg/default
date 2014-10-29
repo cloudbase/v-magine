@@ -3,13 +3,17 @@ prompt 0
 timeout 2
 ontimeout ks-net
 menu title PXE Network Boot
+serial 0 115200
 
 label ks-net
   menu label ^Network install
-  kernel vmlinuz
-  append initrd=initrd.img ro selinux=0 ks=hd:fd0:/ks.cfg inst.repo=http://mirror.centos.org/centos/7/os/x86_64 ksdevice=eth0 no_timer_check ramdisk_size=100000
+  kernel vmlinuz text console=ttyS0,115200n8 console=tty0 consoleblank=0
+  append initrd=initrd.img ro selinux=0 ks=hd:fd0:/ks.cfg inst.repo=http://10.14.0.142/centos/7.0/os/x86_64
+ ksdevice=eth0  ramdisk_size=100000
+
+#inst.repo=http://mirror.centos.org/centos/7/os/x86_64
 
 #label ks-cdrom
 #  menu label Kickstart ^CD
-#  kernel vmlinuz
+#  kernel vmlinuz text console=ttyS0,115200n8 console=tty0 consoleblank=0
 #  append initrd=initrd.img ro selinux=0 ks=hd:fd0:/ks.cfg inst.repo=cdrom ksdevice=eth0 no_timer_check ramdisk_size=100000

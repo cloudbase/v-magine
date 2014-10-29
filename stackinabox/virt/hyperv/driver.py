@@ -19,6 +19,7 @@ from stackinabox.virt import base
 from stackinabox.virt.hyperv import constants
 from stackinabox.virt.hyperv import netutilsv2
 from stackinabox.virt.hyperv import vhdutilsv2
+from stackinabox.virt.hyperv import vmutils
 from stackinabox.virt.hyperv import vmutilsv2
 from stackinabox import windows
 
@@ -28,6 +29,7 @@ class HyperVDriver(base.BaseDriver):
         self._vmutils = vmutilsv2.VMUtilsV2()
         self._vhdutils = vhdutilsv2.VHDUtilsV2()
         self._netutils = netutilsv2.NetworkUtilsV2()
+        self._windows_utils = windows.WindowsUtils()
 
     def vm_exists(self, vm_name):
         return self._vmutils.vm_exists(vm_name)
@@ -35,6 +37,9 @@ class HyperVDriver(base.BaseDriver):
     def vm_is_stopped(self, vm_name):
         return (self._vmutils.get_vm_state(vm_name) ==
                 constants.HYPERV_VM_STATE_DISABLED)
+
+    def reboot_vm(self, vm_name):
+        self._vmutils.set_vm_state(vm_name, constants.HYPERV_VM_STATE_REBOOT)
 
     def power_off_vm(self, vm_name):
         self._vmutils.set_vm_state(vm_name, constants.HYPERV_VM_STATE_DISABLED)
@@ -44,7 +49,8 @@ class HyperVDriver(base.BaseDriver):
         self._vmutils.destroy_vm(vm_name)
 
     def create_vm(self, vm_name, vm_path, max_disk_size, max_memory_mb,
-                  min_memory_mb, vcpus_num, vmnic_info, vfd_path):
+                  min_memory_mb, vcpus_num, vmnic_info, vfd_path,
+                  console_named_pipe):
         vhd_path = os.path.join(vm_path, "%s.vhdx" % vm_name)
 
         if os.path.exists(vhd_path):
@@ -55,7 +61,8 @@ class HyperVDriver(base.BaseDriver):
         # Hyper-V requires memory to be 2MB aligned
         max_memory_mb -= max_memory_mb % 2
 
-        memory_ratio = max_memory_mb / float(min_memory_mb)
+        #memory_ratio = max_memory_mb / float(min_memory_mb)
+        memory_ratio = 1
         self._vmutils.create_vm(vm_name, max_memory_mb, vcpus_num, False,
                                 memory_ratio)
 
@@ -75,6 +82,10 @@ class HyperVDriver(base.BaseDriver):
                     self._netutils.set_vswitch_port_vlan_id(
                         access_vlan_id, vmnic_name, trunk_vlan_ids,
                         private_vlan_id)
+
+        if console_named_pipe:
+            self._vmutils.set_vm_serial_port_connection(vm_name,
+                                                        console_named_pipe)
 
     def start_vm(self, vm_name):
         self._vmutils.set_vm_state(vm_name, constants.HYPERV_VM_STATE_ENABLED)
@@ -100,11 +111,33 @@ class HyperVDriver(base.BaseDriver):
                         base.UDP: windows.PROTOCOL_UDP}
         interface_name = "vEthernet (%s)" % vswitch_name
 
-        windows_utils = windows.WindowsUtils()
-        if windows_utils.firewall_rule_exists(rule_name):
-            windows_utils.firewall_remove_rule(rule_name)
+        if self._windows_utils.firewall_rule_exists(rule_name):
+            self._windows_utils.firewall_remove_rule(rule_name)
 
-        windows_utils.firewall_create_rule(rule_name, local_ports,
-                                           protocol_map[protocol],
-                                           [interface_name],
-                                           allow, description)
+        self._windows_utils.firewall_create_rule(rule_name, local_ports,
+                                                 protocol_map[protocol],
+                                                 [interface_name],
+                                                 allow, description)
+
+    def check_platform(self):
+        VLAN_HOTFIX_ID = '2982439'
+
+        if not self._windows_utils.check_os_version(
+                6, 2, comparison=windows.VER_GREATER_EQUAL):
+            raise Exception("Windows 8 or Windows Server / Hyper Server 2012 "
+                            "or above are required for this product")
+
+        try:
+            # TODO: check if the feature is installed
+            self._vmutils.list_instances()
+        except vmutils.HyperVException as ex:
+            raise Exception("Please enable Hyper-V on this host before "
+                            "installing OpenStack")
+
+        if (self._windows_utils.check_os_version(6, 3) and
+                not self._windows_utils.check_hotfix(VLAN_HOTFIX_ID)):
+            raise Exception(
+                "Windows update KB%(hotfix_id)s needs to be installed for "
+                "OpenStack to work properly on this host. Please see: "
+                "http://support.microsoft.com/?kbid=%(hotfix_id)s" %
+                {"hotfix_id": VLAN_HOTFIX_ID})
