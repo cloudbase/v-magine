@@ -25,10 +25,13 @@ from six.moves.urllib import request
 LOG = logging
 
 def execute_process(args, shell=False):
+    si = subprocess.STARTUPINFO()
+    si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     p = subprocess.Popen(args,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
-                         shell=shell)
+                         shell=shell,
+                         startupinfo=si)
     (out, err) = p.communicate()
     if p.returncode:
         raise Exception("Command failed: %s" % err)

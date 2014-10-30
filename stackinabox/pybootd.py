@@ -65,13 +65,17 @@ class PyBootdManager(object):
             listen_address, tftp_root_url, reservations,
             pool_start, pool_count)
 
-        args = [sys.executable, "-c",
-                "from pybootd import daemons; daemons.main()",
+        python = os.path.join(os.path.dirname(sys.executable), "python.exe")
+        args = [python, "-c", "from pybootd import daemons; daemons.main()",
                 "--config", self._pybootd_ini_path]
+
+        si = subprocess.STARTUPINFO()
+        si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         self._pybootd_proc = subprocess.Popen(args,
                                               #stdout=subprocess.PIPE,
                                               #stderr=subprocess.PIPE,
-                                              shell=False)
+                                              shell=False,
+                                              startupinfo=si)
 
         # Make sure we terminate the process before exiting
         # TODO(alexpilotti): Platform independence
