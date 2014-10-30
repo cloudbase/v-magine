@@ -19,7 +19,6 @@ import pythoncom
 import threading
 import time
 
-from oslo.utils import units
 from PyQt4 import QtCore
 
 from stackinabox import actions
