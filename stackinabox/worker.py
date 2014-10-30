@@ -184,7 +184,6 @@ class Worker(QtCore.QObject):
         return (vm_int_mgmt_ip, vm_admin_user, password)
 
     def _install_rdo(self, rdo_installer, host, username, password):
-        LOG.info("install_rdo")
         max_connect_attempts = 10
         reboot_sleep_s = 10
 
@@ -252,8 +251,18 @@ class Worker(QtCore.QObject):
 
     def _validate_deployment(self, rdo_installer):
         self.status_changed.emit('Validating OpenStack deployment...')
-        rdo_installer.check_hyperv_compute_services(platform.node())
-        self.status_changed.emit('Your OpenStack deployment is ready!')
+        # Skip for now
+        # rdo_installer.check_hyperv_compute_services(platform.node())
+
+    def _create_cirros_image(self, dep_actions, openstack_cred):
+        image_path = "cirros.vhdx.gz"
+        self.status_changed.emit('Downloading Cirros VHDX image...')
+        dep_actions.download_cirros_image(image_path)
+        self.status_changed.emit('Removing existing images...')
+        dep_actions.delete_existing_images(openstack_cred)
+        self.status_changed.emit('Uploading Cirros VHDX image in Glance...')
+        dep_actions.create_cirros_image(openstack_cred, image_path)
+        os.remove(image_path)
 
     @QtCore.pyqtSlot()
     def deploy_openstack(self):
@@ -265,13 +274,18 @@ class Worker(QtCore.QObject):
             rdo_installer = rdo.RDOInstaller(self._stdout_callback,
                                              self._stderr_callback)
 
-            (ssh_ip, ssh_user, ssh_password) = self._deploy_openstack_vm(
+            (mgmt_ip, ssh_user, ssh_password) = self._deploy_openstack_vm(
                 dep_actions)
-            nova_config = self._install_rdo(rdo_installer, ssh_ip, ssh_user,
+            nova_config = self._install_rdo(rdo_installer, mgmt_ip, ssh_user,
                                             ssh_password)
             self._install_local_hyperv_compute(dep_actions, nova_config)
             self._validate_deployment(rdo_installer)
 
+            openstack_cred = dep_actions.get_openstack_credentials(
+                mgmt_ip, ssh_password)
+            self._create_cirros_image(dep_actions, openstack_cred)
+
+            self.status_changed.emit('Your OpenStack deployment is ready!')
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)

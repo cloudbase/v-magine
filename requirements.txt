@@ -7,4 +7,6 @@ netifaces
 pybootd
 psutil
 oslo.utils
-PySide
+PyQt4
+python-keystoneclient
+python-glanceclient

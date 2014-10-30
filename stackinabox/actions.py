@@ -13,12 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import gzip
 import logging
 import os
 import psutil
 
 from oslo.utils import units
 
+from stackinabox import glance
 from stackinabox import kickstart
 from stackinabox import pybootd
 from stackinabox import utils
@@ -46,10 +48,15 @@ DATA_VLAN_RANGE = range(500, 2000)
 
 HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V Nova Compute'
-HYPERV_MSI_URL = "https://www.cloudbase.it/downloads/HyperVNovaCompute_Icehouse_2014_1_3.msi"
+HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
+                  "HyperVNovaCompute_Icehouse_2014_1_3.msi")
+CIRROS_VHDX_URL = ("https://raw.githubusercontent.com/cloudbase/"
+                   "ci-overcloud-init-scripts/master/scripts/devstack_vm/"
+                   "cirros-0.3.3-x86_64.vhdx.gz")
 
 OPENSTACK_INSTANCES_PATH = "C:\\OpenStack\\Instances"
 OPENSTACK_LOGDIR = "C:\\OpenStack\\Log"
+
 
 class DeploymentActions(object):
 
@@ -71,8 +78,28 @@ class DeploymentActions(object):
 
     def download_hyperv_compute_msi(self, target_path):
         utils.retry_action(
-            lambda: utils.download_file(HYPERV_MSI_URL, target_path),
-            lambda ex: LOG.info(ex))
+            lambda: utils.download_file(HYPERV_MSI_URL, target_path))
+
+    def download_cirros_image(self, target_path):
+        utils.retry_action(
+            lambda: utils.download_file(CIRROS_VHDX_URL, target_path))
+
+    def get_openstack_credentials(self, mgmt_int_ip, password):
+        auth_url = 'http://%s:5000/v2.0/' % mgmt_int_ip
+        return {'tenant_name': 'admin', 'username': 'admin',
+                'password': password, 'auth_url': auth_url}
+
+    def delete_existing_images(self, openstack_cred):
+        g = glance.GlanceClient()
+        g.login(**openstack_cred)
+        for image in g.get_images():
+            g.delete_image(image['id'])
+
+    def create_cirros_image(self, openstack_cred, gzipped_image_path):
+        g = glance.GlanceClient()
+        g.login(**openstack_cred)
+        with gzip.open(gzipped_image_path, 'rb') as f:
+            g.create_image('cirros', 'vhd', 'bare', f, 'hyperv', 'public')
 
     def install_hyperv_compute(self, msi_path, nova_config):
 
