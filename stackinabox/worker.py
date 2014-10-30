@@ -27,6 +27,7 @@ from stackinabox import security
 
 LOG = logging
 
+
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
         super(_VMConsoleThread, self).__init__()
@@ -74,10 +75,16 @@ class Worker(QtCore.QObject):
         self._term_type = term_type
         self._term_cols = cols
         self._term_rows = rows
+        LOG.debug("Term info set: %s" %
+                  str((self._term_type, self._term_cols, self._term_rows)))
 
     @QtCore.pyqtSlot()
     def started(self):
         LOG.info("Started")
+
+    def _get_mac_address(self, vm_network_config, vnic_name):
+        return [vnic_cfg[2] for vnic_cfg in vm_network_config
+                if vnic_cfg[1] == vnic_name][0]
 
     def _deploy_openstack_vm(self, dep_actions):
         vm_dir = "C:\\VM"
@@ -88,6 +95,11 @@ class Worker(QtCore.QObject):
         # TODO(alexpilotti): Add support for more OSs
         pxe_os_id = "centos7"
         console_named_pipe = r"\\.\pipe\%s" % vm_name
+
+        inst_repo = "http://10.14.0.142/centos/7.0/os/x86_64"
+        # inst_repo = "http://mirror.centos.org/centos/7/os/x86_64"
+
+        vfd_path = os.path.join(vm_dir, "floppy.vfd")
 
         self.status_changed.emit('Generating random password...')
         password = security.get_random_password()
@@ -105,9 +117,6 @@ class Worker(QtCore.QObject):
         self.status_changed.emit('Check if OpenStack controller VM exists...')
         dep_actions.check_remove_vm(vm_name)
 
-        vfd_path = os.path.join(vm_dir, "floppy.vfd")
-        dep_actions.create_kickstart_vfd(vfd_path, encrypted_password)
-
         self.status_changed.emit('Creating virtual switches...')
         internal_network_config = dep_actions.get_internal_network_config()
         dep_actions.create_vswitches(external_vswitch_name,
@@ -118,15 +127,40 @@ class Worker(QtCore.QObject):
             vm_name, vm_dir, max_vm_mem_mb, vfd_path, external_vswitch_name,
             console_named_pipe)
 
+        LOG.debug("VNIC Network config: %s " % vm_network_config)
+
+        mgmt_ext_mac_address = self._get_mac_address(vm_network_config,
+                                                     "%s-mgmt-ext" % vm_name)
+        mgmt_int_mac_address = self._get_mac_address(vm_network_config,
+                                                     "%s-mgmt-int" % vm_name)
+        data_mac_address = self._get_mac_address(vm_network_config,
+                                                 "%s-data" % vm_name)
+        ext_mac_address = self._get_mac_address(vm_network_config,
+                                                "%s-ext" % vm_name)
+        pxe_mac_address = self._get_mac_address(vm_network_config,
+                                                "%s-pxe" % vm_name)
+
+        dep_actions.create_kickstart_vfd(vfd_path, encrypted_password,
+                                         mgmt_ext_mac_address,
+                                         mgmt_int_mac_address,
+                                         data_mac_address,
+                                         ext_mac_address,
+                                         inst_repo)
+
         vnic_ip_info = dep_actions.get_openstack_vm_ip_info(
             vm_network_config, internal_network_config["subnet"])
 
-        LOG.debug("VNIC IP info: %s " % vnic_ip_info)
+        LOG.debug("VNIC PXE IP info: %s " % vnic_ip_info)
 
         self.status_changed.emit('Starting PXE daemons...')
         dep_actions.start_pxe_service(
             internal_network_config["host_ip"],
             [vnic_ip[1:] for vnic_ip in vnic_ip_info], pxe_os_id)
+
+        dep_actions.generate_mac_pxelinux_cfg(
+            pxe_mac_address,
+            mgmt_ext_mac_address.replace('-', ':'),
+            inst_repo)
 
         self.status_changed.emit('PXE booting OpenStack controller VM...')
         dep_actions.start_openstack_vm()
@@ -152,9 +186,13 @@ class Worker(QtCore.QObject):
     def _install_rdo(self, rdo_installer, host, username, password):
         LOG.info("install_rdo")
         max_connect_attempts = 10
-        reboot_sleep_s = 5
+        reboot_sleep_s = 10
 
         try:
+            self.status_changed.emit(
+                'Waiting for the RDO VM to reboot...')
+            time.sleep(reboot_sleep_s)
+
             self.status_changed.emit(
                 'Enstablishing SSH connection with RDO VM...')
             rdo_installer.connect(host, username, password,
@@ -214,7 +252,7 @@ class Worker(QtCore.QObject):
 
     def _validate_deployment(self, rdo_installer):
         self.status_changed.emit('Validating OpenStack deployment...')
-        r.check_hyperv_compute_services(platform.node())
+        rdo_installer.check_hyperv_compute_services(platform.node())
         self.status_changed.emit('Your OpenStack deployment is ready!')
 
     @QtCore.pyqtSlot()
@@ -237,6 +275,6 @@ class Worker(QtCore.QObject):
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
-            self.error.emit(ex);
+            self.error.emit(ex)
         finally:
             dep_actions.stop_pxe_service()

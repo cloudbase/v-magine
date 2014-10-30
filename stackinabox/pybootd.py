@@ -15,6 +15,7 @@
 
 import atexit
 import iniparse
+import logging
 import os
 import subprocess
 import sys
@@ -22,13 +23,20 @@ import sys
 from stackinabox import utils
 from stackinabox import windows
 
+LOG = logging
+
+
 class PyBootdManager(object):
     def __init__(self):
         self._pybootd_ini_path = None
         self._pybootd_proc = None
+        self._pxelinux_cfg_dir = None
 
     def _get_pybootd_ini_template_path(self):
         return os.path.join(utils.get_resources_dir(), "pybootd.ini")
+
+    def _get_pxelinux_cfg_path(self):
+        return os.path.join(utils.get_resources_dir(), "pxelinux.template")
 
     def _generate_pybootd_ini(self, listen_address, tftp_root_url,
                               reservations, pool_start,
@@ -57,23 +65,46 @@ class PyBootdManager(object):
 
         return pybootd_ini_path
 
-    def start(self, listen_address, tftp_root_url, pool_start, reservations,
+    def generate_mac_pxelinux_cfg(self, pxe_mac_address, params):
+        mac_cfg_path = os.path.join(self._pxelinux_cfg_dir,
+                                    "01-%s" % pxe_mac_address.lower())
+
+        with open(self._get_pxelinux_cfg_path(), "rb") as f:
+            pxelinux_cfg = f.read()
+
+        for (key, value) in params.items():
+            pxelinux_cfg = pxelinux_cfg.replace("<%%%s%%>" % key, value)
+
+        with open(mac_cfg_path, "wb") as f:
+            f.write(pxelinux_cfg)
+
+    def start(self, listen_address, tftp_root_dir, pool_start, reservations,
               pool_count=None):
         self.stop()
+
+        tftp_root_url = "file://"
+        if sys.platform == "win32":
+            # Note: pybootd fails if the drive is in the url
+            tftp_root_url += tftp_root_dir.replace("\\", "/")[2:]
+        else:
+            tftp_root_url += tftp_root_dir
 
         self._pybootd_ini_path = self._generate_pybootd_ini(
             listen_address, tftp_root_url, reservations,
             pool_start, pool_count)
 
+        self._pxelinux_cfg_dir = os.path.join(tftp_root_dir, "pxelinux.cfg")
+
         python = os.path.join(os.path.dirname(sys.executable), "python.exe")
         args = [python, "-c", "from pybootd import daemons; daemons.main()",
                 "--config", self._pybootd_ini_path]
+        LOG.info("Starting pybootd: %s" % args)
 
         si = subprocess.STARTUPINFO()
         si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         self._pybootd_proc = subprocess.Popen(args,
-                                              #stdout=subprocess.PIPE,
-                                              #stderr=subprocess.PIPE,
+                                              # stdout=subprocess.PIPE,
+                                              # stderr=subprocess.PIPE,
                                               shell=False,
                                               startupinfo=si)
 

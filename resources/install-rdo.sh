@@ -115,9 +115,9 @@ fi
 
 ADMIN_PASSWORD=$1
 ANSWER_FILE=packstack-answers.txt
-MGMT_IFACE=eth1
-DATA_IFACE=eth2
-EXT_IFACE=eth3
+MGMT_IFACE=mgmt-int
+DATA_IFACE=data
+EXT_IFACE=ext
 OVS_DATA_BRIDGE=br-data
 OVS_EXT_BRIDGE=br-ex
 NTP_HOSTS=0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org

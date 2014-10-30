@@ -14,7 +14,7 @@ class RDOInstaller(object):
         self._stderr_callback = stderr_callback
         self._ssh = None
 
-    def _exec_shell_cmd_check_exit_status(self, cmd):
+    def _exec_shell_cmd_check_exit_status_single(self, cmd):
         chan = self._ssh.invoke_shell(term=self._term_type,
                                       width=self._term_cols,
                                       height=self._term_rows)
@@ -36,13 +36,21 @@ class RDOInstaller(object):
         if exit_status:
             raise Exception("Command failed with exit code: %d" % exit_status)
 
-    def _exec_cmd(self, cmd):
+    def _exec_shell_cmd_check_exit_status(self, cmd):
+        utils.retry_action(
+            lambda: self._exec_shell_cmd_check_exit_status_single(cmd),
+            interval=5)
+
+    def _exec_cmd_single(self, cmd):
         chan = self._ssh.get_transport().open_session()
         chan.exec_command(cmd)
         return chan.recv_exit_status()
 
-    def _connect(self, host, username, password, term_type, term_cols,
-                 term_rows):
+    def _exec_cmd(self, cmd):
+        return utils.retry_action(lambda: self._exec_cmd_single(cmd))
+
+    def _connect_single(self, host, username, password, term_type, term_cols,
+                        term_rows):
         self.disconnect()
         LOG.debug("connecting")
 
@@ -58,10 +66,9 @@ class RDOInstaller(object):
     def connect(self, host, username, password, term_type, term_cols,
                 term_rows, max_attempts=1):
         utils.retry_action(
-            lambda: self._connect(
+            lambda: self._connect_single(
                 host, username, password, term_type, term_cols, term_rows),
-            lambda ex: LOG.info(ex),
-            max_attempts)
+            max_attempts=max_attempts)
 
     def disconnect(self):
         if self._ssh:
@@ -105,13 +112,17 @@ class RDOInstaller(object):
             config[name] = self._get_config_value(config_file, section, name)
         return {section: config}
 
-    def _copy_resource_file(self, file_name):
+    def _copy_resource_file_single(self, file_name):
         LOG.debug("Copying %s" % file_name)
         sftp = self._ssh.open_sftp()
         path = os.path.join(utils.get_resources_dir(), file_name)
         sftp.put(path, '/root/%s' % file_name)
         sftp.close()
         LOG.debug("%s copied" % file_name)
+
+    def _copy_resource_file(self, file_name):
+        return utils.retry_action(
+            lambda: self._copy_resource_file_single(file_name))
 
     def _check_hyperv_compute_services(self, host_name):
         if (self._exec_utils_function(
@@ -126,8 +137,7 @@ class RDOInstaller(object):
 
     def check_hyperv_compute_services(self, host_name):
         utils.retry_action(
-            lambda: self._check_hyperv_compute_services(host_name),
-            lambda ex: LOG.info(ex), interval=5)
+            lambda: self._check_hyperv_compute_services(host_name), interval=5)
 
     def install_rdo(self, rdo_admin_password):
         install_script = 'install-rdo.sh'
@@ -137,6 +147,6 @@ class RDOInstaller(object):
         self._exec_shell_cmd_check_exit_status(
             '/bin/chmod u+x /root/%(install_script)s && '
             '/root/%(install_script)s \"%(rdo_admin_password)s\"' %
-            { 'install_script': install_script,
-              'rdo_admin_password': rdo_admin_password})
+            {'install_script': install_script,
+             'rdo_admin_password': rdo_admin_password})
         LOG.info("RDO installed")

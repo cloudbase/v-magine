@@ -16,7 +16,6 @@
 import logging
 import os
 import psutil
-import sys
 
 from oslo.utils import units
 
@@ -140,18 +139,18 @@ class DeploymentActions(object):
     def check_platform_requirements(self):
         self._virt_driver.check_platform()
 
+    def generate_mac_pxelinux_cfg(self, pxe_mac_address, mgmt_ext_mac_address,
+                                  inst_repo):
+        self._pybootd_manager.generate_mac_pxelinux_cfg(
+            pxe_mac_address,
+            {'mgmt_ext_mac_address': mgmt_ext_mac_address,
+             'inst_repo': inst_repo})
+
     def start_pxe_service(self, listen_address, reservations, pxe_os_id):
         pxe_base_dir = utils.get_pxe_files_dir()
         tftp_root_dir = os.path.join(pxe_base_dir, pxe_os_id)
 
-        tftp_root_url = "file://"
-        if sys.platform == "win32":
-            # Note: pybootd fails if the drive is in the url
-            tftp_root_url += tftp_root_dir.replace("\\", "/")[2:]
-        else:
-            tftp_root_url += tftp_root_dir
-
-        self._pybootd_manager.start(listen_address, tftp_root_url,
+        self._pybootd_manager.start(listen_address, tftp_root_dir,
                                     reservations[0][1], reservations)
 
     def stop_pxe_service(self):
@@ -178,14 +177,17 @@ class DeploymentActions(object):
         # vmswitch_name, vmnic_name, mac_address, pxe, allow_mac_spoofing,
         # access_vlan_id, trunk_vlan_ids, private_vlan_id
         vm_network_config = [
-            (external_vswitch_name, "%s-mgmt-ext" % vm_name, None,
+            (external_vswitch_name, "%s-mgmt-ext" % vm_name,
+             utils.get_random_mac_address(),
              False, False, None, None, None),
             (VSWITCH_INTERNAL_NAME, "%s-mgmt-int" % vm_name,
              utils.get_random_mac_address(),
              False, False, None, None, None),
-            (VSWITCH_DATA_NAME, "%s-data" % vm_name, None,
+            (VSWITCH_DATA_NAME, "%s-data" % vm_name,
+             utils.get_random_mac_address(),
              False, True, None, DATA_VLAN_RANGE, 0),
-            (external_vswitch_name, "%s-ext" % vm_name, None,
+            (external_vswitch_name, "%s-ext" % vm_name,
+             utils.get_random_mac_address(),
              False, True, None, None, None),
             (VSWITCH_INTERNAL_NAME, "%s-pxe" % vm_name,
              utils.get_random_mac_address(),
@@ -237,10 +239,20 @@ class DeploymentActions(object):
 
         return vnic_ip_info
 
-    def create_kickstart_vfd(self, vfd_path, encrypted_password):
-        kickstart.generate_kickstart_vfd(vfd_path,
-                                         {"encrypted_password":
-                                          encrypted_password})
+    def create_kickstart_vfd(self, vfd_path, encrypted_password,
+                             mgmt_ext_mac_address, mgmt_int_mac_address,
+                             data_mac_address, ext_mac_address, inst_repo):
+        def _format_udev_mac(mac):
+            return mac.lower().replace('-', ':')
+
+        kickstart.generate_kickstart_vfd(
+            vfd_path,
+            {"encrypted_password": encrypted_password,
+             "mgmt_ext_mac_address": _format_udev_mac(mgmt_ext_mac_address),
+             "mgmt_int_mac_address": _format_udev_mac(mgmt_int_mac_address),
+             "data_mac_address": _format_udev_mac(data_mac_address),
+             "ext_mac_address": _format_udev_mac(ext_mac_address),
+             "inst_repo": inst_repo})
 
     def create_vswitches(self, external_vswitch_name, internal_network_config):
         virt_driver = virt_factory.get_virt_driver()

@@ -1,6 +1,5 @@
 install
-#url --url="http://mirror.centos.org/centos/7/os/x86_64/"
-url --url="http://10.14.0.142/centos/7.0/os/x86_64/"
+url --url="<%inst_repo%>"
 
 lang en_US.UTF-8
 keyboard --vckeymap=us --xlayouts='us'
@@ -30,5 +29,31 @@ reboot
 wget
 %end
 %post --log=/root/post.log --erroronfail
-#/sbin/grubby --update-kernel=ALL --args="console=ttyS0,115200n8 console=tty0 consoleblank=0"
+
+config_network_adapter () {
+    local IFACE=$1
+    local MAC_ADDR=$2
+
+    /usr/bin/cat << EOF > /etc/sysconfig/network-scripts/ifcfg-$IFACE
+DEVICE="$IFACE"
+HWADDR="${MAC_ADDR^^}"
+NM_CONTROLLED="no"
+BOOTPROTO="dhcp"
+ONBOOT="yes"
+EOF
+}
+
+UDEV_NET_RULES=/etc/udev/rules.d/60-net.rules
+
+/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="<%mgmt_ext_mac_address%>", ATTR{type}=="1", KERNEL=="eth*", NAME="mgmt-ext"' > $UDEV_NET_RULES
+/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="<%mgmt_int_mac_address%>", ATTR{type}=="1", KERNEL=="eth*", NAME="mgmt-int"' >> $UDEV_NET_RULES
+/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="<%data_mac_address%>", ATTR{type}=="1", KERNEL=="eth*", NAME="data"' >> $UDEV_NET_RULES
+/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="<%ext_mac_address%>", ATTR{type}=="1", KERNEL=="eth*", NAME="ext"' >> $UDEV_NET_RULES
+
+/usr/bin/rm -f  /etc/sysconfig/network-scripts/ifcfg-eth*
+
+config_network_adapter mgmt-ext <%mgmt_ext_mac_address%>
+config_network_adapter mgmt-int <%mgmt_int_mac_address%>
+
+/sbin/grubby --update-kernel=ALL --args="console=tty0 console=ttyS0,115200n8 consoleblank=0"
 %end

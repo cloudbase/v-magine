@@ -17,6 +17,9 @@ import logging
 import os
 import sys
 
+# For PyInstaller
+import pkg_resources
+
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 from PyQt4 import QtWebKit
@@ -56,7 +59,7 @@ class Controller(QtCore.QObject):
 
     @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):
-        self._worker.set_term_info(term_type, cols, rows)
+        self._worker.set_term_info(str(term_type), cols, rows)
 
     @QtCore.pyqtSlot()
     def install(self):
@@ -127,7 +130,12 @@ class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
 
 
 def main():
-    logging.basicConfig(filename='stackinabox.log', level=logging.DEBUG)
+    base_dir = os.path.dirname(sys.executable)
+    os.chdir(base_dir)
+
+    log_file = os.path.join(base_dir, 'stackinabox.log')
+    logging.basicConfig(filename=log_file, level=logging.DEBUG)
+    logging.getLogger("paramiko").setLevel(logging.WARNING)
 
     app = QtGui.QApplication(sys.argv)
 

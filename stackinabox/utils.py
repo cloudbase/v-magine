@@ -24,6 +24,7 @@ from six.moves.urllib import request
 
 LOG = logging
 
+
 def execute_process(args, shell=False):
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -40,10 +41,10 @@ def execute_process(args, shell=False):
 
 def download_file(url, target_path, report_hook=None):
     class URLopenerWithException(request.FancyURLopener):
-      def http_error_default(self, url, fp, errcode, errmsg, headers):
-        raise Exception("Download failed with error: %s" % errcode)
+        def http_error_default(self, url, fp, errcode, errmsg, headers):
+            raise Exception("Download failed with error: %s" % errcode)
     return URLopenerWithException().retrieve(url, target_path,
-        reporthook=report_hook)
+                                             reporthook=report_hook)
 
 
 def retry_action(action, error_action=None, max_attempts=10, interval=0):
@@ -55,6 +56,7 @@ def retry_action(action, error_action=None, max_attempts=10, interval=0):
         except Exception as ex:
             i += 1
             if i < max_attempts:
+                LOG.exception(ex)
                 if error_action:
                     error_action(ex)
                 if interval:

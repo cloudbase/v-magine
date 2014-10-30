@@ -12,11 +12,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import os
 import tempfile
 
 from stackinabox import utils
 from stackinabox import vfd
+
+LOG = logging
 
 
 def _get_kickstart_template():
@@ -27,6 +30,7 @@ def _generate_kickstart_file(params):
     with open(_get_kickstart_template(), "rb") as f:
         ks = f.read()
 
+    LOG.debug("Kickstart params: %s" % params)
     for (key, value) in params.items():
         ks = ks.replace("<%%%s%%>" % key, value)
 
