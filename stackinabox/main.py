@@ -21,6 +21,7 @@ import sys
 import pkg_resources
 import xmlrpclib
 
+from pybootd import daemons as pybootd_daemons
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 from PyQt4 import QtWebKit
@@ -147,4 +148,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] == 'pybootd':
+        pybootd_daemons.main()
+    else:
+        main()

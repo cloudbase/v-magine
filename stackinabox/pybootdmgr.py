@@ -97,9 +97,7 @@ class PyBootdManager(object):
         if not os.path.isdir(self._pxelinux_cfg_dir):
             os.makedirs(self._pxelinux_cfg_dir)
 
-        python = os.path.join(os.path.dirname(sys.executable), "python.exe")
-        args = [python, "-c", "from pybootd import daemons; daemons.main()",
-                "--config", self._pybootd_ini_path]
+        args = [sys.executable, "pybootd", "--config", self._pybootd_ini_path]
         LOG.info("Starting pybootd: %s" % args)
 
         si = subprocess.STARTUPINFO()

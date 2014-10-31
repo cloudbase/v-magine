@@ -22,7 +22,7 @@ from oslo.utils import units
 
 from stackinabox import glance
 from stackinabox import kickstart
-from stackinabox import pybootd
+from stackinabox import pybootdmgr
 from stackinabox import utils
 from stackinabox import windows
 from stackinabox.virt import base as base_virt_driver
@@ -61,7 +61,7 @@ OPENSTACK_LOGDIR = "C:\\OpenStack\\Log"
 class DeploymentActions(object):
 
     def __init__(self):
-        self._pybootd_manager = pybootd.PyBootdManager()
+        self._pybootd_manager = pybootdmgr.PyBootdManager()
         self._virt_driver = virt_factory.get_virt_driver()
         self._windows_utils = windows.WindowsUtils()
         self._vm_name = None
