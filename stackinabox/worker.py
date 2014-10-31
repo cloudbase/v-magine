@@ -96,8 +96,8 @@ class Worker(QtCore.QObject):
         pxe_os_id = "centos7"
         console_named_pipe = r"\\.\pipe\%s" % vm_name
 
-        inst_repo = "http://10.14.0.142/centos/7.0/os/x86_64"
-        # inst_repo = "http://mirror.centos.org/centos/7/os/x86_64"
+        # inst_repo = "http://10.14.0.142/centos/7.0/os/x86_64"
+        inst_repo = "http://mirror.centos.org/centos/7/os/x86_64"
 
         vfd_path = os.path.join(vm_dir, "floppy.vfd")
 
@@ -232,7 +232,7 @@ class Worker(QtCore.QObject):
                                  'Hyper-V are already installed...')
         msi_info = dep_actions.check_hyperv_compute_installed()
         if msi_info:
-            self.status_changed.emit('Uninstalling older version of the '
+            self.status_changed.emit('Uninstalling a previous version of the '
                                      'Hyper-V OpenStack components...')
             dep_actions.uninstall_product(msi_info[0])
 
