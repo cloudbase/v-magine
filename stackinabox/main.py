@@ -19,6 +19,7 @@ import sys
 
 # For PyInstaller
 import pkg_resources
+import xmlrpclib
 
 from PyQt4 import QtCore
 from PyQt4 import QtGui
@@ -120,7 +121,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
 class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(QWebPageWithoutJsWarning, self).__init__(parent)
 
     @QtCore.pyqtSlot()

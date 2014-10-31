@@ -94,6 +94,8 @@ class PyBootdManager(object):
             pool_start, pool_count)
 
         self._pxelinux_cfg_dir = os.path.join(tftp_root_dir, "pxelinux.cfg")
+        if not os.path.isdir(self._pxelinux_cfg_dir):
+            os.makedirs(self._pxelinux_cfg_dir)
 
         python = os.path.join(os.path.dirname(sys.executable), "python.exe")
         args = [python, "-c", "from pybootd import daemons; daemons.main()",
