@@ -219,5 +219,5 @@ def kill_process(pid):
         if hProc:
             win32api.TerminateProcess(hProc, 0)
     finally:
-        if hProc != None:
+        if hProc:
             hProc.Close()

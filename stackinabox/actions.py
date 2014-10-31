@@ -38,7 +38,7 @@ FIREWALL_PXE_RULE_NAME = "stackinabox PXE"
 DHCP_PORT = 67
 TFTP_PORT = 69
 
-MIN_OS_FREE_MEMORY_MB = 1.5 * 1024
+MIN_OS_FREE_MEMORY_MB = 500
 OPENSTACK_VM_RECOMMENDED_MEM_MB = 8 * 1024
 OPENSTACK_VM_MIN_MEM_MB = 1 * 1024
 
@@ -158,9 +158,14 @@ class DeploymentActions(object):
 
     def _get_openstack_vm_memory_mb(self):
         mem_info = psutil.virtual_memory()
+        LOG.info("Host memory: %s" % str(mem_info))
+
         # Get the best option considering host limits
-        max_mem_mb = min(mem_info.total / units.Mi - MIN_OS_FREE_MEMORY_MB,
+        max_mem_mb = min(mem_info.available / units.Mi - MIN_OS_FREE_MEMORY_MB,
                          OPENSTACK_VM_RECOMMENDED_MEM_MB)
+        LOG.info("Memory to be assigned to the OpenStack VM: %sMB" %
+                 max_mem_mb)
+
         return max_mem_mb
 
     def check_platform_requirements(self):
@@ -189,18 +194,7 @@ class DeploymentActions(object):
                 self._virt_driver.power_off_vm(vm_name)
             self._virt_driver.destroy_vm(vm_name)
 
-    def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
-                            external_vswitch_name, console_named_pipe):
-        min_mem_mb = OPENSTACK_VM_MIN_MEM_MB
-        if not max_mem_mb:
-            max_mem_mb = self._get_openstack_vm_memory_mb()
-        if max_mem_mb < min_mem_mb:
-            raise Exception("Not enough RAM available for OpenStack")
-
-        vhd_max_size = OPENSTACK_VM_VHD_MAX_SIZE
-        # Set vCPU count equal to the hosts's core count
-        vcpu_count = len(psutil.cpu_percent(interval=0, percpu=True))
-
+    def get_openstack_vm_network_config(self, vm_name, external_vswitch_name):
         # vmswitch_name, vmnic_name, mac_address, pxe, allow_mac_spoofing,
         # access_vlan_id, trunk_vlan_ids, private_vlan_id
         vm_network_config = [
@@ -221,12 +215,25 @@ class DeploymentActions(object):
              True, False, None, None, None),
         ]
 
+        return vm_network_config
+
+    def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
+                            vm_network_config, console_named_pipe):
+        min_mem_mb = OPENSTACK_VM_MIN_MEM_MB
+        if not max_mem_mb:
+            max_mem_mb = self._get_openstack_vm_memory_mb()
+        if max_mem_mb < min_mem_mb:
+            raise Exception("Not enough RAM available for OpenStack")
+
+        vhd_max_size = OPENSTACK_VM_VHD_MAX_SIZE
+        # Set vCPU count equal to the hosts's core count
+        vcpu_count = len(psutil.cpu_percent(interval=0, percpu=True))
+
         self._virt_driver.create_vm(vm_name, vm_dir, vhd_max_size,
                                     max_mem_mb, min_mem_mb, vcpu_count,
                                     vm_network_config, vfd_path,
                                     console_named_pipe)
         self._vm_name = vm_name
-        return vm_network_config
 
     def start_openstack_vm(self):
         self._virt_driver.start_vm(self._vm_name)

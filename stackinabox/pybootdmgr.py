@@ -114,6 +114,7 @@ class PyBootdManager(object):
 
     def stop(self):
         if self._pybootd_proc:
+            LOG.info('Killing pybootd')
             self._pybootd_proc.kill()
             self._pybootd_proc = None
         if self._pybootd_ini_path:

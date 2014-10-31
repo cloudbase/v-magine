@@ -122,12 +122,9 @@ class Worker(QtCore.QObject):
         dep_actions.create_vswitches(external_vswitch_name,
                                      internal_network_config)
 
-        self.status_changed.emit('Creating the OpenStack controller VM...')
-        vm_network_config = dep_actions.create_openstack_vm(
-            vm_name, vm_dir, max_vm_mem_mb, vfd_path, external_vswitch_name,
-            console_named_pipe)
-
-        LOG.debug("VNIC Network config: %s " % vm_network_config)
+        vm_network_config = dep_actions.get_openstack_vm_network_config(
+            vm_name, external_vswitch_name)
+        LOG.info("VNIC Network config: %s " % vm_network_config)
 
         mgmt_ext_mac_address = self._get_mac_address(vm_network_config,
                                                      "%s-mgmt-ext" % vm_name)
@@ -146,6 +143,11 @@ class Worker(QtCore.QObject):
                                          data_mac_address,
                                          ext_mac_address,
                                          inst_repo)
+
+        self.status_changed.emit('Creating the OpenStack controller VM...')
+        dep_actions.create_openstack_vm(
+            vm_name, vm_dir, max_vm_mem_mb, vfd_path, vm_network_config,
+            console_named_pipe)
 
         vnic_ip_info = dep_actions.get_openstack_vm_ip_info(
             vm_network_config, internal_network_config["subnet"])

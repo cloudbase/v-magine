@@ -61,7 +61,7 @@ class HyperVDriver(base.BaseDriver):
         # Hyper-V requires memory to be 2MB aligned
         max_memory_mb -= max_memory_mb % 2
 
-        #memory_ratio = max_memory_mb / float(min_memory_mb)
+        # memory_ratio = max_memory_mb / float(min_memory_mb)
         memory_ratio = 1
         self._vmutils.create_vm(vm_name, max_memory_mb, vcpus_num, False,
                                 memory_ratio)
