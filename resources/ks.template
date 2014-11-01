@@ -33,13 +33,14 @@ wget
 config_network_adapter () {
     local IFACE=$1
     local MAC_ADDR=$2
+    local ONBOOT=$3
 
     /usr/bin/cat << EOF > /etc/sysconfig/network-scripts/ifcfg-$IFACE
 DEVICE="$IFACE"
 HWADDR="${MAC_ADDR^^}"
 NM_CONTROLLED="no"
 BOOTPROTO="dhcp"
-ONBOOT="yes"
+ONBOOT="$ONBOOT"
 EOF
 }
 
@@ -52,8 +53,10 @@ UDEV_NET_RULES=/etc/udev/rules.d/60-net.rules
 
 /usr/bin/rm -f  /etc/sysconfig/network-scripts/ifcfg-eth*
 
-config_network_adapter mgmt-ext <%mgmt_ext_mac_address%>
-config_network_adapter mgmt-int <%mgmt_int_mac_address%>
+config_network_adapter mgmt-ext <%mgmt_ext_mac_address%> "yes"
+config_network_adapter mgmt-int <%mgmt_int_mac_address%> "yes"
+config_network_adapter mgmt-ext <%data_mac_address%> "no"
+config_network_adapter mgmt-int <%ext_mac_address%> "no"
 
 /sbin/grubby --update-kernel=ALL --args="console=tty0 console=ttyS0,115200n8 consoleblank=0"
 %end
