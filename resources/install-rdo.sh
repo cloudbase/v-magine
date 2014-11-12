@@ -138,8 +138,8 @@ read HOST_IP NETMASK_BITS BCAST  <<< `get_interface_ipv4 $MGMT_IFACE`
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 
-RDO_RELEASE_RPM="https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm"
-#RDO_RELEASE_RPM="https://rdo.fedorapeople.org/rdo-release.rpm"
+#RDO_RELEASE_RPM="https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm"
+RDO_RELEASE_RPM="https://rdo.fedorapeople.org/rdo-release.rpm"
 
 if ! /usr/bin/rpm -q rdo-release > /dev/null
 then

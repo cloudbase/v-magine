@@ -49,7 +49,7 @@ DATA_VLAN_RANGE = range(500, 2000)
 HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V Nova Compute'
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
-                  "HyperVNovaCompute_Icehouse_2014_1_3.msi")
+                  "HyperVNovaCompute_Juno_2014_2.msi")
 CIRROS_VHDX_URL = ("https://raw.githubusercontent.com/cloudbase/"
                    "ci-overcloud-init-scripts/master/scripts/devstack_vm/"
                    "cirros-0.3.3-x86_64.vhdx.gz")
