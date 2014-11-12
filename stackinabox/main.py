@@ -131,13 +131,20 @@ class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
         return False
 
 
+def _config_logging(log_dir):
+    log_format = ("%(asctime)-15s %(levelname)s %(module)s %(funcName)s "
+                  "%(lineno)d %(thread)d %(threadName)s %(message)s")
+    log_file = os.path.join(log_dir, 'stackinabox.log')
+    logging.basicConfig(filename=log_file, level=logging.DEBUG,
+                        format=log_format)
+    logging.getLogger("paramiko").setLevel(logging.WARNING)
+
+
 def main():
     base_dir = os.path.dirname(sys.executable)
     os.chdir(base_dir)
 
-    log_file = os.path.join(base_dir, 'stackinabox.log')
-    logging.basicConfig(filename=log_file, level=logging.DEBUG)
-    logging.getLogger("paramiko").setLevel(logging.WARNING)
+    _config_logging(base_dir)
 
     app = QtGui.QApplication(sys.argv)
 
