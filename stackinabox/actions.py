@@ -292,7 +292,7 @@ class DeploymentActions(object):
         virt_driver = virt_factory.get_virt_driver()
 
         if not virt_driver.vswitch_exists(external_vswitch_name):
-            raise Exception("External switch not found: %s" %
+            raise Exception("Virtual switch not found: %s" %
                             external_vswitch_name)
 
         if not virt_driver.vswitch_exists(VSWITCH_INTERNAL_NAME):
