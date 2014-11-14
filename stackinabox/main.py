@@ -34,10 +34,11 @@ LOG = logging
 
 
 class Controller(QtCore.QObject):
-    on_status_changed_event = QtCore.pyqtSignal(str)
+    on_status_changed_event = QtCore.pyqtSignal(str, int, int)
     on_stdout_data_event = QtCore.pyqtSignal(str)
     on_stderr_data_event = QtCore.pyqtSignal(str)
     on_error_event = QtCore.pyqtSignal(str)
+    on_install_done_event = QtCore.pyqtSignal(bool)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -46,6 +47,7 @@ class Controller(QtCore.QObject):
         self._worker.stderr_data_ready.connect(self._send_stderr_data)
         self._worker.status_changed.connect(self._status_changed)
         self._worker.error.connect(self._error)
+        self._worker.install_done.connect(self._install_done)
 
     def _send_stdout_data(self, data):
         self.on_stdout_data_event.emit(data)
@@ -53,11 +55,14 @@ class Controller(QtCore.QObject):
     def _send_stderr_data(self, data):
         self.on_stderr_data_event.emit(data)
 
-    def _status_changed(self, msg):
-        self.on_status_changed_event.emit(msg)
+    def _status_changed(self, msg, step, max_steps):
+        self.on_status_changed_event.emit(msg, step, max_steps)
 
     def _error(self, ex):
         self.on_error_event.emit(ex.message)
+
+    def _install_done(self, success):
+        self.on_install_done_event.emit(success)
 
     @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):

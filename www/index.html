@@ -20,8 +20,16 @@
                 });
             }
 
-            function statusChanged(msg) {
+            function installDone(success) {
+                $('#getopenstackbutton').button("enable");
+                $('#status').text('');
+                $("#mainprogressbar").progressbar({ value: 0 });
+            }
+
+            function statusChanged(msg, step, maxSteps) {
                 $('#status').text(msg);
+                $("#mainprogressbar").progressbar({ value: step,
+                                                    max: maxSteps });
             }
 
             function gotStdOutData(data){
@@ -76,10 +84,18 @@
 
                     setupTerm();
 
+                    $("#mainprogressbar").progressbar({ value: 0 });
+
+                    $("#getopenstackbutton").button().click(function(){
+                        $(this).button("disable");
+                        startInstall();
+                    });
+
                     controller.on_status_changed_event.connect(statusChanged);
                     controller.on_stdout_data_event.connect(gotStdOutData);
                     controller.on_stderr_data_event.connect(gotStdErrData);
                     controller.on_error_event.connect(handleError);
+                    controller.on_install_done_event.connect(installDone);
                  }
                 catch(ex)
                 {
@@ -92,7 +108,8 @@
         <div id="outer">
             <div id="status"></div>
             <div id="term"></div>
-            <button onclick=startInstall()>Get OpenStack!</button>
+            <div id="mainprogressbar"></div>
+            <button id="getopenstackbutton">Get OpenStack!</button>
         </div>
     </body>
 </html>

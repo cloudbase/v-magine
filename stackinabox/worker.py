@@ -53,8 +53,9 @@ class Worker(QtCore.QObject):
     finished = QtCore.pyqtSignal()
     stdout_data_ready = QtCore.pyqtSignal(str)
     stderr_data_ready = QtCore.pyqtSignal(str)
-    status_changed = QtCore.pyqtSignal(str)
+    status_changed = QtCore.pyqtSignal(str, int, int)
     error = QtCore.pyqtSignal(Exception)
+    install_done = QtCore.pyqtSignal(bool)
 
     def __init__(self):
         super(Worker, self).__init__()
@@ -62,6 +63,9 @@ class Worker(QtCore.QObject):
         self._term_type = None
         self._term_cols = None
         self._term_rows = None
+
+        self._curr_step = 0
+        self._max_steps = 0
 
         def stdout_callback(data):
             self.stdout_data_ready.emit(data)
@@ -86,6 +90,10 @@ class Worker(QtCore.QObject):
         return [vnic_cfg[2] for vnic_cfg in vm_network_config
                 if vnic_cfg[1] == vnic_name][0]
 
+    def _update_status(self, msg):
+        self._curr_step += 1
+        self.status_changed.emit(msg, self._curr_step, self._max_steps)
+
     def _deploy_openstack_vm(self, dep_actions):
         vm_dir = "C:\\VM"
         external_vswitch_name = "external"
@@ -101,23 +109,23 @@ class Worker(QtCore.QObject):
 
         vfd_path = os.path.join(vm_dir, "floppy.vfd")
 
-        self.status_changed.emit('Generating random password...')
+        self._update_status('Generating random password...')
         password = security.get_random_password()
         # TODO Remove
         password = "Passw0rd"
 
         LOG.debug("Password: %s" % password)
 
-        self.status_changed.emit('Generating MD5 password...')
+        self._update_status('Generating MD5 password...')
         encrypted_password = security.get_password_md5(password)
 
         if not os.path.isdir(vm_dir):
             os.makedirs(vm_dir)
 
-        self.status_changed.emit('Check if OpenStack controller VM exists...')
+        self._update_status('Check if OpenStack controller VM exists...')
         dep_actions.check_remove_vm(vm_name)
 
-        self.status_changed.emit('Creating virtual switches...')
+        self._update_status('Creating virtual switches...')
         internal_network_config = dep_actions.get_internal_network_config()
         dep_actions.create_vswitches(external_vswitch_name,
                                      internal_network_config)
@@ -144,7 +152,7 @@ class Worker(QtCore.QObject):
                                          ext_mac_address,
                                          inst_repo)
 
-        self.status_changed.emit('Creating the OpenStack controller VM...')
+        self._update_status('Creating the OpenStack controller VM...')
         dep_actions.create_openstack_vm(
             vm_name, vm_dir, max_vm_mem_mb, vfd_path, vm_network_config,
             console_named_pipe)
@@ -154,7 +162,7 @@ class Worker(QtCore.QObject):
 
         LOG.debug("VNIC PXE IP info: %s " % vnic_ip_info)
 
-        self.status_changed.emit('Starting PXE daemons...')
+        self._update_status('Starting PXE daemons...')
         dep_actions.start_pxe_service(
             internal_network_config["host_ip"],
             [vnic_ip[1:] for vnic_ip in vnic_ip_info], pxe_os_id)
@@ -164,7 +172,7 @@ class Worker(QtCore.QObject):
             mgmt_ext_mac_address.replace('-', ':'),
             inst_repo)
 
-        self.status_changed.emit('PXE booting OpenStack controller VM...')
+        self._update_status('PXE booting OpenStack controller VM...')
         dep_actions.start_openstack_vm()
 
         LOG.debug("Reading from console")
@@ -173,7 +181,7 @@ class Worker(QtCore.QObject):
         console_thread.start()
         console_thread.join()
 
-        self.status_changed.emit('Rebooting OpenStack controller VM...')
+        self._update_status('Rebooting OpenStack controller VM...')
         dep_actions.reboot_openstack_vm()
 
         LOG.info("PXE booting done")
@@ -190,79 +198,79 @@ class Worker(QtCore.QObject):
         reboot_sleep_s = 10
 
         try:
-            self.status_changed.emit(
+            self._update_status(
                 'Waiting for the RDO VM to reboot...')
             time.sleep(reboot_sleep_s)
 
-            self.status_changed.emit(
+            self._update_status(
                 'Enstablishing SSH connection with RDO VM...')
             rdo_installer.connect(host, username, password,
                                   self._term_type, self._term_cols,
                                   self._term_rows, max_connect_attempts)
 
-            self.status_changed.emit('Updating RDO VM...')
+            self._update_status('Updating RDO VM...')
             rdo_installer.update_os()
 
-            self.status_changed.emit('Installing RDO...')
+            self._update_status('Installing RDO...')
             rdo_installer.install_rdo(password)
 
-            self.status_changed.emit('Checking if rebooting the RDO VM is '
+            self._update_status('Checking if rebooting the RDO VM is '
                                      'required...')
             if rdo_installer.check_new_kernel():
-                self.status_changed.emit('Rebooting RDO VM...')
+                self._update_status('Rebooting RDO VM...')
                 rdo_installer.reboot()
 
                 time.sleep(reboot_sleep_s)
 
-                self.status_changed.emit(
+                self._update_status(
                     'Enstablishing SSH connection with RDO VM...')
                 rdo_installer.connect(host, username, password,
                                       self._term_type, self._term_cols,
                                       self._term_rows, max_connect_attempts)
 
-            self.status_changed.emit("Retrieving OpenStack configuration...")
+            self._update_status("Retrieving OpenStack configuration...")
             nova_config = rdo_installer.get_nova_config()
 
-            self.status_changed.emit('RDO successfully deployed!')
+            self._update_status('RDO successfully deployed!')
 
             return nova_config
         finally:
             rdo_installer.disconnect()
 
     def _install_local_hyperv_compute(self, dep_actions, nova_config):
-        self.status_changed.emit('Checking if the OpenStack components for '
+        self._update_status('Checking if the OpenStack components for '
                                  'Hyper-V are already installed...')
         msi_info = dep_actions.check_hyperv_compute_installed()
         if msi_info:
-            self.status_changed.emit('Uninstalling a previous version of the '
+            self._update_status('Uninstalling a previous version of the '
                                      'Hyper-V OpenStack components...')
             dep_actions.uninstall_product(msi_info[0])
 
         msi_path = "hyperv_nova_compute.msi"
         try:
-            self.status_changed.emit('Downloading Hyper-V OpenStack '
+            self._update_status('Downloading Hyper-V OpenStack '
                                      'components...')
             dep_actions.download_hyperv_compute_msi(msi_path)
-            self.status_changed.emit('Installing Hyper-V OpenStack '
+            self._update_status('Installing Hyper-V OpenStack '
                                      'components...')
             dep_actions.install_hyperv_compute(msi_path, nova_config)
         finally:
             os.remove(msi_path)
 
-        self.status_changed.emit('Hyper-V OpenStack installed successfully')
+        self._update_status('Hyper-V OpenStack installed successfully')
 
     def _validate_deployment(self, rdo_installer):
-        self.status_changed.emit('Validating OpenStack deployment...')
+        self._update_status('Validating OpenStack deployment...')
         # Skip for now
         # rdo_installer.check_hyperv_compute_services(platform.node())
 
     def _create_cirros_image(self, dep_actions, openstack_cred):
         image_path = "cirros.vhdx.gz"
-        self.status_changed.emit('Downloading Cirros VHDX image...')
+        self._update_status('Downloading Cirros VHDX image...')
         dep_actions.download_cirros_image(image_path)
-        self.status_changed.emit('Removing existing images...')
+        self._update_status('Removing existing images...')
         dep_actions.delete_existing_images(openstack_cred)
-        self.status_changed.emit('Uploading Cirros VHDX image in Glance...')
+        self._update_status('Uploading Cirros VHDX image in Glance...')
         dep_actions.create_cirros_image(openstack_cred, image_path)
         os.remove(image_path)
 
@@ -272,6 +280,9 @@ class Worker(QtCore.QObject):
         dep_actions = actions.DeploymentActions()
 
         try:
+            self._curr_step = 0
+            self._max_steps = 27
+
             dep_actions.check_platform_requirements()
             rdo_installer = rdo.RDOInstaller(self._stdout_callback,
                                              self._stderr_callback)
@@ -287,10 +298,13 @@ class Worker(QtCore.QObject):
                 mgmt_ip, ssh_password)
             self._create_cirros_image(dep_actions, openstack_cred)
 
-            self.status_changed.emit('Your OpenStack deployment is ready!')
+            self._update_status('Your OpenStack deployment is ready!')
+
+            self.install_done.emit(True)
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
             self.error.emit(ex)
+            self.install_done.emit(False)
         finally:
             dep_actions.stop_pxe_service()
