@@ -1,13 +1,23 @@
 ﻿<html>
     <head>
         <script src="./scripts/jquery-1.11.1.min.js"></script>
+        <script src="./scripts/jquery-ui-1.11.2.min.js"></script>
         <script src="./scripts/term.js"></script>
         <link rel="stylesheet" type="text/css" href="main.css">
+        <link rel="stylesheet" type="text/css" href="jquery-ui.min.css">
 
         <script language="javascript" type="text/javascript">
 
             function handleError(msg) {
-                alert(msg);
+                $('<div />').html(msg).dialog({
+                    modal: true,
+                    title: "Error",
+                    buttons: {
+                        Ok: function() {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
             }
 
             function statusChanged(msg) {
@@ -76,7 +86,6 @@
                     handleError(msg);
                 }
             }
-
         </script>
     </head>
     <body>
