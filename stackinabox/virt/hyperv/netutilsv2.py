@@ -134,11 +134,13 @@ class NetworkUtilsV2(netutils.NetworkUtils):
 
     def get_vswitches(self):
         vswitches = []
+        ext_vswitches = [vswitch.Name for vswitch in
+                         self._get_external_vswitches()]
+
         for vswitch in self._conn.Msvm_VirtualEthernetSwitch():
             vswitches.append(
                 {'name': vswitch.ElementName,
-                 'is_external':
-                 self._get_vswitch_external_port(vswitch) is not None})
+                 'is_external': vswitch.Name in ext_vswitches})
         return vswitches
 
     def _get_vswitch(self, vswitch_name):
@@ -148,6 +150,25 @@ class NetworkUtilsV2(netutils.NetworkUtils):
             raise vmutils.HyperVException(_('VSwitch not found: %s') %
                                           vswitch_name)
         return vswitch[0]
+
+    def _get_external_vswitches(self):
+        ext_vswitches = []
+        for ext_port in (self._conn.Msvm_ExternalEthernetPort() +
+                         self._conn.Msvm_WifiPort()):
+            lan_endpoints = ext_port.associators(
+                wmi_result_class=self._LAN_ENDPOINT)
+            if len(lan_endpoints):
+                lan_endpoints = lan_endpoints[0].associators(
+                    wmi_result_class=self._LAN_ENDPOINT)
+                if len(lan_endpoints):
+                    vswitch_ports = lan_endpoints[0].associators(
+                        wmi_result_class=self._ETHERNET_SWITCH_PORT)
+                    if len(vswitch_ports):
+                        vswitches = vswitch_ports[0].associators(
+                        wmi_result_class='Msvm_VirtualEthernetSwitch')
+                        if vswitches:
+                            ext_vswitches.append(vswitches[0])
+        return ext_vswitches
 
     def _get_vswitch_external_port(self, vswitch):
         vswitch_ports = vswitch.associators(
