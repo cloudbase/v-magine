@@ -90,6 +90,9 @@ class HyperVDriver(base.BaseDriver):
     def start_vm(self, vm_name):
         self._vmutils.set_vm_state(vm_name, constants.HYPERV_VM_STATE_ENABLED)
 
+    def get_vswitches(self):
+        return self._netutils.get_vswitches()
+
     def vswitch_exists(self, vswitch_name):
         return self._netutils.vswitch_exists(vswitch_name)
 

@@ -131,6 +131,12 @@ class NetworkUtilsV2(netutils.NetworkUtils):
             sw_port.EnabledState = self._STATE_DISABLED
             self._modify_virt_resource(sw_port)
 
+    def get_vswitches(self):
+        vswitches = []
+        for vswitch in self._conn.Msvm_VirtualEthernetSwitch():
+            vswitches.append(vswitch.ElementName)
+        return vswitches
+
     def _get_vswitch(self, vswitch_name):
         vswitch = self._conn.Msvm_VirtualEthernetSwitch(
             ElementName=vswitch_name)

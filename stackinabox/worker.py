@@ -56,6 +56,7 @@ class Worker(QtCore.QObject):
     status_changed = QtCore.pyqtSignal(str, int, int)
     error = QtCore.pyqtSignal(Exception)
     install_done = QtCore.pyqtSignal(bool)
+    get_ext_vswitches_completed = QtCore.pyqtSignal(list)
 
     def __init__(self):
         super(Worker, self).__init__()
@@ -85,6 +86,7 @@ class Worker(QtCore.QObject):
     @QtCore.pyqtSlot()
     def started(self):
         LOG.info("Started")
+        pythoncom.CoInitializeEx(pythoncom.COINIT_APARTMENTTHREADED)
 
     def _get_mac_address(self, vm_network_config, vnic_name):
         return [vnic_cfg[2] for vnic_cfg in vm_network_config
@@ -275,8 +277,29 @@ class Worker(QtCore.QObject):
         os.remove(image_path)
 
     @QtCore.pyqtSlot()
+    def get_ext_vswitches(self):
+        try:
+            LOG.debug("get_ext_vswitches called")
+
+            dep_actions = actions.DeploymentActions()
+            ext_vswitches = dep_actions.get_ext_vswitches()
+            LOG.debug("External vswitches: %s" % str(ext_vswitches))
+            self.get_ext_vswitches_completed.emit(ext_vswitches)
+        except Exception as ex:
+            LOG.exception(ex)
+            raise
+
+    @QtCore.pyqtSlot(str, str)
+    def add_ext_vswitch(self, vswitch_name, nic_name):
+        try:
+            dep_actions = actions.DeploymentActions()
+            dep_actions.add_ext_vswitch(vswitch_name, nic_name)
+        except Exception as ex:
+            LOG.exception(ex)
+            raise
+
+    @QtCore.pyqtSlot()
     def deploy_openstack(self):
-        pythoncom.CoInitializeEx(pythoncom.COINIT_APARTMENTTHREADED)
         dep_actions = actions.DeploymentActions()
 
         try:

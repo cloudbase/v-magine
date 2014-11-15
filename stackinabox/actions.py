@@ -235,6 +235,13 @@ class DeploymentActions(object):
                                     console_named_pipe)
         self._vm_name = vm_name
 
+    def get_ext_vswitches(self):
+        # TODO: filter external ones only
+        return self._virt_driver.get_vswitches()
+
+    def add_ext_vswitch(self, vswitch_name, nic_name):
+        self._virt_driver.create_vswitch(vswitch_name, nic_name, True)
+
     def start_openstack_vm(self):
         self._virt_driver.start_vm(self._vm_name)
 

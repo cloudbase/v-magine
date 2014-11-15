@@ -1,12 +1,20 @@
-﻿<html>
+﻿<html ng-app="stackInABoxApp">
     <head>
         <script src="./scripts/jquery-1.11.1.min.js"></script>
         <script src="./scripts/jquery-ui-1.11.2.min.js"></script>
+        <script src="./scripts/angular.min.js"></script>
         <script src="./scripts/term.js"></script>
         <link rel="stylesheet" type="text/css" href="main.css">
         <link rel="stylesheet" type="text/css" href="jquery-ui.min.css">
 
         <script language="javascript" type="text/javascript">
+
+            angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
+                ['$scope', function($scope) {
+                $scope.extVSwitches = [];
+                $scope.extVSwitch = null;
+            }]);
+
 
             function handleError(msg) {
                 $('<div />').html(msg).dialog({
@@ -30,6 +38,16 @@
                 $('#status').text(msg);
                 $("#mainprogressbar").progressbar({ value: step,
                                                     max: maxSteps });
+            }
+
+            function getExtVSwitchesCompleted(extVSwitchesJson) {
+                var $scope = angular.element("#tab-config").scope();
+
+                $scope.extVSwitches = JSON.parse(extVSwitchesJson);
+                $scope.extVSwitch = null;
+                $scope.$apply();
+
+                $("#extvswitch").selectmenu("refresh", true);
             }
 
             function gotStdOutData(data){
@@ -73,29 +91,76 @@
                 });
 
                 controller.set_term_info('vt100', term_cols, term_rows)
-
                 term.open($('#term')[0]);
-                //term.write('\x1b[31mWelcome to term.js!\x1b[m\r\n');
+            }
+
+            function addExtVSwitch() {
+                try {
+                    controller.add_ext_vswitch(vswitch_name, nic_name);
+                }
+                catch(ex)
+                {
+                    handleError(ex);
+                }
+            }
+
+            function initAddExtVSwitchDialog() {
+                dialog = $("#addextvswitchdialog").dialog({
+                    autoOpen: false,
+                    height: 300,
+                    width: 350,
+                    modal: true,
+                    buttons: {
+                        "Ok": addExtVSwitch,
+                        "Cancel": function() {
+                            dialog.dialog("close");
+                        }
+                    },
+                    close: function() {
+                        dialog.find("form")[0].reset();
+                    }
+                });
+
+                form = dialog.find("form").on("submit", function(event) {
+                    event.preventDefault();
+                    addExtVSwitch();
+                });
+            }
+
+            function initUi() {
+                setupTerm();
+
+                controller.get_ext_vswitches();
+
+                $("#maintabs").tabs();
+
+                $("#extvswitch").selectmenu();
+                $("#addextvswitch").button().click(function(){
+                    $("#addextvswitchdialog").dialog("open");
+                });
+
+                initAddExtVSwitchDialog();
+
+                $("#mainprogressbar").progressbar({ value: 0 });
+                $("#getopenstackbutton").button().click(function(){
+                    $(this).button("disable");
+                    startInstall();
+                });
             }
 
             function ApplicationIsReady() {
                 try {
                     console.log("ApplicationIsReady!");
 
-                    setupTerm();
-
-                    $("#mainprogressbar").progressbar({ value: 0 });
-
-                    $("#getopenstackbutton").button().click(function(){
-                        $(this).button("disable");
-                        startInstall();
-                    });
+                    initUi();
 
                     controller.on_status_changed_event.connect(statusChanged);
                     controller.on_stdout_data_event.connect(gotStdOutData);
                     controller.on_stderr_data_event.connect(gotStdErrData);
                     controller.on_error_event.connect(handleError);
                     controller.on_install_done_event.connect(installDone);
+                    controller.on_get_ext_vswitches_completed_event.connect(
+                        getExtVSwitchesCompleted);
                  }
                 catch(ex)
                 {
@@ -106,10 +171,52 @@
     </head>
     <body>
         <div id="outer">
-            <div id="status"></div>
-            <div id="term"></div>
-            <div id="mainprogressbar"></div>
-            <button id="getopenstackbutton">Get OpenStack!</button>
+            <div id="maintabs">
+                <ul>
+                    <li><a href="#tab-config">Your environment</a></li>
+                    <li><a href="#tab-review">Review</a></li>
+                    <li><a href="#tab-install">Install OpenStack!</a></li>
+                </ul>
+                <div id="tab-config" ng-controller="StackInABoxCtrl">
+                    <div id="addextvswitchdialog" title="Add a new external vswitch">
+                        <form>
+                            <fieldset>
+                                <label for="nics">Network adapters</label>
+                                <select name="nics" id="nics">
+                                    <optgroup label="Wired" id="wirednics">
+                                    </optgroup>
+                                    <optgroup label="Wireless" id="wirelessnics">
+                                    </optgroup>
+                                </select>
+
+                            <label for="vswitchname">VSwitch name</label>
+                            <input type="text" name="vswitchname" id="vswitchname">
+
+
+                            <input type="submit" tabindex="-1">
+                            </fieldset>
+                        </form>
+                    </div>
+
+                    <form action="#">
+                        <fieldset>
+                            <label for="extvswitch">External vswitch</label>
+                            <select name="extvswitch" id="extvswitch" ng-model="extVSwitch"
+                                    ng-options="vswitch for vswitch in extVSwitches | orderBy">
+                            </select>
+                            <button id="addextvswitch">Add an external vswitch</button>
+                        </fieldset>
+                    </form>
+                </div>
+                <div id="tab-review">
+                    <button id="getopenstackbutton">Get OpenStack!</button>
+                </div>
+                <div id="tab-install">
+                    <div id="status"></div>
+                    <div id="term"></div>
+                    <div id="mainprogressbar"></div>
+                </div>
+            </div>
         </div>
     </body>
 </html>

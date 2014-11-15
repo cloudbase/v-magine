@@ -246,6 +246,9 @@ class NetworkUtils(object):
                       'from switch %(vswitch_name)s '
                       'with error %(ret_val)s') % data)
 
+    def get_vswitches(self):
+        raise NotImplementedError()
+
     def _get_vswitch(self, vswitch_name):
         vswitch = self._conn.Msvm_VirtualSwitch(ElementName=vswitch_name)
         if not vswitch:

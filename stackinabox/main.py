@@ -13,6 +13,7 @@
 #    under the License.
 
 import ctypes
+import json
 import logging
 import os
 import sys
@@ -39,6 +40,7 @@ class Controller(QtCore.QObject):
     on_stderr_data_event = QtCore.pyqtSignal(str)
     on_error_event = QtCore.pyqtSignal(str)
     on_install_done_event = QtCore.pyqtSignal(bool)
+    on_get_ext_vswitches_completed_event = QtCore.pyqtSignal(str)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -48,6 +50,8 @@ class Controller(QtCore.QObject):
         self._worker.status_changed.connect(self._status_changed)
         self._worker.error.connect(self._error)
         self._worker.install_done.connect(self._install_done)
+        self._worker.get_ext_vswitches_completed.connect(
+            self._get_ext_vswitches_completed)
 
     def _send_stdout_data(self, data):
         self.on_stdout_data_event.emit(data)
@@ -64,15 +68,33 @@ class Controller(QtCore.QObject):
     def _install_done(self, success):
         self.on_install_done_event.emit(success)
 
+    def _get_ext_vswitches_completed(self, ext_vswitches):
+        self.on_get_ext_vswitches_completed_event.emit(
+            json.dumps(ext_vswitches))
+
     @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):
         self._worker.set_term_info(str(term_type), cols, rows)
 
     @QtCore.pyqtSlot()
     def install(self):
-        LOG.info("Install called")
+        LOG.debug("Install called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'deploy_openstack',
                                         QtCore.Qt.QueuedConnection)
+
+    @QtCore.pyqtSlot()
+    def get_ext_vswitches(self):
+        LOG.debug("get_ext_vswitches called")
+        QtCore.QMetaObject.invokeMethod(self._worker, 'get_ext_vswitches',
+                                        QtCore.Qt.QueuedConnection)
+
+    @QtCore.pyqtSlot(str, str)
+    def add_ext_vswitch(vswitch_name, nic_name):
+        LOG.debug("add_ext_vswitch called")
+        QtCore.QMetaObject.invokeMethod(self._worker, 'add_ext_vswitch',
+                                        QtCore.Qt.QueuedConnection,
+                                        QtCore.Q_ARG(str, vswitch_name),
+                                        QtCore.Q_ARG(str, nic_name))
 
 
 class MainWindow(QtGui.QMainWindow):
