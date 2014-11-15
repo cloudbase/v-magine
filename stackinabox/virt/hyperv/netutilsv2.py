@@ -21,6 +21,7 @@ from stackinabox.virt.hyperv import vmutils
 class NetworkUtilsV2(netutils.NetworkUtils):
 
     _EXTERNAL_PORT = 'Msvm_ExternalEthernetPort'
+    _WIFI_PORT = 'Msvm_WiFiPort'
     _ETHERNET_SWITCH_PORT = 'Msvm_EthernetSwitchPort'
     _PORT_ALLOC_SET_DATA = 'Msvm_EthernetPortAllocationSettingData'
     _PORT_VLAN_SET_DATA = 'Msvm_EthernetSwitchPortVlanSettingData'
@@ -134,7 +135,10 @@ class NetworkUtilsV2(netutils.NetworkUtils):
     def get_vswitches(self):
         vswitches = []
         for vswitch in self._conn.Msvm_VirtualEthernetSwitch():
-            vswitches.append(vswitch.ElementName)
+            vswitches.append(
+                {'name': vswitch.ElementName,
+                 'is_external':
+                 self._get_vswitch_external_port(vswitch) is not None})
         return vswitches
 
     def _get_vswitch(self, vswitch_name):
@@ -159,6 +163,10 @@ class NetworkUtilsV2(netutils.NetworkUtils):
                         wmi_result_class=self._EXTERNAL_PORT)
                     if ext_port:
                         return vswitch_port
+                    wifi_port = lan_endpoints[0].associators(
+                        wmi_result_class=self._WIFI_PORT)
+                    if wifi_port:
+                        return wifi_port
 
     def create_vswitch(self, vswitch_name, external_port_name=None,
                        create_internal_port=False):

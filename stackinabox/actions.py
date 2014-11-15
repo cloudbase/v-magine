@@ -236,8 +236,8 @@ class DeploymentActions(object):
         self._vm_name = vm_name
 
     def get_ext_vswitches(self):
-        # TODO: filter external ones only
-        return self._virt_driver.get_vswitches()
+        return [vswitch['name'] for vswitch in
+                self._virt_driver.get_vswitches() if vswitch['is_external']]
 
     def add_ext_vswitch(self, vswitch_name, nic_name):
         self._virt_driver.create_vswitch(vswitch_name, nic_name, True)
