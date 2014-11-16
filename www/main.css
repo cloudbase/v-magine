@@ -62,3 +62,15 @@ body {
     margin: 10px;
     height: 40px;
 }
+
+/*
+.ui-selectmenu-text{
+    border-style: solid;
+    border-color: red;
+}
+*/
+
+input:required:invalid, input:focus:invalid {
+    border-style: solid;
+    border-color: red;
+}

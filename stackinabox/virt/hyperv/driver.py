@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import os
 
 from stackinabox.virt import base
@@ -22,6 +23,8 @@ from stackinabox.virt.hyperv import vhdutilsv2
 from stackinabox.virt.hyperv import vmutils
 from stackinabox.virt.hyperv import vmutilsv2
 from stackinabox import windows
+
+LOG = logging.getLogger(__name__)
 
 
 class HyperVDriver(base.BaseDriver):
@@ -93,11 +96,15 @@ class HyperVDriver(base.BaseDriver):
     def get_vswitches(self):
         return self._netutils.get_vswitches()
 
+    def get_host_nics(self):
+        return self._netutils.get_external_ports()
+
     def vswitch_exists(self, vswitch_name):
         return self._netutils.vswitch_exists(vswitch_name)
 
     def create_vswitch(self, vswitch_name, external_port_name=None,
                        create_internal_port=False):
+        LOG.debug('create_vswitch called. %s' % vswitch_name)
         self._netutils.create_vswitch(vswitch_name, external_port_name,
                                       create_internal_port)
 

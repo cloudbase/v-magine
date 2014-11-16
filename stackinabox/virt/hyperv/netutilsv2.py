@@ -13,10 +13,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
+
 from stackinabox.i18n import _
 from stackinabox.virt.hyperv import netutils
 from stackinabox.virt.hyperv import vmutils
 
+LOG = logging.getLogger(__name__)
 
 class NetworkUtilsV2(netutils.NetworkUtils):
 
@@ -189,8 +192,29 @@ class NetworkUtilsV2(netutils.NetworkUtils):
                     if wifi_port:
                         return wifi_port
 
+    def get_external_ports(self):
+        ext_ports = []
+        for ext_port in (self._conn.Msvm_ExternalEthernetPort(EnabledState=2) +
+                         self._conn.Msvm_WifiPort(EnabledState=2)):
+
+            if ext_port.path().CLASS == self._EXTERNAL_PORT:
+                port_type = "ethernet"
+            else:
+                port_type = "wifi"
+
+            ext_ports.append(
+                {"name": ext_port.ElementName,
+                 "type": port_type,
+                 "in_use": len(ext_port.associators(
+                               wmi_result_class=self._LAN_ENDPOINT)) > 0})
+        return ext_ports
+
     def create_vswitch(self, vswitch_name, external_port_name=None,
                        create_internal_port=False):
+        LOG.debug('create_vswitch called. vswitch_name: %(vswitch_name)s, '
+                  'external_port_name: %(external_port_name)s, '
+                  'create_internal_port: %(create_internal_port)s' % locals())
+
         svc = self._conn.Msvm_VirtualEthernetSwitchManagementService()[0]
         vswitch_data = self._conn.Msvm_VirtualEthernetSwitchSettingData.new()
         vswitch_data.ElementName = vswitch_name
@@ -199,13 +223,14 @@ class NetworkUtilsV2(netutils.NetworkUtils):
 
         if external_port_name:
             ext_port_list = self._conn.Msvm_ExternalEthernetPort(
-                Name=external_port_name)
+                ElementName=external_port_name)
             if not ext_port_list:
                 ext_port_list = self._conn.Msvm_WiFiPort(
-                    Name=external_port_name)
+                    ElementName=external_port_name)
                 if not ext_port_list:
                     raise vmutils.HyperVException(_('External port not found: '
                                                     '%s') % external_port_name)
+
             ext_port = ext_port_list[0]
 
             port_alloc_ext = self._get_default_setting_data(

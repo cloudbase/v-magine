@@ -41,6 +41,8 @@ class Controller(QtCore.QObject):
     on_error_event = QtCore.pyqtSignal(str)
     on_install_done_event = QtCore.pyqtSignal(bool)
     on_get_ext_vswitches_completed_event = QtCore.pyqtSignal(str)
+    on_get_available_host_nics_completed_event = QtCore.pyqtSignal(str)
+    on_add_ext_vswitch_completed_event = QtCore.pyqtSignal(bool)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -52,6 +54,10 @@ class Controller(QtCore.QObject):
         self._worker.install_done.connect(self._install_done)
         self._worker.get_ext_vswitches_completed.connect(
             self._get_ext_vswitches_completed)
+        self._worker.get_available_host_nics_completed.connect(
+            self._get_available_host_nics_completed)
+        self._worker.add_ext_vswitch_completed.connect(
+            self._add_ext_vswitch_completed)
 
     def _send_stdout_data(self, data):
         self.on_stdout_data_event.emit(data)
@@ -72,6 +78,13 @@ class Controller(QtCore.QObject):
         self.on_get_ext_vswitches_completed_event.emit(
             json.dumps(ext_vswitches))
 
+    def _get_available_host_nics_completed(self, host_nics):
+        self.on_get_available_host_nics_completed_event.emit(
+            json.dumps(host_nics))
+
+    def _add_ext_vswitch_completed(self, success):
+        self.on_add_ext_vswitch_completed_event.emit(success)
+
     @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):
         self._worker.set_term_info(str(term_type), cols, rows)
@@ -88,8 +101,15 @@ class Controller(QtCore.QObject):
         QtCore.QMetaObject.invokeMethod(self._worker, 'get_ext_vswitches',
                                         QtCore.Qt.QueuedConnection)
 
+    @QtCore.pyqtSlot()
+    def get_available_host_nics(self):
+        LOG.debug("get_available_host_nics called")
+        QtCore.QMetaObject.invokeMethod(self._worker,
+                                        'get_available_host_nics',
+                                        QtCore.Qt.QueuedConnection)
+
     @QtCore.pyqtSlot(str, str)
-    def add_ext_vswitch(vswitch_name, nic_name):
+    def add_ext_vswitch(self, vswitch_name, nic_name):
         LOG.debug("add_ext_vswitch called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'add_ext_vswitch',
                                         QtCore.Qt.QueuedConnection,
@@ -134,7 +154,7 @@ class MainWindow(QtGui.QMainWindow):
     def onLoad(self):
         page = self._web.page()
         page.settings().setAttribute(
-            QtWebKit.QWebSettings.DeveloperExtrasEnabled, False)
+            QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
 
         frame = page.mainFrame()
         page.setViewportSize(frame.contentsSize())

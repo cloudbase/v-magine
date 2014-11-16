@@ -13,8 +13,9 @@
                 ['$scope', function($scope) {
                 $scope.extVSwitches = [];
                 $scope.extVSwitch = null;
+                $scope.hostNics = [];
+                $scope.hostNic = null;
             }]);
-
 
             function handleError(msg) {
                 $('<div />').html(msg).dialog({
@@ -48,6 +49,16 @@
                 $scope.$apply();
 
                 $("#extvswitch").selectmenu("refresh", true);
+            }
+
+            function getAvailableHostNicsCompleted(hostNicsJson) {
+                var $scope = angular.element("#addextvswitchdialog").scope();
+
+                $scope.hostNics = JSON.parse(hostNicsJson);
+                $scope.hostNic = null;
+                $scope.$apply();
+
+                $("#hostnics").selectmenu("refresh", true);
             }
 
             function gotStdOutData(data){
@@ -94,9 +105,21 @@
                 term.open($('#term')[0]);
             }
 
+            function enableAddExtVSwitchDialogControls(enable) {
+                var action = enable ? "enable" : "disable";
+                $("#addextvswitchdialogok").button(action);
+                $("#addextvswitchdialogcancel").button(action);
+                $(".ui-dialog-titlebar-close").button(action);
+            }
+
             function addExtVSwitch() {
                 try {
-                    controller.add_ext_vswitch(vswitch_name, nic_name);
+                    var $scope = angular.element("#addextvswitchdialog").scope();
+                    if($("#addextvswitchdialogform")[0].checkValidity()) {
+                        enableAddExtVSwitchDialogControls(false);
+                        controller.add_ext_vswitch($scope.extVSwitch,
+                                                   $scope.hostNic.name);
+                    }
                 }
                 catch(ex)
                 {
@@ -104,26 +127,51 @@
                 }
             }
 
+            function addExtVSwitchCompleted(success) {
+                $("#addextvswitchdialog").dialog("close");
+                enableAddExtVSwitchDialogControls(true);
+            }
+
             function initAddExtVSwitchDialog() {
                 dialog = $("#addextvswitchdialog").dialog({
                     autoOpen: false,
                     height: 300,
-                    width: 350,
+                    width: 800,
                     modal: true,
-                    buttons: {
-                        "Ok": addExtVSwitch,
-                        "Cancel": function() {
-                            dialog.dialog("close");
-                        }
+
+                    buttons: [
+                    {
+                        id: "addextvswitchdialogok",
+                        text: "Ok",
+                        click: function() {
+                            addExtVSwitch();
+                            return false;
+                            }
                     },
+                    {
+                        id: "addextvswitchdialogcancel",
+                        text: "Cancel",
+                        click: function() {
+                            dialog.dialog("close");
+                            }
+                    }],
                     close: function() {
                         dialog.find("form")[0].reset();
                     }
                 });
 
-                form = dialog.find("form").on("submit", function(event) {
-                    event.preventDefault();
-                    addExtVSwitch();
+                //$("#addextvswitchdialogok").attr("ng-disabled", "!addextvswitchdialogform.$valid");
+
+                $("#hostnics").selectmenu({
+                    change: function(event, ui) {
+                        // AngularJs two way databinding does not work
+                        // with selectmenu
+                        var value = $(this).val();
+                        var $scope = angular.element(this).scope();
+                        $scope.$apply(function() {
+                            $scope.hostNic = $scope.hostNics[value];
+                        });
+                    }
                 });
             }
 
@@ -137,6 +185,8 @@
                 $("#extvswitch").selectmenu();
                 $("#addextvswitch").button().click(function(){
                     $("#addextvswitchdialog").dialog("open");
+                    controller.get_available_host_nics();
+                    return false;
                 });
 
                 initAddExtVSwitchDialog();
@@ -161,6 +211,10 @@
                     controller.on_install_done_event.connect(installDone);
                     controller.on_get_ext_vswitches_completed_event.connect(
                         getExtVSwitchesCompleted);
+                    controller.on_get_available_host_nics_completed_event.connect(
+                        getAvailableHostNicsCompleted);
+                    controller.on_add_ext_vswitch_completed_event.connect(
+                        addExtVSwitchCompleted);
                  }
                 catch(ex)
                 {
@@ -177,27 +231,22 @@
                     <li><a href="#tab-review">Review</a></li>
                     <li><a href="#tab-install">Install OpenStack!</a></li>
                 </ul>
+                <div id="addextvswitchdialog" title="Add a new external vswitch"
+                     ng-controller="StackInABoxCtrl">
+                    <form name="addextvswitchdialogform" id="addextvswitchdialogform" class="inputform">
+                        <fieldset>
+                            <label for="hostnics">Network adapters</label>
+                            <select name="hostnics" id="hostnics" ng-model="hostNic" required
+                                    ng-options="hostNic.name group by hostNic.type for hostNic in hostNics | orderBy:name">
+                            </select>
+
+                        <label for="vswitchname">VSwitch name</label>
+                        <input type="text" name="vswitchname" id="vswitchname" ng-model="extVSwitch" required>
+
+                        </fieldset>
+                    </form>
+                </div>
                 <div id="tab-config" ng-controller="StackInABoxCtrl">
-                    <div id="addextvswitchdialog" title="Add a new external vswitch">
-                        <form>
-                            <fieldset>
-                                <label for="nics">Network adapters</label>
-                                <select name="nics" id="nics">
-                                    <optgroup label="Wired" id="wirednics">
-                                    </optgroup>
-                                    <optgroup label="Wireless" id="wirelessnics">
-                                    </optgroup>
-                                </select>
-
-                            <label for="vswitchname">VSwitch name</label>
-                            <input type="text" name="vswitchname" id="vswitchname">
-
-
-                            <input type="submit" tabindex="-1">
-                            </fieldset>
-                        </form>
-                    </div>
-
                     <form action="#">
                         <fieldset>
                             <label for="extvswitch">External vswitch</label>

@@ -270,6 +270,9 @@ class NetworkUtils(object):
     def remove_vswitch(self, vswitch_name):
         raise NotImplementedError()
 
+    def get_external_ports(self):
+        raise NotImplementedError()
+
     def _get_vswitch_external_port(self, vswitch):
         vswitch_ports = vswitch.associators(
             wmi_result_class=self._ETHERNET_SWITCH_PORT)

@@ -235,6 +235,10 @@ class DeploymentActions(object):
                                     console_named_pipe)
         self._vm_name = vm_name
 
+    def get_available_host_nics(self):
+        return [nic for nic in self._virt_driver.get_host_nics()
+                if not nic["in_use"]]
+
     def get_ext_vswitches(self):
         return [vswitch['name'] for vswitch in
                 self._virt_driver.get_vswitches() if vswitch['is_external']]

@@ -57,6 +57,8 @@ class Worker(QtCore.QObject):
     error = QtCore.pyqtSignal(Exception)
     install_done = QtCore.pyqtSignal(bool)
     get_ext_vswitches_completed = QtCore.pyqtSignal(list)
+    get_available_host_nics_completed = QtCore.pyqtSignal(list)
+    add_ext_vswitch_completed = QtCore.pyqtSignal(bool)
 
     def __init__(self):
         super(Worker, self).__init__()
@@ -287,15 +289,37 @@ class Worker(QtCore.QObject):
             self.get_ext_vswitches_completed.emit(ext_vswitches)
         except Exception as ex:
             LOG.exception(ex)
+            self.error.emit(ex)
+            raise
+
+    @QtCore.pyqtSlot()
+    def get_available_host_nics(self):
+        try:
+            LOG.debug("get_available_host_nics called")
+            dep_actions = actions.DeploymentActions()
+            host_nics = dep_actions.get_available_host_nics()
+            LOG.debug("Available host nics: %s" % str(host_nics))
+            self.get_available_host_nics_completed.emit(host_nics)
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
             raise
 
     @QtCore.pyqtSlot(str, str)
     def add_ext_vswitch(self, vswitch_name, nic_name):
         try:
+            LOG.debug("add_ext_vswitch called, vswitch_name: "
+                      "%(vswitch_name)s, nic_name: %(nic_name)s" %
+                      {"vswitch_name": vswitch_name, "nic_name": nic_name})
             dep_actions = actions.DeploymentActions()
-            dep_actions.add_ext_vswitch(vswitch_name, nic_name)
+            dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
+            # Refresh VSwitch list
+            self.get_ext_vswitches()
+            self.add_ext_vswitch_completed.emit(True);
         except Exception as ex:
             LOG.exception(ex)
+            self.error.emit(ex)
+            self.add_ext_vswitch_completed.emit(False);
             raise
 
     @QtCore.pyqtSlot()
