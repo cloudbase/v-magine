@@ -27,6 +27,8 @@ from stackinabox import security
 
 LOG = logging
 
+DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/7/os/x86_64"
+
 
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
@@ -98,9 +100,8 @@ class Worker(QtCore.QObject):
         self._curr_step += 1
         self.status_changed.emit(msg, self._curr_step, self._max_steps)
 
-    def _deploy_openstack_vm(self, dep_actions):
+    def _deploy_openstack_vm(self, dep_actions, ext_vswitch_name):
         vm_dir = "C:\\VM"
-        external_vswitch_name = "external"
         vm_name = "openstack-controller"
         vm_admin_user = "root"
         max_vm_mem_mb = None
@@ -109,7 +110,7 @@ class Worker(QtCore.QObject):
         console_named_pipe = r"\\.\pipe\%s" % vm_name
 
         # inst_repo = "http://10.14.0.142/centos/7.0/os/x86_64"
-        inst_repo = "http://mirror.centos.org/centos/7/os/x86_64"
+        inst_repo = DEFAULT_CENTOS_MIRROR
 
         vfd_path = os.path.join(vm_dir, "floppy.vfd")
 
@@ -131,11 +132,11 @@ class Worker(QtCore.QObject):
 
         self._update_status('Creating virtual switches...')
         internal_network_config = dep_actions.get_internal_network_config()
-        dep_actions.create_vswitches(external_vswitch_name,
+        dep_actions.create_vswitches(ext_vswitch_name,
                                      internal_network_config)
 
         vm_network_config = dep_actions.get_openstack_vm_network_config(
-            vm_name, external_vswitch_name)
+            vm_name, ext_vswitch_name)
         LOG.info("VNIC Network config: %s " % vm_network_config)
 
         mgmt_ext_mac_address = self._get_mac_address(vm_network_config,
@@ -278,6 +279,23 @@ class Worker(QtCore.QObject):
         dep_actions.create_cirros_image(openstack_cred, image_path)
         os.remove(image_path)
 
+    def get_config(self):
+        try:
+            dep_actions = actions.DeploymentActions()
+            (min_mem_mb, suggested_mem_mb,
+             max_mem_mb) = dep_actions.get_openstack_vm_memory_mb()
+
+            return {
+                "default_centos_mirror": DEFAULT_CENTOS_MIRROR,
+                "min_openstack_vm_mem_mb": min_mem_mb,
+                "suggested_openstack_vm_mem_mb": suggested_mem_mb,
+                "max_openstack_vm_mem_mb": max_mem_mb
+            }
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+            raise
+
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
         try:
@@ -322,8 +340,8 @@ class Worker(QtCore.QObject):
             self.add_ext_vswitch_completed.emit(False);
             raise
 
-    @QtCore.pyqtSlot()
-    def deploy_openstack(self):
+    @QtCore.pyqtSlot(str)
+    def deploy_openstack(self, ext_vswitch_name):
         dep_actions = actions.DeploymentActions()
 
         try:
@@ -335,7 +353,7 @@ class Worker(QtCore.QObject):
                                              self._stderr_callback)
 
             (mgmt_ip, ssh_user, ssh_password) = self._deploy_openstack_vm(
-                dep_actions)
+                dep_actions, str(ext_vswitch_name))
             nova_config = self._install_rdo(rdo_installer, mgmt_ip, ssh_user,
                                             ssh_password)
             self._install_local_hyperv_compute(dep_actions, nova_config)

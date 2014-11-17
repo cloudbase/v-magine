@@ -1,229 +1,15 @@
 ﻿<html ng-app="stackInABoxApp">
     <head>
-        <script src="./scripts/jquery-1.11.1.min.js"></script>
-        <script src="./scripts/jquery-ui-1.11.2.min.js"></script>
-        <script src="./scripts/angular.min.js"></script>
-        <script src="./scripts/term.js"></script>
         <link rel="stylesheet" type="text/css" href="main.css">
         <link rel="stylesheet" type="text/css" href="jquery-ui.min.css">
-
-        <script language="javascript" type="text/javascript">
-
-            angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
-                ['$scope', function($scope) {
-                $scope.extVSwitches = [];
-                $scope.extVSwitch = null;
-                $scope.hostNics = [];
-                $scope.hostNic = null;
-            }]);
-
-            function handleError(msg) {
-                $('<div />').html(msg).dialog({
-                    modal: true,
-                    title: "Error",
-                    buttons: {
-                        Ok: function() {
-                            $(this).dialog("close");
-                        }
-                    }
-                });
-            }
-
-            function installDone(success) {
-                $('#getopenstackbutton').button("enable");
-                $('#status').text('');
-                $("#mainprogressbar").progressbar({ value: 0 });
-            }
-
-            function statusChanged(msg, step, maxSteps) {
-                $('#status').text(msg);
-                $("#mainprogressbar").progressbar({ value: step,
-                                                    max: maxSteps });
-            }
-
-            function getExtVSwitchesCompleted(extVSwitchesJson) {
-                var $scope = angular.element("#tab-config").scope();
-
-                $scope.extVSwitches = JSON.parse(extVSwitchesJson);
-                $scope.extVSwitch = null;
-                $scope.$apply();
-
-                $("#extvswitch").selectmenu("refresh", true);
-            }
-
-            function getAvailableHostNicsCompleted(hostNicsJson) {
-                var $scope = angular.element("#addextvswitchdialog").scope();
-
-                $scope.hostNics = JSON.parse(hostNicsJson);
-                $scope.hostNic = null;
-                $scope.$apply();
-
-                $("#hostnics").selectmenu("refresh", true);
-            }
-
-            function gotStdOutData(data){
-                //console.log(data);
-                term.write(data.replace('\n', '\r\n'));
-            }
-
-            function gotStdErrData(data){
-                //console.log("err: " + data);
-                term.write(data.replace('\n', '\r\n'));
-            }
-
-            function startInstall() {
-                console.log("startInstall!");
-                try {
-                    term.reset();
-                    controller.install();
-                }
-                catch(ex)
-                {
-                    handleError(ex);
-                }
-            }
-
-            var term;
-
-            function setupTerm() {
-                term_cols = 136
-                term_rows = 36
-
-                term = new Terminal({
-                    cols: term_cols,
-                    rows: term_rows,
-                    useStyle: true,
-                    screenKeys: true,
-                    cursorBlink: false
-                });
-
-                term.on('data', function(data) {
-                    // TODO: write back
-                });
-
-                controller.set_term_info('vt100', term_cols, term_rows)
-                term.open($('#term')[0]);
-            }
-
-            function enableAddExtVSwitchDialogControls(enable) {
-                var action = enable ? "enable" : "disable";
-                $("#addextvswitchdialogok").button(action);
-                $("#addextvswitchdialogcancel").button(action);
-                $(".ui-dialog-titlebar-close").button(action);
-            }
-
-            function addExtVSwitch() {
-                try {
-                    var $scope = angular.element("#addextvswitchdialog").scope();
-                    if($("#addextvswitchdialogform")[0].checkValidity()) {
-                        enableAddExtVSwitchDialogControls(false);
-                        controller.add_ext_vswitch($scope.extVSwitch,
-                                                   $scope.hostNic.name);
-                    }
-                }
-                catch(ex)
-                {
-                    handleError(ex);
-                }
-            }
-
-            function addExtVSwitchCompleted(success) {
-                $("#addextvswitchdialog").dialog("close");
-                enableAddExtVSwitchDialogControls(true);
-            }
-
-            function initAddExtVSwitchDialog() {
-                dialog = $("#addextvswitchdialog").dialog({
-                    autoOpen: false,
-                    height: 300,
-                    width: 800,
-                    modal: true,
-
-                    buttons: [
-                    {
-                        id: "addextvswitchdialogok",
-                        text: "Ok",
-                        click: function() {
-                            addExtVSwitch();
-                            return false;
-                            }
-                    },
-                    {
-                        id: "addextvswitchdialogcancel",
-                        text: "Cancel",
-                        click: function() {
-                            dialog.dialog("close");
-                            }
-                    }],
-                    close: function() {
-                        dialog.find("form")[0].reset();
-                    }
-                });
-
-                //$("#addextvswitchdialogok").attr("ng-disabled", "!addextvswitchdialogform.$valid");
-
-                $("#hostnics").selectmenu({
-                    change: function(event, ui) {
-                        // AngularJs two way databinding does not work
-                        // with selectmenu
-                        var value = $(this).val();
-                        var $scope = angular.element(this).scope();
-                        $scope.$apply(function() {
-                            $scope.hostNic = $scope.hostNics[value];
-                        });
-                    }
-                });
-            }
-
-            function initUi() {
-                setupTerm();
-
-                controller.get_ext_vswitches();
-
-                $("#maintabs").tabs();
-
-                $("#extvswitch").selectmenu();
-                $("#addextvswitch").button().click(function(){
-                    $("#addextvswitchdialog").dialog("open");
-                    controller.get_available_host_nics();
-                    return false;
-                });
-
-                initAddExtVSwitchDialog();
-
-                $("#mainprogressbar").progressbar({ value: 0 });
-                $("#getopenstackbutton").button().click(function(){
-                    $(this).button("disable");
-                    startInstall();
-                });
-            }
-
-            function ApplicationIsReady() {
-                try {
-                    console.log("ApplicationIsReady!");
-
-                    initUi();
-
-                    controller.on_status_changed_event.connect(statusChanged);
-                    controller.on_stdout_data_event.connect(gotStdOutData);
-                    controller.on_stderr_data_event.connect(gotStdErrData);
-                    controller.on_error_event.connect(handleError);
-                    controller.on_install_done_event.connect(installDone);
-                    controller.on_get_ext_vswitches_completed_event.connect(
-                        getExtVSwitchesCompleted);
-                    controller.on_get_available_host_nics_completed_event.connect(
-                        getAvailableHostNicsCompleted);
-                    controller.on_add_ext_vswitch_completed_event.connect(
-                        addExtVSwitchCompleted);
-                 }
-                catch(ex)
-                {
-                    handleError(msg);
-                }
-            }
-        </script>
+        <script src="./scripts/jquery-1.11.1.min.js"></script>
+        <script src="./scripts/jquery-ui-1.11.2.min.js"></script>
+        <script src="./scripts/jquery.input-ip-address-control-1.0.min.js"></script>
+        <script src="./scripts/angular.min.js"></script>
+        <script src="./scripts/term.js"></script>
+        <script src="./scripts/main.js"></script>
     </head>
-    <body>
+    <body ng-controller="StackInABoxCtrl">
         <div id="outer">
             <div id="maintabs">
                 <ul>
@@ -231,34 +17,71 @@
                     <li><a href="#tab-review">Review</a></li>
                     <li><a href="#tab-install">Install OpenStack!</a></li>
                 </ul>
-                <div id="addextvswitchdialog" title="Add a new external vswitch"
+                <div id="addextvswitchdialog" title="Add a new external virtual switch"
                      ng-controller="StackInABoxCtrl">
                     <form name="addextvswitchdialogform" id="addextvswitchdialogform" class="inputform">
                         <fieldset>
-                            <label for="hostnics">Network adapters</label>
+                            <label for="hostnics">Host network adapter</label>
                             <select name="hostnics" id="hostnics" ng-model="hostNic" required
                                     ng-options="hostNic.name group by hostNic.type for hostNic in hostNics | orderBy:name">
                             </select>
 
                         <label for="vswitchname">VSwitch name</label>
-                        <input type="text" name="vswitchname" id="vswitchname" ng-model="extVSwitch" required>
-
+                        <input type="text" name="vswitchname" id="vswitchname" ng-model="extVSwitch" required
+                               class="text ui-widget-content ui-corner-all">
                         </fieldset>
                     </form>
                 </div>
-                <div id="tab-config" ng-controller="StackInABoxCtrl">
-                    <form action="#">
+                <div id="tab-config">
+                    <form action="#" name="tabconfigform" id="tabconfigform">
                         <fieldset>
-                            <label for="extvswitch">External vswitch</label>
+                            <label for="extvswitch">External virtual switch</label>
                             <select name="extvswitch" id="extvswitch" ng-model="extVSwitch"
                                     ng-options="vswitch for vswitch in extVSwitches | orderBy">
                             </select>
                             <button id="addextvswitch">Add an external vswitch</button>
+                            <label for="openstackvmmem">OpenStack controller RAM</label>
+                            <input type="text" id="openstackvmmem" readonly ng-model="openStackVMMem + 'MB'">
+                            <div id="openstackvmmemslider"></div>
+                            <label for="fiprangestart">Floating IP range start</label>
+                            <input type="text" name="fiprangestart" id="fiprangestart"
+                                   ng-model="fipRangeStart" required
+                                   class="text ui-widget-content ui-corner-all">
+                            <label for="fiprangeend">Floating IP range end</label>
+                            <input type="text" name="fiprangeend" id="fiprangeend"
+                                   ng-model="fipRangeEnd" required
+                                   class="text ui-widget-content ui-corner-all">
+                            <label for="adminpassword">Admin password</label>
+                            <input type="password" name="adminpassword" id="adminpassword"
+                                   ng-model="adminPassword" required
+                                   class="text ui-widget-content ui-corner-all">
+                            <label for="adminpasswordrepeat">Repeat admin password</label>
+                            <input type="password" name="adminpasswordrepeat" id="adminpasswordrepeat"
+                                   required class="text ui-widget-content ui-corner-all">
+                            <label for="centosmirror">CentOS mirror</label>
+                            <input type="url" name="centosmirror" id="centosmirror" ng-model="centosMirror" required
+                                   class="text ui-widget-content ui-corner-all">
+                            <button id="reviewbutton">Next - Review your configuration</button>
                         </fieldset>
                     </form>
                 </div>
                 <div id="tab-review">
-                    <button id="getopenstackbutton">Get OpenStack!</button>
+                    <form action="#" name="tabreviewform" id="tabreviewform">
+                        <fieldset>
+                            <label for="extvswitchreview">External virtual switch</label>
+                            <input type="text" id="extvswitchreview" readonly ng-model="extVSwitch">
+                            <label for="openstackvmmemreview">OpenStack controller RAM</label>
+                            <input type="text" id="openstackvmmemreview" readonly ng-model="openStackVMMem + 'MB'">
+                            <label for="fiprangestartreview">Floating IP range start</label>
+                            <input type="text" id="fiprangestartreview" readonly ng-model="fipRangeStart">
+                            <label for="fiprangeendreview">Floating IP range end</label>
+                            <input type="text" id="fiprangeendreview" readonly ng-model="fipRangeEnd">
+                            <label for="centosmirrorreview">CentOS mirror</label>
+                            <input type="text" id="centosmirrorreview" readonly ng-model="centosMirror">
+                            <button id="configbutton">Back - Change your configuration</button>
+                            <button id="getopenstackbutton">Get OpenStack!</button>
+                        </fieldset>
+                    </form>
                 </div>
                 <div id="tab-install">
                     <div id="status"></div>

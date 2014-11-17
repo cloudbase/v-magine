@@ -63,12 +63,40 @@ body {
     height: 40px;
 }
 
-/*
-.ui-selectmenu-text{
-    border-style: solid;
-    border-color: red;
+#extvswitch {
+    width: 400px;
 }
-*/
+
+#hostnics {
+    width: 600px;
+}
+
+#centosmirror {
+    width: 600px;
+}
+
+label, input {
+    display:block;
+}
+
+fieldset {
+    padding:0;
+    border:0;
+    margin-top:25px;
+}
+
+#openstackvmmem {
+    border:0;
+    color: black;
+    font-weight: bold;
+}
+
+#extvswitchreview, #openstackvmmemreview, #fiprangestartreview,
+#fiprangeendreview, #centosmirrorreview {
+    border:0;
+    color: black;
+    font-weight: bold;
+}
 
 input:required:invalid, input:focus:invalid {
     border-style: solid;

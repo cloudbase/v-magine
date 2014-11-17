@@ -39,7 +39,7 @@ DHCP_PORT = 67
 TFTP_PORT = 69
 
 MIN_OS_FREE_MEMORY_MB = 500
-OPENSTACK_VM_RECOMMENDED_MEM_MB = 8 * 1024
+OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 8 * 1024
 OPENSTACK_VM_MIN_MEM_MB = 1 * 1024
 
 OPENSTACK_VM_VHD_MAX_SIZE = 60 * units.Gi
@@ -156,17 +156,19 @@ class DeploymentActions(object):
                                         "nova_install.log")
         LOG.info("Nova compute installed")
 
-    def _get_openstack_vm_memory_mb(self):
+    def get_openstack_vm_memory_mb(self):
         mem_info = psutil.virtual_memory()
         LOG.info("Host memory: %s" % str(mem_info))
 
-        # Get the best option considering host limits
-        max_mem_mb = min(mem_info.available / units.Mi - MIN_OS_FREE_MEMORY_MB,
-                         OPENSTACK_VM_RECOMMENDED_MEM_MB)
-        LOG.info("Memory to be assigned to the OpenStack VM: %sMB" %
-                 max_mem_mb)
+        max_mem_mb = mem_info.available / units.Mi - MIN_OS_FREE_MEMORY_MB
 
-        return max_mem_mb
+        # Get the best option considering host limits
+        suggested_mem_mb = min(max_mem_mb, OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
+
+        if suggested_mem_mb < OPENSTACK_VM_MIN_MEM_MB:
+            raise Exception("Not enough RAM available for OpenStack")
+
+        return (OPENSTACK_VM_MIN_MEM_MB, suggested_mem_mb, max_mem_mb)
 
     def check_platform_requirements(self):
         self._virt_driver.check_platform()
@@ -219,9 +221,11 @@ class DeploymentActions(object):
 
     def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
                             vm_network_config, console_named_pipe):
-        min_mem_mb = OPENSTACK_VM_MIN_MEM_MB
+        (min_mem_mb, max_mem_mb_auto,
+         max_mem_mb_limit) = self.get_openstack_vm_memory_mb()
+
         if not max_mem_mb:
-            max_mem_mb = self._get_openstack_vm_memory_mb()
+            max_mem_mb = max_mem_mb_auto
         if max_mem_mb < min_mem_mb:
             raise Exception("Not enough RAM available for OpenStack")
 

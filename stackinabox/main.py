@@ -85,15 +85,20 @@ class Controller(QtCore.QObject):
     def _add_ext_vswitch_completed(self, success):
         self.on_add_ext_vswitch_completed_event.emit(success)
 
+    @QtCore.pyqtSlot(result=str)
+    def get_config(self):
+        return json.dumps(self._worker.get_config())
+
     @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):
         self._worker.set_term_info(str(term_type), cols, rows)
 
-    @QtCore.pyqtSlot()
-    def install(self):
+    @QtCore.pyqtSlot(str)
+    def install(self, ext_vswitch_name):
         LOG.debug("Install called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'deploy_openstack',
-                                        QtCore.Qt.QueuedConnection)
+                                        QtCore.Qt.QueuedConnection,
+                                        QtCore.Q_ARG(str, ext_vswitch_name))
 
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
@@ -141,6 +146,16 @@ class MainWindow(QtGui.QMainWindow):
         self._web.load(QtCore.QUrl("www/index.html"))
 
         self._web.show()
+
+    def closeEvent(self, event):
+        reply = QtGui.QMessageBox.question(
+            self, 'Message',
+            "Are you sure to quit and interrupt the OpenStack installation?",
+            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
     def _init_worker(self):
         self._thread = QtCore.QThread()
