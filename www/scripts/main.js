@@ -228,7 +228,10 @@ function initUi() {
         min: $scope.minOpenStackVMMem,
         max: $scope.maxOpenStackVMMem,
         slide: function(event, ui) {
-            $("#openstackvmmem").val(ui.value.toString() + "MB");
+            var value = ui.value.toString();
+            $("#openstackvmmem").val(value + "MB");
+            // AngularJs is not performing two way databinding
+            $scope.openStackVMMem = value
         }
     });
 
