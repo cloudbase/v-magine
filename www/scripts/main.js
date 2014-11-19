@@ -28,8 +28,13 @@ function handleError(msg) {
 
 function installDone(success) {
     $('#getopenstackbutton').button("enable");
-    $('#status').text('');
     $("#mainprogressbar").progressbar({ value: 0 });
+
+    if(success) {
+        $('#status').text('Your OpenStack is ready!');
+    } else {
+        $('#status').text('Ops, something went wrong. :-(');
+    }
 }
 
 function statusChanged(msg, step, maxSteps) {
