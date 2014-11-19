@@ -18,6 +18,7 @@ import platform
 import pythoncom
 import threading
 import time
+import sys
 
 from PyQt4 import QtCore
 
@@ -28,7 +29,7 @@ from stackinabox import security
 LOG = logging
 
 DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/7/os/x86_64"
-
+OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
 
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
@@ -100,10 +101,13 @@ class Worker(QtCore.QObject):
         self._curr_step += 1
         self.status_changed.emit(msg, self._curr_step, self._max_steps)
 
-    def _deploy_openstack_vm(self, dep_actions, ext_vswitch_name):
-        vm_dir = "C:\\VM"
+    def _deploy_openstack_vm(self, dep_actions, ext_vswitch_name,
+                             openstack_base_dir):
         vm_name = "openstack-controller"
         vm_admin_user = "root"
+
+        vm_dir = os.path.join(openstack_base_dir, vm_name)
+
         max_vm_mem_mb = None
         # TODO(alexpilotti): Add support for more OSs
         pxe_os_id = "centos7"
@@ -242,7 +246,8 @@ class Worker(QtCore.QObject):
         finally:
             rdo_installer.disconnect()
 
-    def _install_local_hyperv_compute(self, dep_actions, nova_config):
+    def _install_local_hyperv_compute(self, dep_actions, nova_config,
+                                      openstack_base_dir):
         self._update_status('Checking if the OpenStack components for '
                                  'Hyper-V are already installed...')
         msi_info = dep_actions.check_hyperv_compute_installed()
@@ -258,7 +263,8 @@ class Worker(QtCore.QObject):
             dep_actions.download_hyperv_compute_msi(msi_path)
             self._update_status('Installing Hyper-V OpenStack '
                                      'components...')
-            dep_actions.install_hyperv_compute(msi_path, nova_config)
+            dep_actions.install_hyperv_compute(msi_path, nova_config,
+                                               openstack_base_dir)
         finally:
             os.remove(msi_path)
 
@@ -279,6 +285,13 @@ class Worker(QtCore.QObject):
         dep_actions.create_cirros_image(openstack_cred, image_path)
         os.remove(image_path)
 
+    def _get_default_openstack_base_dir(self):
+        if sys.platform == 'win32':
+            drive = os.environ['SYSTEMDRIVE']
+            return os.path.join(drive, OPENSTACK_DEFAULT_BASE_DIR_WIN32)
+        else:
+            raise NotImplementedError()
+
     def get_config(self):
         try:
             dep_actions = actions.DeploymentActions()
@@ -286,6 +299,8 @@ class Worker(QtCore.QObject):
              max_mem_mb) = dep_actions.get_openstack_vm_memory_mb()
 
             return {
+                "default_openstack_base_dir":
+                self._get_default_openstack_base_dir(),
                 "default_centos_mirror": DEFAULT_CENTOS_MIRROR,
                 "min_openstack_vm_mem_mb": min_mem_mb,
                 "suggested_openstack_vm_mem_mb": suggested_mem_mb,
@@ -340,11 +355,15 @@ class Worker(QtCore.QObject):
             self.add_ext_vswitch_completed.emit(False);
             raise
 
-    @QtCore.pyqtSlot(str)
-    def deploy_openstack(self, ext_vswitch_name):
+    @QtCore.pyqtSlot(str, str)
+    def deploy_openstack(self, ext_vswitch_name, openstack_base_dir):
         dep_actions = actions.DeploymentActions()
 
         try:
+            # Convert Qt strings to Python strings
+            ext_vswitch_name = str(ext_vswitch_name)
+            openstack_base_dir = str(openstack_base_dir)
+
             self._curr_step = 0
             self._max_steps = 27
 
@@ -353,10 +372,11 @@ class Worker(QtCore.QObject):
                                              self._stderr_callback)
 
             (mgmt_ip, ssh_user, ssh_password) = self._deploy_openstack_vm(
-                dep_actions, str(ext_vswitch_name))
+                dep_actions, ext_vswitch_name, openstack_base_dir)
             nova_config = self._install_rdo(rdo_installer, mgmt_ip, ssh_user,
                                             ssh_password)
-            self._install_local_hyperv_compute(dep_actions, nova_config)
+            self._install_local_hyperv_compute(dep_actions, nova_config,
+                                               openstack_base_dir)
             self._validate_deployment(rdo_installer)
 
             openstack_cred = dep_actions.get_openstack_credentials(

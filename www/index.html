@@ -58,6 +58,10 @@
                             <label for="adminpasswordrepeat">Repeat admin password</label>
                             <input type="password" name="adminpasswordrepeat" id="adminpasswordrepeat"
                                    required class="text ui-widget-content ui-corner-all">
+                            <label for="openstackbasedir">OpenStack base path</label>
+                            <input type="text" name="openstackbasedir" id="openstackbasedir"
+                                   required class="text ui-widget-content ui-corner-all"
+                                   ng-model="openstackBaseDir">
                             <label for="centosmirror">CentOS mirror</label>
                             <input type="url" name="centosmirror" id="centosmirror" ng-model="centosMirror" required
                                    class="text ui-widget-content ui-corner-all">
@@ -76,6 +80,8 @@
                             <input type="text" id="fiprangestartreview" readonly ng-model="fipRangeStart">
                             <label for="fiprangeendreview">Floating IP range end</label>
                             <input type="text" id="fiprangeendreview" readonly ng-model="fipRangeEnd">
+                            <label for="openstackbasedir">OpenStack base path</label>
+                            <input type="text" id="openstackbasedirreview" readonly ng-model="openstackBaseDir">
                             <label for="centosmirrorreview">CentOS mirror</label>
                             <input type="text" id="centosmirrorreview" readonly ng-model="centosMirror">
                             <button id="configbutton">Back - Change your configuration</button>

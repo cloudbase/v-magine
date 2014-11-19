@@ -11,6 +11,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.openStackVMMem = 0;
     $scope.fipRangeStart = null;
     $scope.fipRangeEnd = null;
+    $scope.openstackBaseDir = null;
 }]);
 
 function handleError(msg) {
@@ -75,7 +76,7 @@ function startInstall() {
         term.reset();
 
         var $scope = angular.element("#maintabs").scope();
-        controller.install($scope.extVSwitch);
+        controller.install($scope.extVSwitch, $scope.openstackBaseDir);
     }
     catch(ex)
     {
@@ -185,6 +186,7 @@ function setDefaultConfigValues() {
     $scope.maxOpenStackVMMem = defaultConfig.max_openstack_vm_mem_mb;
     $scope.minOpenStackVMMem = defaultConfig.min_openstack_vm_mem_mb;
     $scope.openStackVMMem = defaultConfig.suggested_openstack_vm_mem_mb;
+    $scope.openstackBaseDir = defaultConfig.default_openstack_base_dir;
     $scope.$apply();
 }
 

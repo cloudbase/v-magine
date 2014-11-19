@@ -92,7 +92,7 @@ fieldset {
 }
 
 #extvswitchreview, #openstackvmmemreview, #fiprangestartreview,
-#fiprangeendreview, #centosmirrorreview {
+#fiprangeendreview, #centosmirrorreview, #openstackbasedirreview {
     border:0;
     color: black;
     font-weight: bold;

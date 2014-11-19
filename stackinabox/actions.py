@@ -54,8 +54,8 @@ CIRROS_VHDX_URL = ("https://raw.githubusercontent.com/cloudbase/"
                    "ci-overcloud-init-scripts/master/scripts/devstack_vm/"
                    "cirros-0.3.3-x86_64.vhdx.gz")
 
-OPENSTACK_INSTANCES_PATH = "C:\\OpenStack\\Instances"
-OPENSTACK_LOGDIR = "C:\\OpenStack\\Log"
+OPENSTACK_INSTANCES_DIR = "Instances"
+OPENSTACK_LOG_DIR = "Log"
 
 
 class DeploymentActions(object):
@@ -101,15 +101,17 @@ class DeploymentActions(object):
         with gzip.open(gzipped_image_path, 'rb') as f:
             g.create_image('cirros', 'vhd', 'bare', f, 'hyperv', 'public')
 
-    def install_hyperv_compute(self, msi_path, nova_config):
+    def install_hyperv_compute(self, msi_path, nova_config,
+                               openstack_base_dir):
+        instances_path = os.path.join(openstack_base_dir,
+                                      OPENSTACK_INSTANCES_DIR)
+        openstack_log_dir = os.path.join(openstack_base_dir, OPENSTACK_LOG_DIR)
 
         features = ["HyperVNovaCompute", "NeutronHyperVAgent",
                     "iSCSISWInitiator", "FreeRDP"]
 
         properties = {}
         properties["RPCBACKEND"] = "RabbitMQ"
-
-        properties["INSTANCESPATH"] = OPENSTACK_INSTANCES_PATH
 
         rabbit_hosts = nova_config["DEFAULT"]["rabbit_hosts"]
         (rabbit_host, rabbit_port) = rabbit_hosts.split(",")[0].split(':')
@@ -123,8 +125,8 @@ class DeploymentActions(object):
         properties["GLANCEHOST"] = glance_host
         properties["GLANCEPORT"] = glance_port
 
-        properties["INSTANCESPATH"] = OPENSTACK_INSTANCES_PATH
-        properties["OPENSTACK_LOGDIR"] = OPENSTACK_LOGDIR
+        properties["INSTANCESPATH"] = instances_path
+        properties["OPENSTACK_LOGDIR"] = openstack_log_dir
 
         properties["RDPCONSOLEURL"] = "http://localhost:8000"
 
@@ -148,8 +150,8 @@ class DeploymentActions(object):
         properties["NEUTRONADMINAUTHURL"] = nova_config["DEFAULT"][
             "neutron_admin_auth_url"]
 
-        if not os.path.exists(OPENSTACK_LOGDIR):
-            os.makedirs(OPENSTACK_LOGDIR)
+        if not os.path.exists(openstack_log_dir):
+            os.makedirs(openstack_log_dir)
 
         LOG.info("Installing Nova compute")
         self._windows_utils.install_msi(msi_path, features, properties,

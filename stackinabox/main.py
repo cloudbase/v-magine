@@ -93,12 +93,13 @@ class Controller(QtCore.QObject):
     def set_term_info(self, term_type, cols, rows):
         self._worker.set_term_info(str(term_type), cols, rows)
 
-    @QtCore.pyqtSlot(str)
-    def install(self, ext_vswitch_name):
+    @QtCore.pyqtSlot(str, str)
+    def install(self, ext_vswitch_name, openstack_base_dir):
         LOG.debug("Install called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'deploy_openstack',
                                         QtCore.Qt.QueuedConnection,
-                                        QtCore.Q_ARG(str, ext_vswitch_name))
+                                        QtCore.Q_ARG(str, ext_vswitch_name),
+                                        QtCore.Q_ARG(str, openstack_base_dir))
 
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
