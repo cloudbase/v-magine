@@ -200,7 +200,7 @@ class Worker(QtCore.QObject):
 
     def _install_rdo(self, rdo_installer, host, username, password):
         max_connect_attempts = 10
-        reboot_sleep_s = 10
+        reboot_sleep_s = 30
 
         try:
             self._update_status(
