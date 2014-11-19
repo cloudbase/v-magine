@@ -102,13 +102,12 @@ class Worker(QtCore.QObject):
         self.status_changed.emit(msg, self._curr_step, self._max_steps)
 
     def _deploy_openstack_vm(self, dep_actions, ext_vswitch_name,
-                             openstack_base_dir):
+                             openstack_vm_mem_mb, openstack_base_dir,
+                             admin_password):
         vm_name = "openstack-controller"
         vm_admin_user = "root"
-
         vm_dir = os.path.join(openstack_base_dir, vm_name)
 
-        max_vm_mem_mb = None
         # TODO(alexpilotti): Add support for more OSs
         pxe_os_id = "centos7"
         console_named_pipe = r"\\.\pipe\%s" % vm_name
@@ -118,15 +117,11 @@ class Worker(QtCore.QObject):
 
         vfd_path = os.path.join(vm_dir, "floppy.vfd")
 
-        self._update_status('Generating random password...')
-        password = security.get_random_password()
-        # TODO Remove
-        password = "Passw0rd"
-
-        LOG.debug("Password: %s" % password)
+        #self._update_status('Generating random password...')
+        #password = security.get_random_password()
 
         self._update_status('Generating MD5 password...')
-        encrypted_password = security.get_password_md5(password)
+        encrypted_password = security.get_password_md5(admin_password)
 
         if not os.path.isdir(vm_dir):
             os.makedirs(vm_dir)
@@ -163,7 +158,7 @@ class Worker(QtCore.QObject):
 
         self._update_status('Creating the OpenStack controller VM...')
         dep_actions.create_openstack_vm(
-            vm_name, vm_dir, max_vm_mem_mb, vfd_path, vm_network_config,
+            vm_name, vm_dir, openstack_vm_mem_mb, vfd_path, vm_network_config,
             console_named_pipe)
 
         vnic_ip_info = dep_actions.get_openstack_vm_ip_info(
@@ -197,10 +192,8 @@ class Worker(QtCore.QObject):
 
         vm_int_mgmt_ip = [vnic_ip[2] for vnic_ip in vnic_ip_info
                           if vnic_ip[0] == "%s-mgmt-int" % vm_name][0]
-        LOG.debug("Connection info: %s " %
-                  str((vm_int_mgmt_ip, vm_admin_user, password)))
 
-        return (vm_int_mgmt_ip, vm_admin_user, password)
+        return (vm_int_mgmt_ip, vm_admin_user)
 
     def _install_rdo(self, rdo_installer, host, username, password):
         max_connect_attempts = 10
@@ -355,24 +348,32 @@ class Worker(QtCore.QObject):
             self.add_ext_vswitch_completed.emit(False);
             raise
 
-    @QtCore.pyqtSlot(str, str)
-    def deploy_openstack(self, ext_vswitch_name, openstack_base_dir):
+    @QtCore.pyqtSlot(str, int, str, str, str, str)
+    def deploy_openstack(self, ext_vswitch_name, openstack_vm_mem_mb,
+                         openstack_base_dir, admin_password,
+                         fip_range_start, fip_range_end):
         dep_actions = actions.DeploymentActions()
 
         try:
             # Convert Qt strings to Python strings
             ext_vswitch_name = str(ext_vswitch_name)
             openstack_base_dir = str(openstack_base_dir)
+            admin_password = str(admin_password)
+            fip_range_start = str(fip_range_start)
+            fip_range_end = str(fip_range_end)
 
             self._curr_step = 0
             self._max_steps = 27
+
+            ssh_password = admin_password
 
             dep_actions.check_platform_requirements()
             rdo_installer = rdo.RDOInstaller(self._stdout_callback,
                                              self._stderr_callback)
 
-            (mgmt_ip, ssh_user, ssh_password) = self._deploy_openstack_vm(
-                dep_actions, ext_vswitch_name, openstack_base_dir)
+            (mgmt_ip, ssh_user) = self._deploy_openstack_vm(
+                dep_actions, ext_vswitch_name, openstack_vm_mem_mb,
+                openstack_base_dir, admin_password)
             nova_config = self._install_rdo(rdo_installer, mgmt_ip, ssh_user,
                                             ssh_password)
             self._install_local_hyperv_compute(dep_actions, nova_config,

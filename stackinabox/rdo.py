@@ -65,6 +65,7 @@ class RDOInstaller(object):
 
     def connect(self, host, username, password, term_type, term_cols,
                 term_rows, max_attempts=1, sleep_interval=30):
+        LOG.debug("Connection info: %s" % str((host, username, password)))
         utils.retry_action(
             lambda: self._connect_single(
                 host, username, password, term_type, term_cols, term_rows),

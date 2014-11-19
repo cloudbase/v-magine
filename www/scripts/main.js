@@ -76,7 +76,12 @@ function startInstall() {
         term.reset();
 
         var $scope = angular.element("#maintabs").scope();
-        controller.install($scope.extVSwitch, $scope.openstackBaseDir);
+        controller.install($scope.extVSwitch,
+                           $scope.openStackVMMem,
+                           $scope.openstackBaseDir,
+                           $scope.adminPassword,
+                           $scope.fipRangeStart,
+                           $scope.fipRangeEnd);
     }
     catch(ex)
     {
