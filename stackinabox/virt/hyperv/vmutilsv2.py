@@ -69,6 +69,14 @@ class VMUtilsV2(vmutils.VMUtils):
     def _init_hyperv_wmi_conn(self, host):
         self._wmi_namespace = '//%s/root/virtualization/v2' % host
 
+    def get_host_config(self):
+        config = self._conn.Msvm_VirtualSystemManagementServiceSettingData()[0]
+        return {"default_external_data_root": config.DefaultExternalDataRoot,
+                "default_vhd_path": config.DefaultVirtualHardDiskPath,
+                "enhanced_session_mode_enabled":
+                config.EnhancedSessionModeEnabled,
+                "numa_spanning_enabled": config.NumaSpanningEnabled}
+
     def list_instance_notes(self):
         instance_notes = []
 

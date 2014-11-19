@@ -109,6 +109,9 @@ class VMUtils(object):
             self._wmi_conn_cimv2 = wmi.WMI(moniker=self._wmi_cimv2_namespace)
         return self._wmi_conn_cimv2
 
+    def get_host_config(self):
+        raise NotImplementedError()
+
     def list_instance_notes(self):
         instance_notes = []
 
