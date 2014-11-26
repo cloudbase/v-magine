@@ -104,14 +104,32 @@ class RDOInstaller(object):
 
     def get_nova_config(self):
         config_file = "/etc/nova/nova.conf"
-        section = "DEFAULT"
+
+        config_names = {"DEFAULT": [
+                            "rabbit_hosts",
+                            "rabbit_userid",
+                            "rabbit_password",
+                            "glance_api_servers",
+                            "neutron_url",
+                            "neutron_admin_auth_url",
+                            "neutron_admin_tenant_name",
+                            "neutron_admin_username",
+                            "neutron_admin_password"
+                            ],
+                        "keystone_authtoken": [
+                            "admin_tenant_name",
+                            "admin_user",
+                            "admin_password"
+                            ]
+                        }
+
         config = {}
-        for name in ["rabbit_hosts", "rabbit_userid", "rabbit_password",
-                     "glance_api_servers", "neutron_url",
-                     "neutron_admin_auth_url", "neutron_admin_tenant_name",
-                     "neutron_admin_username", "neutron_admin_password"]:
-            config[name] = self._get_config_value(config_file, section, name)
-        return {section: config}
+        for (section, names) in config_names.items():
+            config[section] = {}
+            for name in names:
+                config[section][name] = self._get_config_value(
+                    config_file, section, name)
+        return config
 
     def _copy_resource_file_single(self, file_name):
         LOG.debug("Copying %s" % file_name)

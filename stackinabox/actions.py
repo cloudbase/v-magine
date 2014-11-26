@@ -17,6 +17,7 @@ import gzip
 import logging
 import os
 import psutil
+import socket
 
 from oslo.utils import units
 
@@ -38,6 +39,9 @@ FIREWALL_PXE_RULE_NAME = "stackinabox PXE"
 DHCP_PORT = 67
 TFTP_PORT = 69
 
+FREERDP_WEBCONNECT_HTTP_PORT = 8000
+FREERDP_WEBCONNECT_HTTPS_PORT = 4430
+
 MIN_OS_FREE_MEMORY_MB = 500
 OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 8 * 1024
 OPENSTACK_VM_MIN_MEM_MB = 1 * 1024
@@ -48,11 +52,14 @@ DATA_VLAN_RANGE = range(500, 2000)
 
 HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V Nova Compute'
+FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
                   "HyperVNovaCompute_Juno_2014_2.msi")
 CIRROS_VHDX_URL = ("https://raw.githubusercontent.com/cloudbase/"
                    "ci-overcloud-init-scripts/master/scripts/devstack_vm/"
                    "cirros-0.3.3-x86_64.vhdx.gz")
+FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
+                              "FreeRDPWebConnect.msi")
 
 OPENSTACK_INSTANCES_DIR = "Instances"
 OPENSTACK_LOG_DIR = "Log"
@@ -66,12 +73,15 @@ class DeploymentActions(object):
         self._windows_utils = windows.WindowsUtils()
         self._vm_name = None
 
-    def check_hyperv_compute_installed(self):
+    def check_installed_components(self):
+        installed_products = []
         products = self._windows_utils.get_installed_products(
             HYPERV_MSI_VENDOR)
         for (product_id, caption) in products:
-            if caption.startswith(HYPERV_MSI_CAPTION_PREFIX):
-                return (product_id, caption)
+            if (caption.startswith(HYPERV_MSI_CAPTION_PREFIX) or
+                    caption.startswith(FREERDP_WEBCONNECT_CAPTION_PREFIX)):
+                installed_products.append((product_id, caption))
+        return installed_products
 
     def uninstall_product(self, product_id):
         self._windows_utils.uninstall_product(product_id, "nova_uninstall.log")
@@ -79,6 +89,11 @@ class DeploymentActions(object):
     def download_hyperv_compute_msi(self, target_path):
         utils.retry_action(
             lambda: utils.download_file(HYPERV_MSI_URL, target_path))
+
+    def download_freerdp_webconnect_msi(self, target_path):
+        utils.retry_action(
+            lambda: utils.download_file(FREERDP_WEBCONNECT_MSI_URL,
+                                        target_path))
 
     def download_cirros_image(self, target_path):
         utils.retry_action(
@@ -100,6 +115,36 @@ class DeploymentActions(object):
         g.login(**openstack_cred)
         with gzip.open(gzipped_image_path, 'rb') as f:
             g.create_image('cirros', 'vhd', 'bare', f, 'hyperv', 'public')
+
+    def install_freerdp_webconnect(self, msi_path, nova_config,
+                                   hyperv_host_username,
+                                   hyperv_host_password):
+
+        features = ['FreeRDPWebConnect', 'VC120Redist']
+        properties = {}
+
+        #properties["REDIRECT_HTTPS"] = "1"
+
+        properties["HTTP_PORT"] = FREERDP_WEBCONNECT_HTTP_PORT
+        properties["HTTPS_PORT"] = FREERDP_WEBCONNECT_HTTPS_PORT
+        properties["ENABLE_FIREWALL_RULES"] = "1"
+
+        properties["OPENSTACK_AUTH_URL"] = nova_config["DEFAULT"][
+            "neutron_admin_auth_url"]
+        properties["OPENSTACK_TENANT_NAME"] = nova_config[
+            "keystone_authtoken"]["admin_tenant_name"]
+        properties["OPENSTACK_USERNAME"] = nova_config["keystone_authtoken"][
+            "admin_user"]
+        properties["OPENSTACK_PASSWORD"] = nova_config["keystone_authtoken"][
+            "admin_password"]
+
+        properties["HYPERV_HOST_USERNAME"] = hyperv_host_username
+        properties["HYPERV_HOST_PASSWORD"] = hyperv_host_password
+
+        LOG.info("Installing FreeRDP-WebConnect")
+        self._windows_utils.install_msi(msi_path, features, properties,
+                                        "freerdp_webconnect.log")
+        LOG.info("FreeRDP-WebConnect")
 
     def install_hyperv_compute(self, msi_path, nova_config,
                                openstack_base_dir):
@@ -126,9 +171,13 @@ class DeploymentActions(object):
         properties["GLANCEPORT"] = glance_port
 
         properties["INSTANCESPATH"] = instances_path
-        properties["OPENSTACK_LOGDIR"] = openstack_log_dir
+        properties["LOGDIR"] = openstack_log_dir
 
-        properties["RDPCONSOLEURL"] = "http://localhost:8000"
+        rdp_console_url = "http://%(host)s:%(port)d" % {
+            "host": socket.gethostname(),
+            "port": FREERDP_WEBCONNECT_HTTP_PORT}
+
+        properties["RDPCONSOLEURL"] = rdp_console_url
 
         properties["ADDVSWITCH"] = "0"
         properties["VSWITCHNAME"] = VSWITCH_DATA_NAME

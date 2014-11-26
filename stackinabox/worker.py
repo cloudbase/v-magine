@@ -240,26 +240,37 @@ class Worker(QtCore.QObject):
             rdo_installer.disconnect()
 
     def _install_local_hyperv_compute(self, dep_actions, nova_config,
-                                      openstack_base_dir):
+                                      openstack_base_dir, hyperv_host_username,
+                                      hyperv_host_password):
         self._update_status('Checking if the OpenStack components for '
                                  'Hyper-V are already installed...')
-        msi_info = dep_actions.check_hyperv_compute_installed()
-        if msi_info:
-            self._update_status('Uninstalling a previous version of the '
-                                     'Hyper-V OpenStack components...')
+        for msi_info in dep_actions.check_installed_components():
+            self._update_status('Uninstalling %s' % msi_info[1])
             dep_actions.uninstall_product(msi_info[0])
 
-        msi_path = "hyperv_nova_compute.msi"
+        nova_msi_path = "hyperv_nova_compute.msi"
+        freerdp_webconnect_msi_path = "freerdp_webconnect.msi"
         try:
-            self._update_status('Downloading Hyper-V OpenStack '
-                                     'components...')
-            dep_actions.download_hyperv_compute_msi(msi_path)
-            self._update_status('Installing Hyper-V OpenStack '
-                                     'components...')
-            dep_actions.install_hyperv_compute(msi_path, nova_config,
+            self._update_status('Downloading Hyper-V OpenStack components...')
+            dep_actions.download_hyperv_compute_msi(nova_msi_path)
+
+            self._update_status('Installing Hyper-V OpenStack components...')
+            dep_actions.install_hyperv_compute(nova_msi_path, nova_config,
                                                openstack_base_dir)
+
+            self._update_status('Downloading FreeRDP-WebConnect...')
+            dep_actions.download_freerdp_webconnect_msi(
+                freerdp_webconnect_msi_path)
+
+            self._update_status('Installing FreeRDP-WebConnect...')
+            dep_actions.install_freerdp_webconnect(
+                freerdp_webconnect_msi_path, nova_config,
+                hyperv_host_username, hyperv_host_password)
         finally:
-            os.remove(msi_path)
+            if os.path.exists(nova_msi_path):
+                os.remove(nova_msi_path)
+            if os.path.exists(freerdp_webconnect_msi_path):
+                os.remove(freerdp_webconnect_msi_path)
 
         self._update_status('Hyper-V OpenStack installed successfully')
 
@@ -348,9 +359,10 @@ class Worker(QtCore.QObject):
             self.add_ext_vswitch_completed.emit(False);
             raise
 
-    @QtCore.pyqtSlot(str, int, str, str, str, str)
+    @QtCore.pyqtSlot(str, int, str, str, str, str, str, str)
     def deploy_openstack(self, ext_vswitch_name, openstack_vm_mem_mb,
                          openstack_base_dir, admin_password,
+                         hyperv_host_username, hyperv_host_password,
                          fip_range_start, fip_range_end):
         dep_actions = actions.DeploymentActions()
 
@@ -359,6 +371,8 @@ class Worker(QtCore.QObject):
             ext_vswitch_name = str(ext_vswitch_name)
             openstack_base_dir = str(openstack_base_dir)
             admin_password = str(admin_password)
+            hyperv_host_username = str(hyperv_host_username)
+            hyperv_host_password = str(hyperv_host_password)
             fip_range_start = str(fip_range_start)
             fip_range_end = str(fip_range_end)
 
@@ -377,7 +391,9 @@ class Worker(QtCore.QObject):
             nova_config = self._install_rdo(rdo_installer, mgmt_ip, ssh_user,
                                             ssh_password)
             self._install_local_hyperv_compute(dep_actions, nova_config,
-                                               openstack_base_dir)
+                                               openstack_base_dir,
+                                               hyperv_host_username,
+                                               hyperv_host_password)
             self._validate_deployment(rdo_installer)
 
             openstack_cred = dep_actions.get_openstack_credentials(

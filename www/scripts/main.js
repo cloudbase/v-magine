@@ -12,6 +12,8 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.fipRangeStart = null;
     $scope.fipRangeEnd = null;
     $scope.openstackBaseDir = null;
+    $scope.hypervHostUsername = "Administrator";
+    $scope.hypervHostPassword = "Passw0rd";
 }]);
 
 function handleError(msg) {
@@ -85,6 +87,8 @@ function startInstall() {
                            $scope.openStackVMMem,
                            $scope.openstackBaseDir,
                            $scope.adminPassword,
+                           $scope.hypervHostUsername,
+                           $scope.hypervHostPassword,
                            $scope.fipRangeStart,
                            $scope.fipRangeEnd);
     }
