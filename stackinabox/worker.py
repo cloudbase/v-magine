@@ -312,7 +312,7 @@ class Worker(QtCore.QObject):
     def _get_fip_range_data(self):
         fip_subnet = utils.get_random_ipv4_subnet()
         fip_range = "%s/24" % fip_subnet
-        fip_range_start = fip_subnet[:-1] + "1"
+        fip_range_start = fip_subnet[:-1] + "2"
         fip_range_end = fip_subnet[:-1] + "254"
         return (fip_range, fip_range_start, fip_range_end)
 
