@@ -92,7 +92,8 @@ fieldset {
 }
 
 #extvswitchreview, #openstackvmmemreview, #fiprangestartreview,
-#fiprangeendreview, #centosmirrorreview, #openstackbasedirreview {
+#fiprangeendreview, #centosmirrorreview, #openstackbasedirreview,
+#hypervhostusernamereview {
     border:0;
     color: black;
     font-weight: bold;

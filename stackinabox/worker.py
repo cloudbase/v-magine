@@ -308,7 +308,8 @@ class Worker(QtCore.QObject):
                 "default_centos_mirror": DEFAULT_CENTOS_MIRROR,
                 "min_openstack_vm_mem_mb": min_mem_mb,
                 "suggested_openstack_vm_mem_mb": suggested_mem_mb,
-                "max_openstack_vm_mem_mb": max_mem_mb
+                "max_openstack_vm_mem_mb": max_mem_mb,
+                "default_hyperv_host_username": "Administrator"
             }
         except Exception as ex:
             LOG.exception(ex)

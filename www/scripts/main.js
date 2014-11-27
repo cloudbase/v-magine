@@ -12,8 +12,8 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.fipRangeStart = null;
     $scope.fipRangeEnd = null;
     $scope.openstackBaseDir = null;
-    $scope.hypervHostUsername = "Administrator";
-    $scope.hypervHostPassword = "Passw0rd";
+    $scope.hypervHostUsername = null;
+    $scope.hypervHostPassword = null;
 }]);
 
 function handleError(msg) {
@@ -201,6 +201,7 @@ function setDefaultConfigValues() {
     $scope.minOpenStackVMMem = defaultConfig.min_openstack_vm_mem_mb;
     $scope.openStackVMMem = defaultConfig.suggested_openstack_vm_mem_mb;
     $scope.openstackBaseDir = defaultConfig.default_openstack_base_dir;
+    $scope.hypervHostUsername = defaultConfig.default_hyperv_host_username;
     $scope.$apply();
 }
 
