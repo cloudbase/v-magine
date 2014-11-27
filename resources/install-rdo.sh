@@ -105,6 +105,18 @@ function generate_ssh_key() {
     /bin/cat $SSH_KEY_PATH_PUB >> ~/.ssh/authorized_keys
 }
 
+function fix_cinder_chap_length() {
+    local CINDER_VERSION=`/usr/bin/python -c "from cinder import version; \
+        print version.version_info.version"`
+    if [ "$CINDER_VERSION" == "2014.2" ]; then
+        local VOLUME_UTILS_PATH=`/usr/bin/python -c "import os; \
+            from cinder.volume import utils; \
+            print os.path.splitext(utils.__file__)[0] + '.py'"`
+        /usr/bin/sed -i "s/generate_password(length=20/generate_password(length=16/g" \
+            $VOLUME_UTILS_PATH
+        /bin/systemctl restart openstack-cinder-volume.service
+    fi
+}
 
 rdo_cleanup
 
@@ -234,6 +246,8 @@ fi
 # Disable nova-compute on this host
 exec_with_retry 5 0 /usr/bin/nova service-disable $(hostname) nova-compute
 /bin/systemctl disable openstack-nova-compute.service
+
+fix_cinder_chap_length
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
