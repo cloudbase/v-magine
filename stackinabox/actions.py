@@ -146,8 +146,17 @@ class DeploymentActions(object):
                                         "freerdp_webconnect.log")
         LOG.info("FreeRDP-WebConnect")
 
+    def _check_username(self, username):
+        username = username.strip()
+        if not "\\" in username:
+            username = "%(host)s\\%(username)s" % {
+                "host": socket.gethostname(),
+                "username": username}
+        return username
+
     def install_hyperv_compute(self, msi_path, nova_config,
-                               openstack_base_dir):
+                               openstack_base_dir, hyperv_host_username,
+                               hyperv_host_password):
         instances_path = os.path.join(openstack_base_dir,
                                       OPENSTACK_INSTANCES_DIR)
         openstack_log_dir = os.path.join(openstack_base_dir, OPENSTACK_LOG_DIR)
@@ -198,6 +207,11 @@ class DeploymentActions(object):
             "neutron_admin_password"]
         properties["NEUTRONADMINAUTHURL"] = nova_config["DEFAULT"][
             "neutron_admin_auth_url"]
+
+        if hyperv_host_username:
+            properties["NOVACOMPUTESERVICEUSER"] = self._check_username(
+                hyperv_host_username)
+            properties["NOVACOMPUTESERVICEPASSWORD"] = hyperv_host_password
 
         if not os.path.exists(openstack_log_dir):
             os.makedirs(openstack_log_dir)

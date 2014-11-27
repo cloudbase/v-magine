@@ -73,6 +73,8 @@ class Worker(QtCore.QObject):
         self._curr_step = 0
         self._max_steps = 0
 
+        self._is_install_done = True
+
         def stdout_callback(data):
             self.stdout_data_ready.emit(data)
         self._stdout_callback = stdout_callback
@@ -92,6 +94,9 @@ class Worker(QtCore.QObject):
     def started(self):
         LOG.info("Started")
         pythoncom.CoInitializeEx(pythoncom.COINIT_APARTMENTTHREADED)
+
+    def can_close(self):
+        return self._is_install_done
 
     def _get_mac_address(self, vm_network_config, vnic_name):
         return [vnic_cfg[2] for vnic_cfg in vm_network_config
@@ -256,7 +261,9 @@ class Worker(QtCore.QObject):
 
             self._update_status('Installing Hyper-V OpenStack components...')
             dep_actions.install_hyperv_compute(nova_msi_path, nova_config,
-                                               openstack_base_dir)
+                                               openstack_base_dir,
+                                               hyperv_host_username,
+                                               hyperv_host_password)
 
             self._update_status('Downloading FreeRDP-WebConnect...')
             dep_actions.download_freerdp_webconnect_msi(
@@ -368,6 +375,8 @@ class Worker(QtCore.QObject):
         dep_actions = actions.DeploymentActions()
 
         try:
+            self._is_install_done = False
+
             # Convert Qt strings to Python strings
             ext_vswitch_name = str(ext_vswitch_name)
             openstack_base_dir = str(openstack_base_dir)
@@ -411,3 +420,4 @@ class Worker(QtCore.QObject):
             self.install_done.emit(False)
         finally:
             dep_actions.stop_pxe_service()
+            self._is_install_done = True

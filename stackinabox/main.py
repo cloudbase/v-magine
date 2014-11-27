@@ -159,14 +159,18 @@ class MainWindow(QtGui.QMainWindow):
         self._web.show()
 
     def closeEvent(self, event):
-        reply = QtGui.QMessageBox.question(
-            self, 'Message',
-            "Are you sure to quit and interrupt the OpenStack installation?",
-            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+        if self._worker.can_close():
             event.accept()
         else:
-            event.ignore()
+            reply = QtGui.QMessageBox.question(
+                self, 'Message',
+                "Are you sure to quit and interrupt the OpenStack "
+                "installation?",
+                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
+                event.accept()
+            else:
+                event.ignore()
 
     def _init_worker(self):
         self._thread = QtCore.QThread()
