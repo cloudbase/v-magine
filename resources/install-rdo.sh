@@ -118,6 +118,30 @@ function fix_cinder_chap_length() {
     fi
 }
 
+function configure_public_subnet() {
+    # PackStack does not handle the subway allocation pool range, gateway and DNS
+    local PUBLIC_SUBNET=public_subnet
+
+    exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
+    --allocation-pool start=$FIP_RANGE_START,end=$FIP_RANGE_END
+
+    if [ $FIP_RANGE_GATEWAY ]; then
+        exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
+        --gateway $FIP_RANGE_GATEWAY
+    fi
+
+    if [ "${FIP_RANGE_NAME_SERVERS[@]}" ]; then
+        exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
+        --dns_nameservers list=true ${FIP_RANGE_NAME_SERVERS[@]}
+    fi
+}
+
+function disable_nova_compute() {
+    # Disable nova-compute on this host
+    exec_with_retry 5 0 /usr/bin/nova service-disable $(hostname) nova-compute
+    /bin/systemctl disable openstack-nova-compute.service
+}
+
 rdo_cleanup
 
 if ! /usr/bin/rpm -q epel-release > /dev/null
@@ -227,26 +251,8 @@ exec_with_retry 20 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
 source /root/keystonerc_admin
 
-# PackStack does not handle the subway allocation pool range, gateway and DNS
-PUBLIC_SUBNET=public_subnet
-
-exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
---allocation-pool start=$FIP_RANGE_START,end=$FIP_RANGE_END
-
-if [ $FIP_RANGE_GATEWAY ]; then
-    exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
-    --gateway $FIP_RANGE_GATEWAY
-fi
-
-if [ "${FIP_RANGE_NAME_SERVERS[@]}" ]; then
-    exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
-    --dns_nameservers list=true ${FIP_RANGE_NAME_SERVERS[@]}
-fi
-
-# Disable nova-compute on this host
-exec_with_retry 5 0 /usr/bin/nova service-disable $(hostname) nova-compute
-/bin/systemctl disable openstack-nova-compute.service
-
+configure_public_subnet
+disable_nova_compute
 fix_cinder_chap_length
 
 # TODO: limit access to: -i $MGMT_IFACE
