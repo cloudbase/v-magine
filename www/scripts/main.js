@@ -264,23 +264,6 @@ function initUi() {
     $("#openstackvmmem").val(
         $("#openstackvmmemslider").slider("value").toString() + "MB");
 
-    $('#fiprangestart, #fiprangeend').ipAddress().on("blur", function(val) {
-        var ui = $(this)[0];
-        if(!ui.value.isIpv4()) {
-            ui.setCustomValidity('Not a valid IP address');
-        } else {
-            // AngularJs is not performing two way databinding
-            var $scope = angular.element(this).scope();
-            $scope.$apply(function() {
-                var model = ui.attributes['ng-model'].value;
-                $scope[model] = ui.value;
-            });
-            ui.setCustomValidity('');
-        }
-    }).each(function() {
-        $(this)[0].setCustomValidity('Please provide an IP address');
-    });
-
     $("#maintabs").tabs({ beforeActivate: function(event, ui){
         var oldTabIndex = ui.oldTab.index();
         if(oldTabIndex == 0) {
