@@ -43,6 +43,11 @@
                             <label for="openstackvmmem">OpenStack controller RAM</label>
                             <input type="text" id="openstackvmmem" readonly ng-model="openStackVMMem + 'MB'">
                             <div id="openstackvmmemslider"></div>
+
+                            <label for="fiprange">Floating IP subnet</label>
+                            <input type="text" name="fiprange" id="fiprange"
+                                   ng-model="fipRange" required
+                                   class="text ui-widget-content ui-corner-all">
                             <label for="fiprangestart">Floating IP range start</label>
                             <input type="text" name="fiprangestart" id="fiprangestart"
                                    ng-model="fipRangeStart" required
@@ -51,6 +56,15 @@
                             <input type="text" name="fiprangeend" id="fiprangeend"
                                    ng-model="fipRangeEnd" required
                                    class="text ui-widget-content ui-corner-all">
+                            <label for="fiprangegateway">Floating IP subnet gateway</label>
+                            <input type="text" name="fiprangegateway" id="fiprangegateway"
+                                   ng-model="fipRangeGateway"
+                                   class="text ui-widget-content ui-corner-all">
+                            <label for="fiprangenameservers">Floating IP subnet DNS</label>
+                            <input type="text" name="fiprangenameservers" id="fiprangenameservers"
+                                   ng-model="fipRangeNameServers" ng-list
+                                   class="text ui-widget-content ui-corner-all">
+
                             <label for="adminpassword">Admin password</label>
                             <input type="password" name="adminpassword" id="adminpassword"
                                    ng-model="adminPassword" required
@@ -58,21 +72,25 @@
                             <label for="adminpasswordrepeat">Repeat admin password</label>
                             <input type="password" name="adminpasswordrepeat" id="adminpasswordrepeat"
                                    required class="text ui-widget-content ui-corner-all">
+
                             <label for="openstackbasedir">OpenStack base path</label>
                             <input type="text" name="openstackbasedir" id="openstackbasedir"
                                    required class="text ui-widget-content ui-corner-all"
                                    ng-model="openstackBaseDir">
-                            <label for="hypervhostusername">Windows admin username</label>
+
+                            <label for="hypervhostusername">Hyper-V admin</label>
                             <input type="text" name="hypervhostusername" id="hypervhostusername"
                                    required class="text ui-widget-content ui-corner-all"
                                    ng-model="hypervHostUsername">
-                            <label for="hypervhostpassword">Windows admin password</label>
+                            <label for="hypervhostpassword">Hyper-V admin password</label>
                             <input type="password" name="hypervhostpassword" id="hypervhostpassword"
                                    required class="text ui-widget-content ui-corner-all"
                                    ng-model="hypervHostPassword">
+
                             <label for="centosmirror">CentOS mirror</label>
                             <input type="url" name="centosmirror" id="centosmirror" ng-model="centosMirror" required
                                    class="text ui-widget-content ui-corner-all">
+
                             <button id="reviewbutton">Next - Review your configuration</button>
                         </fieldset>
                     </form>
@@ -84,10 +102,18 @@
                             <input type="text" id="extvswitchreview" readonly ng-model="extVSwitch">
                             <label for="openstackvmmemreview">OpenStack controller RAM</label>
                             <input type="text" id="openstackvmmemreview" readonly ng-model="openStackVMMem + 'MB'">
+
+                            <label for="fiprangereview">Floating IP subnet</label>
+                            <input type="text" id="fiprangereview" readonly ng-model="fipRange" >
                             <label for="fiprangestartreview">Floating IP range start</label>
                             <input type="text" id="fiprangestartreview" readonly ng-model="fipRangeStart">
                             <label for="fiprangeendreview">Floating IP range end</label>
                             <input type="text" id="fiprangeendreview" readonly ng-model="fipRangeEnd">
+                            <label for="fiprangegatewayreview">Floating IP subnet gateway</label>
+                            <input type="text" id="fiprangegatewayreview" readonly ng-model="fipRangeGateway">
+                            <label for="fiprangenameserversreview">Floating IP subnet DNS</label>
+                            <input type="text" id="fiprangenameserversreview" readonly ng-model="fipRangeNameServers" ng-list>
+
                             <label for="openstackbasedirreview">OpenStack base path</label>
                             <input type="text" id="openstackbasedirreview" readonly ng-model="openstackBaseDir">
                             <label for="hypervhostusernamereview">Windows admin username</label>

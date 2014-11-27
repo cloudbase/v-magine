@@ -158,14 +158,22 @@ class RDOInstaller(object):
         utils.retry_action(
             lambda: self._check_hyperv_compute_services(host_name), interval=5)
 
-    def install_rdo(self, rdo_admin_password):
+    def install_rdo(self, rdo_admin_password, fip_range, fip_range_start,
+                    fip_range_end, fip_gateway, fip_name_servers):
         install_script = 'install-rdo.sh'
         self._copy_resource_file(install_script)
 
         LOG.info("Installing RDO")
         self._exec_shell_cmd_check_exit_status(
             '/bin/chmod u+x /root/%(install_script)s && '
-            '/root/%(install_script)s \"%(rdo_admin_password)s\"' %
+            '/root/%(install_script)s \"%(rdo_admin_password)s\" '
+            '\"%(fip_range)s\" \"%(fip_range_start)s\" \"%(fip_range_end)s\" '
+            '\"%(fip_gateway)s\" %(fip_name_servers)s' %
             {'install_script': install_script,
-             'rdo_admin_password': rdo_admin_password})
+             'rdo_admin_password': rdo_admin_password,
+             'fip_range': fip_range,
+             'fip_range_start': fip_range_start,
+             'fip_range_end': fip_range_end,
+             'fip_gateway': fip_gateway is not None or '',
+             'fip_name_servers': " ".join(fip_name_servers)})
         LOG.info("RDO installed")

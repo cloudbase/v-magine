@@ -114,6 +114,12 @@ then
 fi
 
 ADMIN_PASSWORD=$1
+FIP_RANGE=$2
+FIP_RANGE_START=$3
+FIP_RANGE_END=$4
+FIP_RANGE_GATEWAY=$5
+FIP_RANGE_NAME_SERVERS=${@:6}
+
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
 DATA_IFACE=data
@@ -184,6 +190,8 @@ openstack-config --set $ANSWER_FILE general CONFIG_SSH_KEY "$SSH_KEY_PATH.pub"
 openstack-config --set $ANSWER_FILE general CONFIG_KEYSTONE_ADMIN_PW "$ADMIN_PASSWORD"
 openstack-config --set $ANSWER_FILE general CONFIG_KEYSTONE_DEMO_PW "$ADMIN_PASSWORD"
 
+openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_DEMO_FLOATRANGE $FIP_RANGE
+
 exec_with_retry 5 0 /usr/bin/yum install -y openvswitch
 /bin/systemctl start openvswitch.service
 
@@ -205,8 +213,25 @@ fi
 
 exec_with_retry 20 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
-# Disable nova-compute on this host
 source /root/keystonerc_admin
+
+# PackStack does not handle the subway allocation pool range, gateway and DNS
+PUBLIC_SUBNET=public_subnet
+
+exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
+--allocation-pool start=$FIP_RANGE_START,end=$FIP_RANGE_END
+
+if [ $FIP_RANGE_GATEWAY ]; then
+    exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
+    --gateway $FIP_RANGE_GATEWAY
+fi
+
+if [ "${FIP_RANGE_NAME_SERVERS[@]}" ]; then
+    exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
+    --dns_nameservers list=true ${FIP_RANGE_NAME_SERVERS[@]}
+fi
+
+# Disable nova-compute on this host
 exec_with_retry 5 0 /usr/bin/nova service-disable $(hostname) nova-compute
 /bin/systemctl disable openstack-nova-compute.service
 

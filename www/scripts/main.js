@@ -9,8 +9,11 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.maxOpenStackVMMem = 0;
     $scope.minOpenStackVMMem = 0;
     $scope.openStackVMMem = 0;
+    $scope.fipRange = null;
     $scope.fipRangeStart = null;
     $scope.fipRangeEnd = null;
+    $scope.fipRangeGateway = null;
+    $scope.fipRangeNameServers = [];
     $scope.openstackBaseDir = null;
     $scope.hypervHostUsername = null;
     $scope.hypervHostPassword = null;
@@ -83,14 +86,21 @@ function startInstall() {
         term.reset();
 
         var $scope = angular.element("#maintabs").scope();
-        controller.install($scope.extVSwitch,
-                           $scope.openStackVMMem,
-                           $scope.openstackBaseDir,
-                           $scope.adminPassword,
-                           $scope.hypervHostUsername,
-                           $scope.hypervHostPassword,
-                           $scope.fipRangeStart,
-                           $scope.fipRangeEnd);
+
+        var dict = {};
+        dict["ext_vswitch_name"] = $scope.extVSwitch;
+        dict["openstack_vm_mem_mb"] = $scope.openStackVMMem;
+        dict["openstack_base_dir"] = $scope.openstackBaseDir;
+        dict["admin_password"] = $scope.adminPassword;
+        dict["hyperv_host_username"] = $scope.hypervHostUsername;
+        dict["hyperv_host_password"] = $scope.hypervHostPassword;
+        dict["fip_range"] = $scope.fipRange;
+        dict["fip_range_start"] = $scope.fipRangeStart;
+        dict["fip_range_end"] = $scope.fipRangeEnd;
+        dict["fip_gateway"] = $scope.fipRangeGateway;
+        dict["fip_name_servers"] = $scope.fipRangeNameServers;
+
+        controller.install(JSON.stringify(dict));
     }
     catch(ex)
     {
@@ -202,6 +212,12 @@ function setDefaultConfigValues() {
     $scope.openStackVMMem = defaultConfig.suggested_openstack_vm_mem_mb;
     $scope.openstackBaseDir = defaultConfig.default_openstack_base_dir;
     $scope.hypervHostUsername = defaultConfig.default_hyperv_host_username;
+    $scope.fipRange = defaultConfig.default_fip_range;
+    $scope.fipRangeStart = defaultConfig.default_fip_range_start;
+    $scope.fipRangeEnd = defaultConfig.default_fip_range_end;
+    $scope.fipRangeGateway = defaultConfig.default_fip_range_gateway;
+    $scope.fipRangeNameServers = defaultConfig.default_fip_range_name_servers;
+
     $scope.$apply();
 }
 

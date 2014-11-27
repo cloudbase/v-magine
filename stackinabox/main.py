@@ -93,23 +93,18 @@ class Controller(QtCore.QObject):
     def set_term_info(self, term_type, cols, rows):
         self._worker.set_term_info(str(term_type), cols, rows)
 
-    @QtCore.pyqtSlot(str, int, str, str, str, str, str, str)
-    def install(self, ext_vswitch_name, openstack_vm_mem_mb,
-                openstack_base_dir, admin_password,
-                hyperv_host_username, hyperv_host_password,
-                fip_range_start, fip_range_end):
-        LOG.debug("Install called")
-        QtCore.QMetaObject.invokeMethod(
-            self._worker, 'deploy_openstack',
-            QtCore.Qt.QueuedConnection,
-            QtCore.Q_ARG(str, ext_vswitch_name),
-            QtCore.Q_ARG(int, openstack_vm_mem_mb),
-            QtCore.Q_ARG(str, openstack_base_dir),
-            QtCore.Q_ARG(str, admin_password),
-            QtCore.Q_ARG(str, hyperv_host_username),
-            QtCore.Q_ARG(str, hyperv_host_password),
-            QtCore.Q_ARG(str, fip_range_start),
-            QtCore.Q_ARG(str, fip_range_end))
+    @QtCore.pyqtSlot(str)
+    def install(self, json_args):
+        LOG.debug("Install called: %s" % json_args)
+
+        try:
+            QtCore.QMetaObject.invokeMethod(
+                self._worker, 'deploy_openstack',
+                QtCore.Qt.QueuedConnection,
+                QtCore.Q_ARG(str, json_args))
+        except Exception as ex:
+            LOG.exception(ex)
+            raise
 
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
@@ -184,7 +179,7 @@ class MainWindow(QtGui.QMainWindow):
     def onLoad(self):
         page = self._web.page()
         page.settings().setAttribute(
-            QtWebKit.QWebSettings.DeveloperExtrasEnabled, False)
+            QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
 
         frame = page.mainFrame()
         page.setViewportSize(frame.contentsSize())

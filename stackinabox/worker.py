@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import json
 import logging
 import os
 import platform
@@ -25,6 +26,7 @@ from PyQt4 import QtCore
 from stackinabox import actions
 from stackinabox import rdo
 from stackinabox import security
+from stackinabox import utils
 
 LOG = logging
 
@@ -200,7 +202,9 @@ class Worker(QtCore.QObject):
 
         return (vm_int_mgmt_ip, vm_admin_user)
 
-    def _install_rdo(self, rdo_installer, host, username, password):
+    def _install_rdo(self, rdo_installer, host, username, password, fip_range,
+                     fip_range_start, fip_range_end, fip_gateway,
+                     fip_name_servers):
         max_connect_attempts = 10
         reboot_sleep_s = 30
 
@@ -219,7 +223,9 @@ class Worker(QtCore.QObject):
             rdo_installer.update_os()
 
             self._update_status('Installing RDO...')
-            rdo_installer.install_rdo(password)
+            rdo_installer.install_rdo(password, fip_range, fip_range_start,
+                                      fip_range_end, fip_gateway,
+                                      fip_name_servers)
 
             self._update_status('Checking if rebooting the RDO VM is '
                                      'required...')
@@ -303,11 +309,22 @@ class Worker(QtCore.QObject):
         else:
             raise NotImplementedError()
 
+    def _get_fip_range_data(self):
+        fip_subnet = utils.get_random_ipv4_subnet()
+        fip_range = "%s/24" % fip_subnet
+        fip_range_start = fip_subnet[:-1] + "1"
+        fip_range_end = fip_subnet[:-1] + "254"
+        return (fip_range, fip_range_start, fip_range_end)
+
     def get_config(self):
         try:
             dep_actions = actions.DeploymentActions()
             (min_mem_mb, suggested_mem_mb,
              max_mem_mb) = dep_actions.get_openstack_vm_memory_mb()
+
+            (fip_range,
+             fip_range_start,
+             fip_range_end) = self._get_fip_range_data()
 
             return {
                 "default_openstack_base_dir":
@@ -316,7 +333,12 @@ class Worker(QtCore.QObject):
                 "min_openstack_vm_mem_mb": min_mem_mb,
                 "suggested_openstack_vm_mem_mb": suggested_mem_mb,
                 "max_openstack_vm_mem_mb": max_mem_mb,
-                "default_hyperv_host_username": "Administrator"
+                "default_hyperv_host_username": "Administrator",
+                "default_fip_range": fip_range,
+                "default_fip_range_start": fip_range_start,
+                "default_fip_range_end": fip_range_end,
+                "default_fip_range_gateway": None,
+                "default_fip_range_name_servers": []
             }
         except Exception as ex:
             LOG.exception(ex)
@@ -367,24 +389,26 @@ class Worker(QtCore.QObject):
             self.add_ext_vswitch_completed.emit(False);
             raise
 
-    @QtCore.pyqtSlot(str, int, str, str, str, str, str, str)
-    def deploy_openstack(self, ext_vswitch_name, openstack_vm_mem_mb,
-                         openstack_base_dir, admin_password,
-                         hyperv_host_username, hyperv_host_password,
-                         fip_range_start, fip_range_end):
+    @QtCore.pyqtSlot(str)
+    def deploy_openstack(self, json_args):
         dep_actions = actions.DeploymentActions()
 
         try:
             self._is_install_done = False
 
-            # Convert Qt strings to Python strings
-            ext_vswitch_name = str(ext_vswitch_name)
-            openstack_base_dir = str(openstack_base_dir)
-            admin_password = str(admin_password)
-            hyperv_host_username = str(hyperv_host_username)
-            hyperv_host_password = str(hyperv_host_password)
-            fip_range_start = str(fip_range_start)
-            fip_range_end = str(fip_range_end)
+            args = json.loads(str(json_args))
+
+            ext_vswitch_name = args.get("ext_vswitch_name")
+            openstack_vm_mem_mb = args.get("openstack_vm_mem_mb")
+            openstack_base_dir = args.get("openstack_base_dir")
+            admin_password = args.get("admin_password")
+            hyperv_host_username = args.get("hyperv_host_username")
+            hyperv_host_password = args.get("hyperv_host_password")
+            fip_range = args.get("fip_range")
+            fip_range_start = args.get("fip_range_start")
+            fip_range_end = args.get("fip_range_end")
+            fip_gateway = args.get("fip_gateway")
+            fip_name_servers = args.get("fip_name_servers")
 
             self._curr_step = 0
             self._max_steps = 27
@@ -399,7 +423,9 @@ class Worker(QtCore.QObject):
                 dep_actions, ext_vswitch_name, openstack_vm_mem_mb,
                 openstack_base_dir, admin_password)
             nova_config = self._install_rdo(rdo_installer, mgmt_ip, ssh_user,
-                                            ssh_password)
+                                            ssh_password, fip_range,
+                                            fip_range_start, fip_range_end,
+                                            fip_gateway, fip_name_servers)
             self._install_local_hyperv_compute(dep_actions, nova_config,
                                                openstack_base_dir,
                                                hyperv_host_username,
