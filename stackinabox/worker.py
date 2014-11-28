@@ -33,6 +33,8 @@ LOG = logging
 DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/7/os/x86_64"
 OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
 
+OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
+
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
         super(_VMConsoleThread, self).__init__()
@@ -312,9 +314,11 @@ class Worker(QtCore.QObject):
     def _get_fip_range_data(self):
         fip_subnet = utils.get_random_ipv4_subnet()
         fip_range = "%s/24" % fip_subnet
+        fip_gateway = fip_subnet[:-1] + "1"
         fip_range_start = fip_subnet[:-1] + "2"
         fip_range_end = fip_subnet[:-1] + "254"
-        return (fip_range, fip_range_start, fip_range_end)
+        fip_gateway = fip_subnet[:-1] + "1"
+        return (fip_range, fip_range_start, fip_range_end, fip_gateway)
 
     def get_config(self):
         try:
@@ -324,7 +328,8 @@ class Worker(QtCore.QObject):
 
             (fip_range,
              fip_range_start,
-             fip_range_end) = self._get_fip_range_data()
+             fip_range_end,
+             fip_gateway) = self._get_fip_range_data()
 
             return {
                 "default_openstack_base_dir":
@@ -337,8 +342,8 @@ class Worker(QtCore.QObject):
                 "default_fip_range": fip_range,
                 "default_fip_range_start": fip_range_start,
                 "default_fip_range_end": fip_range_end,
-                "default_fip_range_gateway": None,
-                "default_fip_range_name_servers": []
+                "default_fip_range_gateway": fip_gateway,
+                "default_fip_range_name_servers": OPENDNS_NAME_SERVERS
             }
         except Exception as ex:
             LOG.exception(ex)

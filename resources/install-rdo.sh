@@ -125,6 +125,9 @@ function configure_public_subnet() {
     exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
     --allocation-pool start=$FIP_RANGE_START,end=$FIP_RANGE_END
 
+    exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
+        --no-gateway
+
     if [ $FIP_RANGE_GATEWAY ]; then
         exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
         --gateway $FIP_RANGE_GATEWAY
@@ -142,6 +145,11 @@ function disable_nova_compute() {
     /bin/systemctl disable openstack-nova-compute.service
 }
 
+function disable_network_manager() {
+    /bin/systemctl stop NetworkManager.service
+    /bin/systemctl disable NetworkManager.service
+}
+
 rdo_cleanup
 
 if ! /usr/bin/rpm -q epel-release > /dev/null
@@ -149,12 +157,15 @@ then
     exec_with_retry 5 0 /usr/bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
 fi
 
-ADMIN_PASSWORD=$1
-FIP_RANGE=$2
-FIP_RANGE_START=$3
-FIP_RANGE_END=$4
-FIP_RANGE_GATEWAY=$5
-FIP_RANGE_NAME_SERVERS=${@:6}
+disable_network_manager
+
+RDO_RELEASE_RPM_URL=$1
+ADMIN_PASSWORD=$2
+FIP_RANGE=$3
+FIP_RANGE_START=$4
+FIP_RANGE_END=$5
+FIP_RANGE_GATEWAY=$6
+FIP_RANGE_NAME_SERVERS=${@:7}
 
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
@@ -180,12 +191,9 @@ read HOST_IP NETMASK_BITS BCAST  <<< `get_interface_ipv4 $MGMT_IFACE`
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 
-#RDO_RELEASE_RPM="https://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-4.noarch.rpm"
-RDO_RELEASE_RPM="https://rdo.fedorapeople.org/rdo-release.rpm"
-
 if ! /usr/bin/rpm -q rdo-release > /dev/null
 then
-    exec_with_retry 5 0 /usr/bin/yum install -y $RDO_RELEASE_RPM
+    exec_with_retry 5 0 /usr/bin/yum install -y $RDO_RELEASE_RPM_URL
 fi
 
 exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack
@@ -247,13 +255,13 @@ fi
 /usr/bin/ovs-vsctl add-br $OVS_EXT_BRIDGE
 /usr/bin/ovs-vsctl add-port $OVS_EXT_BRIDGE $EXT_IFACE
 
-exec_with_retry 20 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
+exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
 source /root/keystonerc_admin
 
-configure_public_subnet
 disable_nova_compute
 fix_cinder_chap_length
+configure_public_subnet
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
