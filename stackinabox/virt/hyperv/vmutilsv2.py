@@ -54,7 +54,8 @@ class VMUtilsV2(vmutils.VMUtils):
     _ETHERNET_PORT_ALLOCATION_SETTING_DATA_CLASS = \
     'Msvm_EthernetPortAllocationSettingData'
 
-    _AUTOMATIC_STARTUP_ACTION_NONE = 2
+    _AUTO_STARTUP_NONE = 2
+    _AUTO_STARTUP_RESTART_ACTIVE = 3
 
     _vm_power_states_map = {constants.HYPERV_VM_STATE_ENABLED: 2,
                             constants.HYPERV_VM_STATE_DISABLED: 3,
@@ -98,8 +99,8 @@ class VMUtilsV2(vmutils.VMUtils):
         vs_data = self._conn.Msvm_VirtualSystemSettingData.new()
         vs_data.ElementName = vm_name
         vs_data.Notes = notes
-        # Don't start automatically on host boot
-        vs_data.AutomaticStartupAction = self._AUTOMATIC_STARTUP_ACTION_NONE
+        # Start automatically on host boot if previously active
+        vs_data.AutomaticStartupAction = self._AUTO_STARTUP_RESTART_ACTIVE
 
         vs_data.VirtualNumaEnabled = False
 

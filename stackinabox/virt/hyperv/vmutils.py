@@ -77,7 +77,8 @@ class VMUtils(object):
 
     _SHUTDOWN_COMPONENT = "Msvm_ShutdownComponent"
     _VIRTUAL_SYSTEM_CURRENT_SETTINGS = 3
-    _AUTOMATIC_STARTUP_ACTION_NONE = 0
+    _AUTO_STARTUP_NONE = 0
+    _AUTO_STARTUP_RESTART_ACTIVE = 1
 
     _vm_power_states_map = {constants.HYPERV_VM_STATE_ENABLED: 2,
                             constants.HYPERV_VM_STATE_DISABLED: 3,
@@ -267,8 +268,8 @@ class VMUtils(object):
     def _create_vm_obj(self, vs_man_svc, vm_name, notes):
         vs_gs_data = self._conn.Msvm_VirtualSystemGlobalSettingData.new()
         vs_gs_data.ElementName = vm_name
-        # Don't start automatically on host boot
-        vs_gs_data.AutomaticStartupAction = self._AUTOMATIC_STARTUP_ACTION_NONE
+        # Start automatically on host boot if previously active
+        vs_gs_data.AutomaticStartupAction = self._AUTO_STARTUP_RESTART_ACTIVE
 
         (vm_path,
          job_path,
