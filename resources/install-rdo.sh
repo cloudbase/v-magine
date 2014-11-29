@@ -155,6 +155,12 @@ function disable_network_manager() {
     /bin/systemctl disable NetworkManager.service
 }
 
+function enable_horizon_password_retrieve() {
+    local LOCAL_SETTINGS_PATH="/usr/share/openstack-dashboard/openstack_dashboard/local/local_settings.py"
+    echo "OPENSTACK_ENABLE_PASSWORD_RETRIEVE = True" >> $LOCAL_SETTINGS_PATH
+    /bin/systemctl restart httpd.service
+}
+
 rdo_cleanup
 
 if ! /usr/bin/rpm -q epel-release > /dev/null
@@ -268,6 +274,7 @@ disable_nova_compute
 fix_cinder_chap_length
 configure_public_subnet
 configure_private_subnet
+enable_horizon_password_retrieve
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
