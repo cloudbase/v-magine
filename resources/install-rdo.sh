@@ -118,8 +118,18 @@ function fix_cinder_chap_length() {
     fi
 }
 
+function configure_private_subnet() {
+    # PackStack does not handle the private subnet DNS
+    local PRIVATE_SUBNET=private_subnet
+
+    if [ "${FIP_RANGE_NAME_SERVERS[@]}" ]; then
+        exec_with_retry 5 0 /usr/bin/neutron subnet-update $PRIVATE_SUBNET \
+        --dns_nameservers list=true ${FIP_RANGE_NAME_SERVERS[@]}
+    fi
+}
+
 function configure_public_subnet() {
-    # PackStack does not handle the subway allocation pool range, gateway and DNS
+    # PackStack does not handle the subnet allocation pool range and gateway
     local PUBLIC_SUBNET=public_subnet
 
     exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
@@ -131,11 +141,6 @@ function configure_public_subnet() {
     if [ $FIP_RANGE_GATEWAY ]; then
         exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
         --gateway $FIP_RANGE_GATEWAY
-    fi
-
-    if [ "${FIP_RANGE_NAME_SERVERS[@]}" ]; then
-        exec_with_retry 5 0 /usr/bin/neutron subnet-update $PUBLIC_SUBNET \
-        --dns_nameservers list=true ${FIP_RANGE_NAME_SERVERS[@]}
     fi
 }
 
@@ -262,6 +267,7 @@ source /root/keystonerc_admin
 disable_nova_compute
 fix_cinder_chap_length
 configure_public_subnet
+configure_private_subnet
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
