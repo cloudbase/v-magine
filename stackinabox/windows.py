@@ -27,8 +27,10 @@ from stackinabox import utils
 from stackinabox.virt.hyperv import vmutils
 
 kernel32 = windll.kernel32
+advapi32 = windll.Advapi32
 
 LOG = logging
+
 
 class Win32_OSVERSIONINFOEX_W(ctypes.Structure):
     _fields_ = [
@@ -45,6 +47,39 @@ class Win32_OSVERSIONINFOEX_W(ctypes.Structure):
         ('wReserved', wintypes.BYTE)
     ]
 
+
+class Win32_STARTUPINFO_W(ctypes.Structure):
+    _fields_ = [
+        ('cb', wintypes.DWORD),
+        ('lpReserved', wintypes.LPWSTR),
+        ('lpDesktop', wintypes.LPWSTR),
+        ('lpTitle', wintypes.LPWSTR),
+        ('dwX', wintypes.DWORD),
+        ('dwY', wintypes.DWORD),
+        ('dwXSize', wintypes.DWORD),
+        ('dwYSize', wintypes.DWORD),
+        ('dwXCountChars', wintypes.DWORD),
+        ('dwYCountChars', wintypes.DWORD),
+        ('dwFillAttribute', wintypes.DWORD),
+        ('dwFlags', wintypes.DWORD),
+        ('wShowWindow', wintypes.WORD),
+        ('cbReserved2', wintypes.WORD),
+        ('lpReserved2', ctypes.POINTER(wintypes.BYTE)),
+        ('hStdInput', wintypes.HANDLE),
+        ('hStdOutput', wintypes.HANDLE),
+        ('hStdError', wintypes.HANDLE),
+    ]
+
+
+class Win32_PROCESS_INFORMATION(ctypes.Structure):
+    _fields_ = [
+        ('hProcess', wintypes.HANDLE),
+        ('hThread', wintypes.HANDLE),
+        ('dwProcessId', wintypes.DWORD),
+        ('dwThreadId', wintypes.DWORD),
+    ]
+
+
 kernel32.VerifyVersionInfoW.argtypes = [
     ctypes.POINTER(Win32_OSVERSIONINFOEX_W),
     wintypes.DWORD, wintypes.ULARGE_INTEGER]
@@ -54,6 +89,59 @@ kernel32.VerSetConditionMask.argtypes = [wintypes.ULARGE_INTEGER,
                                          wintypes.DWORD,
                                          wintypes.BYTE]
 kernel32.VerSetConditionMask.restype = wintypes.ULARGE_INTEGER
+
+kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+kernel32.CloseHandle.restype = wintypes.BOOL
+
+kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+kernel32.WaitForSingleObject.restype = wintypes.DWORD
+
+advapi32.SaferCreateLevel.argtypes = [wintypes.DWORD,
+                                      wintypes.DWORD,
+                                      wintypes.DWORD,
+                                      ctypes.POINTER(wintypes.HANDLE),
+                                      ctypes.c_void_p]
+advapi32.SaferCreateLevel.restype = wintypes.BOOL
+
+advapi32.SaferCloseLevel.argtypes = [wintypes.HANDLE]
+advapi32.SaferCloseLevel.restype = wintypes.BOOL
+
+advapi32.SaferComputeTokenFromLevel.argtypes = [wintypes.HANDLE,
+                                                wintypes.HANDLE,
+                                                ctypes.POINTER(
+                                                    wintypes.HANDLE),
+                                                wintypes.DWORD,
+                                                ctypes.c_void_p]
+advapi32.SaferComputeTokenFromLevel.restype = wintypes.BOOL
+
+advapi32.CreateProcessWithTokenW.argtypes = [wintypes.HANDLE,
+                                             wintypes.DWORD,
+                                             wintypes.LPCWSTR,
+                                             wintypes.LPWSTR,
+                                             wintypes.DWORD,
+                                             ctypes.c_void_p,
+                                             wintypes.LPCWSTR,
+                                             ctypes.POINTER(
+                                                 Win32_STARTUPINFO_W),
+                                             ctypes.POINTER(
+                                                 Win32_PROCESS_INFORMATION)]
+advapi32.CreateProcessWithTokenW.restype = wintypes.BOOL
+
+advapi32.CreateProcessAsUserW.argtypes = [wintypes.HANDLE,
+                                          wintypes.LPCWSTR,
+                                          wintypes.LPWSTR,
+                                          ctypes.c_void_p,
+                                          ctypes.c_void_p,
+                                          wintypes.BOOL,
+                                          wintypes.DWORD,
+                                          ctypes.c_void_p,
+                                          wintypes.LPCWSTR,
+                                          ctypes.POINTER(
+                                              Win32_STARTUPINFO_W),
+                                          ctypes.POINTER(
+                                              Win32_PROCESS_INFORMATION)]
+advapi32.CreateProcessAsUserW.restype = wintypes.BOOL
+
 
 VER_MAJORVERSION = 1
 VER_MINORVERSION = 2
@@ -81,6 +169,14 @@ ERROR_OLD_WIN_VERSION = 1150
 PROTOCOL_TCP = "TCP"
 PROTOCOL_UDP = "UDP"
 
+SW_SHOWNORMAL = 1
+
+SAFER_SCOPEID_USER = 2
+SAFER_LEVELID_UNTRUSTED = 0x1000
+SAFER_LEVEL_OPEN = 1
+
+INFINITE = 0xFFFFFFFF
+
 
 class WindowsUtils(object):
     _FW_IP_PROTOCOL_TCP = 6
@@ -107,7 +203,7 @@ class WindowsUtils(object):
             return hotfix_id_list[0].InstalledOn
 
     def get_installed_products(self, vendor):
-        products=[]
+        products = []
         for p in self._conn_cimv2.Win32_Product(vendor=vendor):
             products.append((p.IdentifyingNumber, p.Caption))
         return products
@@ -210,6 +306,50 @@ class WindowsUtils(object):
     def firewall_remove_rule(self, rule_name):
         fw_policy2 = client.Dispatch("HNetCfg.FwPolicy2")
         fw_policy2.Rules.Remove(rule_name)
+
+    def run_safe_process(self, filename, arguments=None, wait=False):
+        safer_level_handle = wintypes.HANDLE()
+        ret_val = advapi32.SaferCreateLevel(SAFER_SCOPEID_USER,
+                                            SAFER_LEVELID_UNTRUSTED,
+                                            SAFER_LEVEL_OPEN,
+                                            ctypes.byref(safer_level_handle),
+                                            None)
+        if not ret_val:
+            raise Exception("SaferCreateLevel failed")
+
+        token = wintypes.HANDLE()
+
+        try:
+            ret_val = advapi32.SaferComputeTokenFromLevel(
+                safer_level_handle, None, ctypes.byref(token), 0, None)
+            if not ret_val:
+                raise Exception("SaferComputeTokenFromLevel failed")
+
+            proc_info = Win32_PROCESS_INFORMATION()
+            startup_info = Win32_STARTUPINFO_W()
+            startup_info.cb = ctypes.sizeof(Win32_STARTUPINFO_W)
+            startup_info.lpDesktop = ""
+
+            ret_val = advapi32.CreateProcessAsUserW(
+                token, filename, arguments, None, None, False, 0, None, None,
+                ctypes.byref(startup_info), ctypes.byref(proc_info))
+            if not ret_val:
+                raise Exception("CreateProcessAsUserW failed")
+
+            if wait and proc_info.hProcess:
+                kernel32.WaitForSingleObject(proc_info.hProcess, INFINITE)
+
+            if proc_info.hProcess:
+                kernel32.CloseHandle(proc_info.hProcess)
+            if proc_info.hThread:
+                kernel32.CloseHandle(proc_info.hThread)
+        finally:
+            if token:
+                kernel32.CloseHandle(token)
+            advapi32.SaferCloseLevel(safer_level_handle)
+
+    def open_url(self, url):
+        win32api.ShellExecute(None, 'open', url, None, None, SW_SHOWNORMAL)
 
 
 def kill_process(pid):
