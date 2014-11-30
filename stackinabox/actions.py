@@ -18,6 +18,7 @@ import logging
 import os
 import psutil
 import socket
+import sys
 
 from oslo.utils import units
 
@@ -153,6 +154,11 @@ class DeploymentActions(object):
                 "host": socket.gethostname(),
                 "username": username}
         return username
+
+    def open_url(self, url):
+        if not self._windows_utils.open_url(url):
+            self._windows_utils.run_safe_process(
+                sys.executable, "openurl %s" % url)
 
     def install_hyperv_compute(self, msi_path, nova_config,
                                openstack_base_dir, hyperv_host_username,

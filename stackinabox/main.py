@@ -29,6 +29,7 @@ from PyQt4 import QtWebKit
 
 import stackinabox
 from stackinabox import utils
+from stackinabox import webbrowser
 from stackinabox import worker as deployment_worker
 
 LOG = logging
@@ -212,15 +213,18 @@ def _config_logging(log_dir):
     logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 
-def main():
-    base_dir = os.path.dirname(sys.executable)
-    os.chdir(base_dir)
-
-    _config_logging(base_dir)
-
+def main(url=None):
     app = QtGui.QApplication(sys.argv)
 
-    main_window = MainWindow()
+    if url:
+        main_window = webbrowser.MainWindow(url)
+    else:
+        base_dir = os.path.dirname(sys.executable)
+        os.chdir(base_dir)
+        _config_logging(base_dir)
+
+        main_window = MainWindow()
+
     main_window.show()
 
     sys.exit(app.exec_())
@@ -230,4 +234,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == 'pybootd':
         pybootd_daemons.main()
     else:
-        main()
+        if len(sys.argv) == 3 and sys.argv[1] == 'openurl':
+            main(sys.argv[2])
+        else:
+            main()
