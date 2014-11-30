@@ -15,6 +15,7 @@
 
 import ctypes
 import logging
+import pywintypes
 import win32api
 import win32con
 import wmi
@@ -172,6 +173,8 @@ PROTOCOL_UDP = "UDP"
 SW_SHOWNORMAL = 1
 
 SAFER_SCOPEID_USER = 2
+SAFER_LEVELID_NORMALUSER = 0x20000
+SAFER_LEVELID_CONSTRAINED = 0x10000
 SAFER_LEVELID_UNTRUSTED = 0x1000
 SAFER_LEVEL_OPEN = 1
 
@@ -310,7 +313,7 @@ class WindowsUtils(object):
     def run_safe_process(self, filename, arguments=None, wait=False):
         safer_level_handle = wintypes.HANDLE()
         ret_val = advapi32.SaferCreateLevel(SAFER_SCOPEID_USER,
-                                            SAFER_LEVELID_UNTRUSTED,
+                                            SAFER_LEVELID_NORMALUSER,
                                             SAFER_LEVEL_OPEN,
                                             ctypes.byref(safer_level_handle),
                                             None)
@@ -330,8 +333,11 @@ class WindowsUtils(object):
             startup_info.cb = ctypes.sizeof(Win32_STARTUPINFO_W)
             startup_info.lpDesktop = ""
 
+            cmdline = ctypes.create_unicode_buffer(
+                '"%s" ' % filename + arguments)
+
             ret_val = advapi32.CreateProcessAsUserW(
-                token, filename, arguments, None, None, False, 0, None, None,
+                token, None, cmdline, None, None, False, 0, None, None,
                 ctypes.byref(startup_info), ctypes.byref(proc_info))
             if not ret_val:
                 raise Exception("CreateProcessAsUserW failed")
@@ -349,8 +355,14 @@ class WindowsUtils(object):
             advapi32.SaferCloseLevel(safer_level_handle)
 
     def open_url(self, url):
-        win32api.ShellExecute(None, 'open', url, None, None, SW_SHOWNORMAL)
-
+        try:
+            win32api.ShellExecute(None, 'open', url, None, None, SW_SHOWNORMAL)
+            return True
+        except pywintypes.error as ex:
+            if ex.winerror == 2:
+                return False
+            else:
+                raise
 
 def kill_process(pid):
     hProc = None
