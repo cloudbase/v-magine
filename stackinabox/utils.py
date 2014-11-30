@@ -74,14 +74,20 @@ def copy_to_temp_file(src_file):
     return temp_file_path
 
 
+def _get_base_dir():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_bin_dir():
+    return os.path.join(_get_base_dir(), "bin")
+
+
 def get_resources_dir():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_dir, "resources")
+    return os.path.join(_get_base_dir(), "resources")
 
 
 def get_pxe_files_dir():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_dir, "pxe")
+    return os.path.join(_get_base_dir(), "pxe")
 
 
 def get_random_ipv4_subnet():

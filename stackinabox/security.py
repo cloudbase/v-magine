@@ -16,9 +16,9 @@ import os
 
 from stackinabox import utils
 
+
 def _get_openssl_bin():
-    openssl_dir = os.path.join(utils.get_resources_dir(), "openssl")
-    return os.path.join(openssl_dir, "openssl")
+    return os.path.join(utils.get_bin_dir(), "openssl")
 
 
 def get_random_password():

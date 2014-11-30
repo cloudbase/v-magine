@@ -11,3 +11,6 @@ if %errorlevel% neq 0 exit /b %errorlevel%
 
 xcopy /S /E /Y resources dist\stackinabox\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
+
+xcopy /S /E /Y bin dist\stackinabox\bin\
+if %errorlevel% neq 0 exit /b %errorlevel%

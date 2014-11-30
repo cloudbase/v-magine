@@ -19,7 +19,7 @@ from stackinabox import utils
 
 
 def _get_mtools_dir():
-    return os.path.join(utils.get_resources_dir(), "mtools")
+    return utils.get_bin_dir()
 
 
 def create_vfd(vfd_path, size_kb=1440, label="stackinabox"):
