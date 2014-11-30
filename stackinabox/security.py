@@ -12,13 +12,16 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import logging
 import os
 
 from stackinabox import utils
 
+LOG = logging.getLogger(__name__)
+
 
 def _get_openssl_bin():
-    return os.path.join(utils.get_bin_dir(), "openssl")
+    return os.path.join(utils.get_bin_dir(), "openssl.exe")
 
 
 def get_random_password():
@@ -31,3 +34,15 @@ def get_password_md5(password):
     openssl_bin = _get_openssl_bin()
     (out, err) = utils.execute_process([openssl_bin, "passwd", "-1", password])
     return out[:-len(os.linesep)]
+
+
+def generate_ssh_key(path, key_type="rsa", key_bits=4096):
+    ssh_keygen_bin = os.path.join(utils.get_bin_dir(), "ssh-keygen.exe")
+    (out, err) = utils.execute_process(
+        [ssh_keygen_bin, "-t", key_type, "-b", str(key_bits), "-N", "", "-C",
+         "v-magine controller", "-f", path])
+    LOG.debug("ssh-keygen output: %s" % out)
+
+
+def get_user_ssh_dir():
+    return os.path.expanduser('~\\.ssh')
