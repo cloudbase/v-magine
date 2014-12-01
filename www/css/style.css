@@ -194,9 +194,10 @@ li{
     line-height: 30px;
 }
 
-#agreement p{
+#agreement p, li{
     color: #827A8D;
     text-align: justify;
+    list-style-type: disc;
 }
 
 #agreement a{

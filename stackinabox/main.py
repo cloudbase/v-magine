@@ -51,8 +51,9 @@ class Controller(QtCore.QObject):
     on_show_eula_event = QtCore.pyqtSignal()
     on_show_deployment_details_event = QtCore.pyqtSignal()
 
-    def __init__(self, worker):
+    def __init__(self, main_window, worker):
         super(Controller, self).__init__()
+        self._main_window = main_window
         self._worker = worker
         self._worker.stdout_data_ready.connect(self._send_stdout_data)
         self._worker.stderr_data_ready.connect(self._send_stderr_data)
@@ -131,7 +132,7 @@ class Controller(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def refuse_eula(self):
-        self.close()
+        self._main_window.close()
 
     @QtCore.pyqtSlot()
     def review_config(self):
@@ -201,7 +202,7 @@ class MainWindow(QtGui.QMainWindow):
         self._web.loadFinished.connect(self.onLoad)
 
         self._init_worker()
-        self._controller = Controller(self._worker)
+        self._controller = Controller(self, self._worker)
 
         page = self._web.page()
         page.settings().setAttribute(
