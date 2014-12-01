@@ -44,6 +44,9 @@ class Controller(QtCore.QObject):
     on_get_ext_vswitches_completed_event = QtCore.pyqtSignal(str)
     on_get_available_host_nics_completed_event = QtCore.pyqtSignal(str)
     on_add_ext_vswitch_completed_event = QtCore.pyqtSignal(bool)
+    on_install_started_event = QtCore.pyqtSignal()
+    on_review_config_event = QtCore.pyqtSignal()
+    on_show_config_event = QtCore.pyqtSignal()
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -86,6 +89,17 @@ class Controller(QtCore.QObject):
     def _add_ext_vswitch_completed(self, success):
         self.on_add_ext_vswitch_completed_event.emit(success)
 
+    def start(self):
+        self.show_config()
+
+    @QtCore.pyqtSlot()
+    def show_config(self):
+        self.on_show_config_event.emit()
+
+    @QtCore.pyqtSlot()
+    def review_config(self):
+        self.on_review_config_event.emit()
+
     @QtCore.pyqtSlot(result=str)
     def get_config(self):
         return json.dumps(self._worker.get_config())
@@ -97,6 +111,8 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot(str)
     def install(self, json_args):
         LOG.debug("Install called: %s" % json_args)
+
+        self.on_install_started_event.emit()
 
         try:
             QtCore.QMetaObject.invokeMethod(
@@ -150,6 +166,18 @@ class MainWindow(QtGui.QMainWindow):
         self._init_worker()
         self._controller = Controller(self._worker)
 
+        page = self._web.page()
+        page.settings().setAttribute(
+            QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
+
+        frame = page.mainFrame()
+        page.setViewportSize(frame.contentsSize())
+
+        if os.name == 'nt':
+            appid = 'StackInABox.1.0.0'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                appid)
+
         self._web.load(QtCore.QUrl("www/index.html"))
 
         self._web.show()
@@ -179,20 +207,12 @@ class MainWindow(QtGui.QMainWindow):
 
     def onLoad(self):
         page = self._web.page()
-        page.settings().setAttribute(
-            QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
-
         frame = page.mainFrame()
-        page.setViewportSize(frame.contentsSize())
-
-        if os.name == 'nt':
-            appid = 'StackInABox.1.0.0'
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
-                appid)
 
         frame.addToJavaScriptWindowObject("controller", self._controller)
         frame.evaluateJavaScript("ApplicationIsReady()")
 
+        self._controller.start()
 
 class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
     def __init__(self, parent=None):
