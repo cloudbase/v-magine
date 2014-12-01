@@ -46,7 +46,7 @@ class Controller(QtCore.QObject):
     on_add_ext_vswitch_completed_event = QtCore.pyqtSignal(bool)
     on_install_started_event = QtCore.pyqtSignal()
     on_review_config_event = QtCore.pyqtSignal()
-    on_show_config_event = QtCore.pyqtSignal()
+    on_show_controller_config_event = QtCore.pyqtSignal()
     on_show_eula_event = QtCore.pyqtSignal()
     on_show_deployment_details_event = QtCore.pyqtSignal()
 
@@ -105,8 +105,8 @@ class Controller(QtCore.QObject):
         self.on_show_deployment_details_event.emit()
 
     @QtCore.pyqtSlot()
-    def show_config(self):
-        self.on_show_config_event.emit()
+    def show_controller_config(self):
+        self.on_show_controller_config_event.emit()
 
     @QtCore.pyqtSlot()
     def show_eula(self):
@@ -174,7 +174,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self._web.setPage(QWebPageWithoutJsWarning(self._web))
 
-        self.resize(1024, 768)
+        self.resize(1020, 768)
         self.setCentralWidget(self._web)
 
         self._web.loadFinished.connect(self.onLoad)
