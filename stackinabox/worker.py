@@ -79,6 +79,8 @@ class Worker(QtCore.QObject):
 
         self._is_install_done = True
 
+        self._dep_actions = actions.DeploymentActions()
+
         def stdout_callback(data):
             self.stdout_data_ready.emit(data)
         self._stdout_callback = stdout_callback
@@ -110,7 +112,7 @@ class Worker(QtCore.QObject):
         self._curr_step += 1
         self.status_changed.emit(msg, self._curr_step, self._max_steps)
 
-    def _deploy_openstack_vm(self, dep_actions, ext_vswitch_name,
+    def _deploy_openstack_vm(self, ext_vswitch_name,
                              openstack_vm_mem_mb, openstack_base_dir,
                              admin_password):
         vm_name = "openstack-controller"
@@ -128,7 +130,7 @@ class Worker(QtCore.QObject):
 
         self._update_status('Generating SSH key...')
         (ssh_key_path,
-         ssh_pub_key_path) = dep_actions.generate_controller_ssh_key()
+         ssh_pub_key_path) = self._dep_actions.generate_controller_ssh_key()
 
         self._update_status('Generating MD5 password...')
         encrypted_password = security.get_password_md5(admin_password)
@@ -137,14 +139,14 @@ class Worker(QtCore.QObject):
             os.makedirs(vm_dir)
 
         self._update_status('Check if OpenStack controller VM exists...')
-        dep_actions.check_remove_vm(vm_name)
+        self._dep_actions.check_remove_vm(vm_name)
 
         self._update_status('Creating virtual switches...')
-        internal_network_config = dep_actions.get_internal_network_config()
-        dep_actions.create_vswitches(ext_vswitch_name,
-                                     internal_network_config)
+        internal_net_config = self._dep_actions.get_internal_network_config()
+        self._dep_actions.create_vswitches(ext_vswitch_name,
+                                           internal_net_config)
 
-        vm_network_config = dep_actions.get_openstack_vm_network_config(
+        vm_network_config = self._dep_actions.get_openstack_vm_network_config(
             vm_name, ext_vswitch_name)
         LOG.info("VNIC Network config: %s " % vm_network_config)
 
@@ -159,36 +161,33 @@ class Worker(QtCore.QObject):
         pxe_mac_address = self._get_mac_address(vm_network_config,
                                                 "%s-pxe" % vm_name)
 
-        dep_actions.create_kickstart_vfd(vfd_path, encrypted_password,
-                                         mgmt_ext_mac_address,
-                                         mgmt_int_mac_address,
-                                         data_mac_address,
-                                         ext_mac_address,
-                                         inst_repo,
-                                         ssh_pub_key_path)
+        self._dep_actions.create_kickstart_vfd(
+            vfd_path, encrypted_password, mgmt_ext_mac_address,
+            mgmt_int_mac_address, data_mac_address, ext_mac_address,
+            inst_repo, ssh_pub_key_path)
 
         self._update_status('Creating the OpenStack controller VM...')
-        dep_actions.create_openstack_vm(
+        self._dep_actions.create_openstack_vm(
             vm_name, vm_dir, openstack_vm_mem_mb, vfd_path, vm_network_config,
             console_named_pipe)
 
-        vnic_ip_info = dep_actions.get_openstack_vm_ip_info(
+        vnic_ip_info = self._dep_actions.get_openstack_vm_ip_info(
             vm_network_config, internal_network_config["subnet"])
 
         LOG.debug("VNIC PXE IP info: %s " % vnic_ip_info)
 
         self._update_status('Starting PXE daemons...')
-        dep_actions.start_pxe_service(
+        self._dep_actions.start_pxe_service(
             internal_network_config["host_ip"],
             [vnic_ip[1:] for vnic_ip in vnic_ip_info], pxe_os_id)
 
-        dep_actions.generate_mac_pxelinux_cfg(
+        self._dep_actions.generate_mac_pxelinux_cfg(
             pxe_mac_address,
             mgmt_ext_mac_address.replace('-', ':'),
             inst_repo)
 
         self._update_status('PXE booting OpenStack controller VM...')
-        dep_actions.start_openstack_vm()
+        self._dep_actions.start_openstack_vm()
 
         LOG.debug("Reading from console")
         console_thread = _VMConsoleThread(console_named_pipe,
@@ -197,7 +196,7 @@ class Worker(QtCore.QObject):
         console_thread.join()
 
         self._update_status('Rebooting OpenStack controller VM...')
-        dep_actions.reboot_openstack_vm()
+        self._dep_actions.reboot_openstack_vm()
 
         LOG.info("PXE booting done")
 
@@ -254,33 +253,32 @@ class Worker(QtCore.QObject):
         finally:
             rdo_installer.disconnect()
 
-    def _install_local_hyperv_compute(self, dep_actions, nova_config,
+    def _install_local_hyperv_compute(self, nova_config,
                                       openstack_base_dir, hyperv_host_username,
                                       hyperv_host_password):
         self._update_status('Checking if the OpenStack components for '
                                  'Hyper-V are already installed...')
-        for msi_info in dep_actions.check_installed_components():
+        for msi_info in self._dep_actions.check_installed_components():
             self._update_status('Uninstalling %s' % msi_info[1])
-            dep_actions.uninstall_product(msi_info[0])
+            self._dep_actions.uninstall_product(msi_info[0])
 
         nova_msi_path = "hyperv_nova_compute.msi"
         freerdp_webconnect_msi_path = "freerdp_webconnect.msi"
         try:
             self._update_status('Downloading Hyper-V OpenStack components...')
-            dep_actions.download_hyperv_compute_msi(nova_msi_path)
+            self._dep_actions.download_hyperv_compute_msi(nova_msi_path)
 
             self._update_status('Installing Hyper-V OpenStack components...')
-            dep_actions.install_hyperv_compute(nova_msi_path, nova_config,
-                                               openstack_base_dir,
-                                               hyperv_host_username,
-                                               hyperv_host_password)
+            self._dep_actions.install_hyperv_compute(
+                nova_msi_path, nova_config, openstack_base_dir,
+                hyperv_host_username, hyperv_host_password)
 
             self._update_status('Downloading FreeRDP-WebConnect...')
-            dep_actions.download_freerdp_webconnect_msi(
+            self._dep_actions.download_freerdp_webconnect_msi(
                 freerdp_webconnect_msi_path)
 
             self._update_status('Installing FreeRDP-WebConnect...')
-            dep_actions.install_freerdp_webconnect(
+            self._dep_actions.install_freerdp_webconnect(
                 freerdp_webconnect_msi_path, nova_config,
                 hyperv_host_username, hyperv_host_password)
         finally:
@@ -296,14 +294,14 @@ class Worker(QtCore.QObject):
         # Skip for now
         # rdo_installer.check_hyperv_compute_services(platform.node())
 
-    def _create_cirros_image(self, dep_actions, openstack_cred):
+    def _create_cirros_image(self, openstack_cred):
         image_path = "cirros.vhdx.gz"
         self._update_status('Downloading Cirros VHDX image...')
-        dep_actions.download_cirros_image(image_path)
+        self._dep_actions.download_cirros_image(image_path)
         self._update_status('Removing existing images...')
-        dep_actions.delete_existing_images(openstack_cred)
+        self._dep_actions.delete_existing_images(openstack_cred)
         self._update_status('Uploading Cirros VHDX image in Glance...')
-        dep_actions.create_cirros_image(openstack_cred, image_path)
+        self._dep_actions.create_cirros_image(openstack_cred, image_path)
         os.remove(image_path)
 
     def _get_default_openstack_base_dir(self):
@@ -324,9 +322,8 @@ class Worker(QtCore.QObject):
 
     def get_config(self):
         try:
-            dep_actions = actions.DeploymentActions()
             (min_mem_mb, suggested_mem_mb,
-             max_mem_mb) = dep_actions.get_openstack_vm_memory_mb()
+             max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb()
 
             (fip_range,
              fip_range_start,
@@ -357,8 +354,7 @@ class Worker(QtCore.QObject):
         try:
             LOG.debug("get_ext_vswitches called")
 
-            dep_actions = actions.DeploymentActions()
-            ext_vswitches = dep_actions.get_ext_vswitches()
+            ext_vswitches = self._dep_actions.get_ext_vswitches()
             LOG.debug("External vswitches: %s" % str(ext_vswitches))
             self.get_ext_vswitches_completed.emit(ext_vswitches)
         except Exception as ex:
@@ -370,8 +366,7 @@ class Worker(QtCore.QObject):
     def get_available_host_nics(self):
         try:
             LOG.debug("get_available_host_nics called")
-            dep_actions = actions.DeploymentActions()
-            host_nics = dep_actions.get_available_host_nics()
+            host_nics = self._dep_actions.get_available_host_nics()
             LOG.debug("Available host nics: %s" % str(host_nics))
             self.get_available_host_nics_completed.emit(host_nics)
         except Exception as ex:
@@ -385,8 +380,7 @@ class Worker(QtCore.QObject):
             LOG.debug("add_ext_vswitch called, vswitch_name: "
                       "%(vswitch_name)s, nic_name: %(nic_name)s" %
                       {"vswitch_name": vswitch_name, "nic_name": nic_name})
-            dep_actions = actions.DeploymentActions()
-            dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
+            self._dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
             # Refresh VSwitch list
             self.get_ext_vswitches()
             self.add_ext_vswitch_completed.emit(True);
@@ -398,8 +392,6 @@ class Worker(QtCore.QObject):
 
     @QtCore.pyqtSlot(str)
     def deploy_openstack(self, json_args):
-        dep_actions = actions.DeploymentActions()
-
         try:
             self._is_install_done = False
 
@@ -420,12 +412,12 @@ class Worker(QtCore.QObject):
             self._curr_step = 0
             self._max_steps = 27
 
-            dep_actions.check_platform_requirements()
+            self._dep_actions.check_platform_requirements()
             rdo_installer = rdo.RDOInstaller(self._stdout_callback,
                                              self._stderr_callback)
 
             (mgmt_ip, ssh_user, ssh_key_path) = self._deploy_openstack_vm(
-                dep_actions, ext_vswitch_name, openstack_vm_mem_mb,
+                ext_vswitch_name, openstack_vm_mem_mb,
                 openstack_base_dir, admin_password)
 
             # Authenticate with the SSH key
@@ -437,15 +429,15 @@ class Worker(QtCore.QObject):
                                             ssh_password, fip_range,
                                             fip_range_start, fip_range_end,
                                             fip_gateway, fip_name_servers)
-            self._install_local_hyperv_compute(dep_actions, nova_config,
+            self._install_local_hyperv_compute(nova_config,
                                                openstack_base_dir,
                                                hyperv_host_username,
                                                hyperv_host_password)
             self._validate_deployment(rdo_installer)
 
-            openstack_cred = dep_actions.get_openstack_credentials(
+            openstack_cred = self._dep_actions.get_openstack_credentials(
                 mgmt_ip, admin_password)
-            self._create_cirros_image(dep_actions, openstack_cred)
+            self._create_cirros_image(openstack_cred)
 
             self._update_status('Your OpenStack deployment is ready!')
 
@@ -456,5 +448,5 @@ class Worker(QtCore.QObject):
             self.error.emit(ex)
             self.install_done.emit(False)
         finally:
-            dep_actions.stop_pxe_service()
+            self._dep_actions.stop_pxe_service()
             self._is_install_done = True
