@@ -103,7 +103,7 @@ class Controller(QtCore.QObject):
             elif self._worker.is_openstack_deployed():
                 self.show_deployment_details()
             else:
-                self.show_config()
+                self.show_controller_config()
         except Exception as ex:
             LOG.exception(ex)
             raise
@@ -128,7 +128,7 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def accept_eula(self):
         self._worker.set_eula_accepted()
-        show_controller_config()
+        self.show_controller_config()
 
     @QtCore.pyqtSlot()
     def refuse_eula(self):
