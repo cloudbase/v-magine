@@ -31,6 +31,20 @@ function handleError(msg) {
     });
 }
 
+function showEula() {
+}
+
+function showDeploymentDetails() {
+}
+
+function showConfig() {
+    $("#maintabs").tabs({active: 0});
+}
+
+function reviewConfig() {
+    $("#maintabs").tabs({active: 1});
+}
+
 function installDone(success) {
     $('#getopenstackbutton').button("enable");
     $("#mainprogressbar").progressbar({ value: 0 });
@@ -40,6 +54,11 @@ function installDone(success) {
     } else {
         $('#status').text('Ops, something went wrong. :-(');
     }
+}
+
+function installStarted() {
+    $("#getopenstackbutton").button("disable");
+    $("#maintabs").tabs({active: 2});
 }
 
 function statusChanged(msg, step, maxSteps) {
@@ -273,13 +292,13 @@ function initUi() {
 
     $("#reviewbutton").button().click(function(){
         if(validateConfigForm()) {
-            $("#maintabs").tabs({active: 1});
+            controller.review_config();
         }
         return false;
     });
 
     $("#configbutton").button().click(function(){
-        $("#maintabs").tabs({active: 0});
+        controller.show_config()
         return false;
     });
 
@@ -287,8 +306,6 @@ function initUi() {
 
     $("#mainprogressbar").progressbar({ value: 0 });
     $("#getopenstackbutton").button().click(function(){
-        $(this).button("disable");
-        $("#maintabs").tabs({active: 2});
         startInstall();
     });
 }
@@ -323,11 +340,17 @@ function ApplicationIsReady() {
 
         initUi();
 
+        controller.on_show_eula_event.connect(showEula);
+        controller.on_show_config_event.connect(showConfig);
+        controller.on_show_deployment_details_event.connect(
+            showDeploymentDetails);
+        controller.on_review_config_event.connect(reviewConfig);
         controller.on_status_changed_event.connect(statusChanged);
         controller.on_stdout_data_event.connect(gotStdOutData);
         controller.on_stderr_data_event.connect(gotStdErrData);
         controller.on_error_event.connect(handleError);
         controller.on_install_done_event.connect(installDone);
+        controller.on_install_started_event.connect(installStarted);
         controller.on_get_ext_vswitches_completed_event.connect(
             getExtVSwitchesCompleted);
         controller.on_get_available_host_nics_completed_event.connect(
