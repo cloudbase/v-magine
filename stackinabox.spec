@@ -1,6 +1,6 @@
 # -*- mode: python -*-
 a = Analysis(['.\\stackinabox\\main.py'],
-             pathex=['C:\\Dev\\StackInABox'],
+             pathex=['.'],
              hiddenimports=[],
              hookspath=None,
              runtime_hooks=None)
@@ -25,7 +25,7 @@ coll = COLLECT(exe,
 
 # uac_admin is not supported upstream yet, use the following pull request:
 #git clone https://github.com/pyinstaller/pyinstaller.git
-#git fetch origin pull/149/head			   
-#git checkout -b pull1 FETCH_HEAD			   
+#git fetch origin pull/149/head
+#git checkout -b pull1 FETCH_HEAD
 #cd pyinstaller
 #python setup.py install
