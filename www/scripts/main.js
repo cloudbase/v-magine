@@ -31,18 +31,27 @@ function handleError(msg) {
     });
 }
 
+function showPage(pageSelector) {
+    $(".active-page").removeClass("active-page");
+    $(pageSelector).addClass("active-page");
+}
+
+function showWelcome() {
+    showPage("#intro");
+}
+
 function showEula() {
+    showPage("#page-1");
 }
 
 function showDeploymentDetails() {
 }
 
-function showConfig() {
-    $("#maintabs").tabs({active: 0});
+function showControllerConfig() {
+    showPage("#page-2");
 }
 
 function reviewConfig() {
-    $("#maintabs").tabs({active: 1});
 }
 
 function installDone(success) {
@@ -253,6 +262,22 @@ function setPasswordValidation() {
 }
 
 function initUi() {
+
+    $("#deploy").click(function(){
+        controller.show_eula();
+    });
+
+    $("#exit").click(function(){
+        controller.refuse_eula();
+    });
+
+    $("#agree").click(function(){
+        controller.accept_eula();
+    });
+
+    $("#agreement").load("eula.html");
+
+    /*
     setDefaultConfigValues();
     setupTerm();
     controller.get_ext_vswitches();
@@ -308,6 +333,7 @@ function initUi() {
     $("#getopenstackbutton").button().click(function(){
         startInstall();
     });
+*/
 }
 
 function validateConfigForm() {
@@ -340,8 +366,10 @@ function ApplicationIsReady() {
 
         initUi();
 
+        controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);
-        controller.on_show_config_event.connect(showConfig);
+        controller.on_show_controller_config_event.connect(
+            showControllerConfig);
         controller.on_show_deployment_details_event.connect(
             showDeploymentDetails);
         controller.on_review_config_event.connect(reviewConfig);

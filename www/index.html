@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/style.css">
 
     <script src="scripts/jquery-1.11.1.min.js"></script>
+    <script src="scripts/jquery-ui-1.11.2.min.js"></script>
     <script src="scripts/angular.min.js"></script>
     <script src="scripts/main.js"></script>
     <!-- ui widgets -->
@@ -21,18 +22,15 @@
 <body class="metro"  ng-controller="StackInABoxCtrl">
 <div class="windows">
 
-    <div class="content-page" id="intro active">
+    <div class="content-page" id="intro">
         <div class="v-magine">
             <img src="images/v-magine-logo-white.svg">
             <p><span style="font-weight:bold;color:#fff;">v-magine</span> installs a complete OpenStack environment on your machine</p>
-            <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="deploy" onclick="document.getElementById('page-1').id = 'page-1 active'; document.getElementById('intro active').id = 'intro' ;return false">Deploy</button>
-
+            <button type="submit" formaction="" class="inputButton large" name="deploy" id="deploy">Deploy</button>
         </div>
-
     </div>
 
     <div class="content-page" id="page-1">
-
         <div class="top">
             <h1>Welcome</h1>
             <div class="v-magine-logo">
@@ -42,12 +40,7 @@
 
         <div id="wrap">
             <h2>Licence agreement</h2>
-            <div class="content-text" id="agreement">
-                <h5>© 2014 Cloudbase Solutions SRL</h5>
-                <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at <a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>.</p>
-                <p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the specific language governing permissions and limitations under the License.</p>
-                <p>mkisofs.exe is released under the GNU General Public License, version 2. You may obtain a copy at <a href="http://www.gnu.org/licenses/gpl-2.0.html">http://www.gnu.org/licenses/gpl-2.0.html</a>.</p>
-            </div>
+            <div class="content-text" id="agreement"></div>
 
             <div class="row">
                 <div class="logo"><img src="images/cbsl-logo.svg"></div>
@@ -57,18 +50,14 @@
             </div>
 
             <div class="buttons page1" align="auto">
-                <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="exit">Exit</button>
-                <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="agree" onclick="document.getElementById('host-setup').id = 'host-setup active'; document.getElementById('page-1 active').id = 'page-1' ;return false">I Accept</button>
-
-                <!--<button type="submit" formaction="" class="inputButton large" name="nextbtn" id="agree" onclick="document.getElementById('host-setup').id = 'host-setup active'; document.getElementById('page-1 active').id = 'page-1' ;return false">I Accept<i class="icon-arrow-right-3 on-right"></i></button>
-             -->
+                <button type="submit" formaction="" class="inputButton large" name="exit" id="exit">Exit</button>
+                <button type="submit" formaction="" class="inputButton large" name="agree" id="agree">I Accept</button>
             </div>
 
         </div>
     </div>
 
     <div class="content-page" id="host-setup">
-
         <div class="top">
             <h1>Hyper-V Host Setup</h1>
             <div class="v-magine-logo">
@@ -105,7 +94,6 @@
     </div>
 
     <div class="content-page" id="page-2">
-
         <div class="top">
             <h1>OpenStack Setup</h1>
             <div class="v-magine-logo">

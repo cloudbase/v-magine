@@ -61,8 +61,8 @@ li{
     display: none;
 }
 
-#intro #active{
-    display: inline;
+.active-page{
+    display: inline !important;
 }
 
 #page-1 #active{
@@ -178,7 +178,7 @@ li{
 .content-text{
     margin-top: 5%;
     max-width: 960px;
-    max-height: 300px;
+    height: 300px;
     overflow-y: scroll;
 }
 
@@ -686,11 +686,11 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
     color: red;
 
-        background-color: red;
+    background-color: red;
 
-        width: 300px;
-        height: 300px;
-position: absolute;
+    width: 300px;
+    height: 300px;
+    position: absolute;
 }
 
 .compute-nodes {
