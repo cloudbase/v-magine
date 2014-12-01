@@ -1,141 +1,317 @@
-﻿<html ng-app="stackInABoxApp">
-    <head>
-        <link rel="stylesheet" type="text/css" href="main.css">
-        <link rel="stylesheet" type="text/css" href="jquery-ui.min.css">
-        <script src="./scripts/jquery-1.11.1.min.js"></script>
-        <script src="./scripts/jquery-ui-1.11.2.min.js"></script>
-        <script src="./scripts/jquery.input-ip-address-control-1.0.min.js"></script>
-        <script src="./scripts/angular.min.js"></script>
-        <script src="./scripts/term.js"></script>
-        <script src="./scripts/main.js"></script>
-    </head>
-    <body ng-controller="StackInABoxCtrl">
-        <div id="outer">
-            <div id="eula">
-            </div>
-            <div id="main">
-            </div>
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>vstack</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/metro-bootstrap.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" href="scripts/jquery/jquery-ui.css">
+    <script src="scripts/jquery/jquery-1.9.1.js"></script>
+    <script src="scripts/nodes.js" type="text/javascript"></script>
+    <script src="scripts/metro/metro-progressbar.js"></script>
+    <script src="scripts/metro/metro-scroll.js"></script>
+    <script src="scripts/javascript.js" type="text/javascript"></script>
+    <!-- for the slider -->
+    <link rel="stylesheet" href="css/jquery.nouislider.min.css"></script>
+    <script src="scripts/jquery.nouislider.all.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
 
-            <div id="maintabs">
-                <ul>
-                    <li><a href="#tab-config">Your environment</a></li>
-                    <li><a href="#tab-review">Review</a></li>
-                    <li><a href="#tab-install">Install OpenStack!</a></li>
-                </ul>
-                <div id="addextvswitchdialog" title="Add a new external virtual switch"
-                     ng-controller="StackInABoxCtrl">
-                    <form name="addextvswitchdialogform" id="addextvswitchdialogform" class="inputform">
-                        <fieldset>
-                            <label for="hostnics">Host network adapter</label>
-                            <select name="hostnics" id="hostnics" ng-model="hostNic" required
-                                    ng-options="hostNic.name group by hostNic.type for hostNic in hostNics | orderBy:name">
-                            </select>
+<body class="metro"  ng-controller="StackInABoxCtrl">
+<div class="windows">
 
-                        <label for="vswitchname">VSwitch name</label>
-                        <input type="text" name="vswitchname" id="vswitchname" ng-model="extVSwitch" required
-                               class="text ui-widget-content ui-corner-all">
-                        </fieldset>
-                    </form>
-                </div>
-                <div id="tab-config">
-                    <form action="#" name="tabconfigform" id="tabconfigform">
-                        <fieldset>
-                            <label for="extvswitch">External virtual switch</label>
-                            <select name="extvswitch" id="extvswitch" ng-model="extVSwitch"
-                                    ng-options="vswitch for vswitch in extVSwitches | orderBy">
-                            </select>
-                            <button id="addextvswitch">Add an external vswitch</button>
-                            <label for="openstackvmmem">OpenStack controller RAM</label>
-                            <input type="text" id="openstackvmmem" readonly ng-model="openStackVMMem + 'MB'">
-                            <div id="openstackvmmemslider"></div>
+    <div class="content-page" id="intro active">
+        <div class="v-magine">
+            <img src="images/v-magine-logo-white.svg">
+            <p><span style="font-weight:bold;color:#fff;">v-magine</span> installs a complete OpenStack environment on your machine</p>
+            <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="deploy" onclick="document.getElementById('page-1').id = 'page-1 active'; document.getElementById('intro active').id = 'intro' ;return false">Deploy</button>
 
-                            <label for="fiprange">Floating IP subnet</label>
-                            <input type="text" name="fiprange" id="fiprange"
-                                   ng-model="fipRange" required
-                                   class="text ui-widget-content ui-corner-all">
-                            <label for="fiprangestart">Floating IP range start</label>
-                            <input type="text" name="fiprangestart" id="fiprangestart"
-                                   ng-model="fipRangeStart" required
-                                   class="text ui-widget-content ui-corner-all">
-                            <label for="fiprangeend">Floating IP range end</label>
-                            <input type="text" name="fiprangeend" id="fiprangeend"
-                                   ng-model="fipRangeEnd" required
-                                   class="text ui-widget-content ui-corner-all">
-                            <label for="fiprangegateway">Floating IP subnet gateway</label>
-                            <input type="text" name="fiprangegateway" id="fiprangegateway"
-                                   ng-model="fipRangeGateway"
-                                   class="text ui-widget-content ui-corner-all">
-                            <label for="fiprangenameservers">Floating IP subnet DNS</label>
-                            <input type="text" name="fiprangenameservers" id="fiprangenameservers"
-                                   ng-model="fipRangeNameServers" ng-list
-                                   class="text ui-widget-content ui-corner-all">
+        </div>
 
-                            <label for="adminpassword">Admin password</label>
-                            <input type="password" name="adminpassword" id="adminpassword"
-                                   ng-model="adminPassword" required
-                                   class="text ui-widget-content ui-corner-all">
-                            <label for="adminpasswordrepeat">Repeat admin password</label>
-                            <input type="password" name="adminpasswordrepeat" id="adminpasswordrepeat"
-                                   required class="text ui-widget-content ui-corner-all">
+    </div>
 
-                            <label for="openstackbasedir">OpenStack base path</label>
-                            <input type="text" name="openstackbasedir" id="openstackbasedir"
-                                   required class="text ui-widget-content ui-corner-all"
-                                   ng-model="openstackBaseDir">
+    <div class="content-page" id="page-1">
 
-                            <label for="hypervhostusername">Hyper-V admin</label>
-                            <input type="text" name="hypervhostusername" id="hypervhostusername"
-                                   required class="text ui-widget-content ui-corner-all"
-                                   ng-model="hypervHostUsername">
-                            <label for="hypervhostpassword">Hyper-V admin password</label>
-                            <input type="password" name="hypervhostpassword" id="hypervhostpassword"
-                                   required class="text ui-widget-content ui-corner-all"
-                                   ng-model="hypervHostPassword">
-
-                            <label for="centosmirror">CentOS mirror</label>
-                            <input type="url" name="centosmirror" id="centosmirror" ng-model="centosMirror" required
-                                   class="text ui-widget-content ui-corner-all">
-
-                            <button id="reviewbutton">Next - Review your configuration</button>
-                        </fieldset>
-                    </form>
-                </div>
-                <div id="tab-review">
-                    <form action="#" name="tabreviewform" id="tabreviewform">
-                        <fieldset>
-                            <label for="extvswitchreview">External virtual switch</label>
-                            <input type="text" id="extvswitchreview" readonly ng-model="extVSwitch">
-                            <label for="openstackvmmemreview">OpenStack controller RAM</label>
-                            <input type="text" id="openstackvmmemreview" readonly ng-model="openStackVMMem + 'MB'">
-
-                            <label for="fiprangereview">Floating IP subnet</label>
-                            <input type="text" id="fiprangereview" readonly ng-model="fipRange" >
-                            <label for="fiprangestartreview">Floating IP range start</label>
-                            <input type="text" id="fiprangestartreview" readonly ng-model="fipRangeStart">
-                            <label for="fiprangeendreview">Floating IP range end</label>
-                            <input type="text" id="fiprangeendreview" readonly ng-model="fipRangeEnd">
-                            <label for="fiprangegatewayreview">Floating IP subnet gateway</label>
-                            <input type="text" id="fiprangegatewayreview" readonly ng-model="fipRangeGateway">
-                            <label for="fiprangenameserversreview">Floating IP subnet DNS</label>
-                            <input type="text" id="fiprangenameserversreview" readonly ng-model="fipRangeNameServers" ng-list>
-
-                            <label for="openstackbasedirreview">OpenStack base path</label>
-                            <input type="text" id="openstackbasedirreview" readonly ng-model="openstackBaseDir">
-                            <label for="hypervhostusernamereview">Windows admin username</label>
-                            <input type="text" id="hypervhostusernamereview" readonly ng-model="hypervHostUsername">
-                            <label for="centosmirrorreview">CentOS mirror</label>
-                            <input type="text" id="centosmirrorreview" readonly ng-model="centosMirror">
-                            <button id="configbutton">Back - Change your configuration</button>
-                            <button id="getopenstackbutton">Get OpenStack!</button>
-                        </fieldset>
-                    </form>
-                </div>
-                <div id="tab-install">
-                    <div id="status"></div>
-                    <div id="term"></div>
-                    <div id="mainprogressbar"></div>
-                </div>
+        <div class="top">
+            <h1>Welcome</h1>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
             </div>
         </div>
-    </body>
+
+        <div id="wrap">
+            <h2>Licence agreement</h2>
+            <div class="content-text" id="agreement">
+                <h5>© 2014 Cloudbase Solutions SRL</h5>
+                <p>Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at <a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>.</p>
+                <p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the License for the specific language governing permissions and limitations under the License.</p>
+                <p>mkisofs.exe is released under the GNU General Public License, version 2. You may obtain a copy at <a href="http://www.gnu.org/licenses/gpl-2.0.html">http://www.gnu.org/licenses/gpl-2.0.html</a>.</p>
+            </div>
+
+            <div class="row">
+                <div class="logo"><img src="images/cbsl-logo.svg"></div>
+                <div class="logo"><img src="images/openstack-logo.svg"></div>
+                <div class="logo"><img src="images/hyperv-logo.svg"></div>
+                <div class="logo"><img src="images/openvswitch-logo.svg"></div>
+            </div>
+
+            <div class="buttons page1" align="auto">
+                <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="exit">Exit</button>
+                <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="agree" onclick="document.getElementById('host-setup').id = 'host-setup active'; document.getElementById('page-1 active').id = 'page-1' ;return false">I Accept</button>
+
+                <!--<button type="submit" formaction="" class="inputButton large" name="nextbtn" id="agree" onclick="document.getElementById('host-setup').id = 'host-setup active'; document.getElementById('page-1 active').id = 'page-1' ;return false">I Accept<i class="icon-arrow-right-3 on-right"></i></button>
+             -->
+            </div>
+
+        </div>
+    </div>
+
+    <div class="content-page" id="host-setup">
+
+        <div class="top">
+            <h1>Hyper-V Host Setup</h1>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
+            </div>
+        </div>
+
+        <div id="wrap-2">
+            <form action="#" name="setupform" id="setupform" class="field">
+                <div class="widget" id="left-widget">
+                    <label>Host Admin User</label>
+                    <input class="field" type="text" value="" placeholder="DOMAIN\Username"/>
+                    <label>Host Admin Password</label>
+                    <input class="field" type="text" value="" placeholder="Password"/>
+                </div>
+                <div class="widget" id="right-widget">
+                    <label>Install Location</label>
+                    <input class="field" type="text" placeholder="C:\v-magine" id="install-location" ng-model="install-Location" required/>
+                    <label>External virtual switch</label>
+                    <select>
+                        <option value="1">external</option>
+                        <option value="2" disabled="disabled"></option>
+                        <option value="3" disabled="disabled"></option>
+                    </select>
+                    <h6 id="createSwitch" onclick="document.getElementById('host-setup active').style.opacity= '0.4'; document.getElementById('page-4-createSwitch').id = 'page-4-createSwitch active'; document.getElementById('page-4-createSwitch active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4-createSwitch active').style.width= '380px'; showOne(1); document.getElementById('page-4-createSwitch active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
+                </div>
+
+                <div class="buttons" align="auto">
+                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="back"  onclick="document.getElementById('page-1').id = 'page-1 active'; document.getElementById('host-setup active').id = 'host-setup' ;return false">Back</button>
+                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="next" onclick="document.getElementById('page-2').id = 'page-2 active'; document.getElementById('host-setup active').id = 'host-setup' ;return false">Next<i class="icon-arrow-right-3 on-right"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="content-page" id="page-2">
+
+        <div class="top">
+            <h1>OpenStack Setup</h1>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
+            </div>
+        </div>
+
+        <div id="wrap-2">
+            <form action="#" name="setupform" id="setupform" class="field">
+                <div class="widget" id="controller">
+                    <h2><i class="fa fa-desktop on-left"></i>Controller</h2>
+
+                    <label>Distribution</label>
+                    <select id="select">
+                        <option value="1">CentOS 7.0 + RDO</option>
+                        <option value="2" >Ubuntu 14.04</option>
+                        <option value="3">OpenSUSE</option>
+                    </select>
+
+                    <label>Image Location</label>
+                    <input class="field" type="text" value="" placeholder="http://centos.org/CentOS-7.0..."/>
+
+
+                    <label>Controller and OpenStack Services Password</label>
+                    <input class="field" type="text" value="" placeholder="Password"/>
+
+                    <div class="allocated-memory">
+                        <label>Allocated Memory:
+                            <span class="example-val" id="slider-step-value"></span> MB</label>
+                        <div class="view">
+                            <div id="slider-step"></div>
+                            <script>
+                                        $('#slider-step').noUiSlider({
+                                            start: [ 2048 ],
+                                            step: 512,
+                                            range: {
+                                                'min': [  512 ],
+                                                'max': [ 8144 ]
+                                            },
+                                            format: wNumb({
+                                                decimals: 0,
+                                            })
+                                        });
+                                        </script>
+                            <script>
+                                            $('#slider-step').Link('lower').to($('#slider-step-value'));
+                                        </script>
+                        </div>
+
+                        <div class="memory-suggestion">
+                            Minimum recommended memory: 2048 MB
+                        </div>
+                    </div>
+                </div>
+                <div class="widget" id="networking">
+                    <h2><i class="fa fa-wifi on-left"></i>Networking</h2>
+
+                    <label>Floating IP Subnet</label>
+                    <input class="field" type="text" placeholder="10.7.1.0/16" id="subnet" ng-model="Subnet" required/>
+                    <label>Floating IP range start</label>
+                    <input class="field" type="text" name="fiprangestart" placeholder="10.7.1.100" id="fiprangestart" ng-model="fipRangeStart" required>
+                    <label>Floating IP range end</label>
+                    <input class="field" type="text" name="fiprangeend" placeholder="10.7.1.200" id="fiprangeend" ng-model="fipRangeEnd" required>
+                    <label>Floating IP Subnet DNS Servers</label>
+                    <input class="field" type="text" placeholder="8.8.8.8, 8.8.4.4" id="netmask" ng-model="Netmask" required/>
+                </div>
+
+                <div class="buttons" align="auto">
+                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="back"  onclick="document.getElementById('host-setup').id = 'host-setup active'; document.getElementById('page-2 active').id = 'page-2' ;return false">Back</button>
+                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="next" onclick="document.getElementById('page-3').id = 'page-3 active'; document.getElementById('page-2 active').id = 'page-2' ;return false">Next<i class="icon-arrow-right-3 on-right"></i></button>
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+
+    <div class="content-page" id="page-3">
+
+        <div class="top">
+            <h1>Compute nodes</h1>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
+            </div>
+        </div>
+
+        <div>
+            <h2 onclick="document.getElementById('page-3 active').style.opacity= '0.4'; document.getElementById('page-4').id = 'page-4 active'; document.getElementById('page-4 active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4 active').style.width= '380px'; showOne(1); document.getElementById('page-4 active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;"><i class="fa fa-plus on-left" style="color: #0099CC"></i>Add node</h2>
+            <div class="registered-nodes">
+                <h6>Registered compute nodes</h6>
+                <div class="compute-nodes">
+                    <div class="compute-nodes-header">
+                        <ul>
+                            <li>Hostname</li>
+                            <li>Hypervisor Type</li>
+                            <li>Operating System</li>
+                        </ul>
+                    </div>
+                    <div class="compute-nodes-list">
+                        <ul>
+                            <li>localhost</li>
+                            <li>Hyper-V</li>
+                            <li>Windows Server 2012 R2</li>
+                            <i class="fa fa-pencil on-right"></i>
+                            <i class="fa fa-trash-o on-right"></i>
+                        </ul>
+                        <ul>
+                            <li>localhost</li>
+                            <li>Hyper-V</li>
+                            <li>Windows Server 2012 R2</li>
+                            <i class="fa fa-pencil on-right"></i>
+                            <i class="fa fa-trash-o on-right"></i>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons" align="auto">
+                <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="back-2" onclick="document.getElementById('page-2').id = 'page-2 active'; document.getElementById('page-3 active').id = 'page-3' ;return false">Back</button>
+                <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="next-2" onclick="document.getElementById('install-page').id = 'install-page active'; document.getElementById('page-3 active').id = 'page-3' ;return false">Next<i class="icon-arrow-right-3 on-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-page" id="page-4">
+        <div id="wrap-4">
+            <h2 onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0;"><i class="fa fa-arrow-circle-left on-left" style="color: #0099CC"></i>Add a compute node</h2>
+            <div class="hypervisor">
+                <h6>Hypervisor Type</h6>
+
+                <li><button id="current" onclick="showOne(1)">Hyper-V</button></li>
+                <li><button disabled onclick="showOne(2)">KVM</button></li>
+                <li><button disabled onclick="showOne(3)">XEN</button></li>
+                <li><button disabled onclick="showOne(4)">ESXI</button></li>
+
+            </div>
+
+            <div class="hyperv" id="1">
+                <form action="#" name="configform" class="small-field" id="configform">
+                    <div class="widget compute-leftside">
+                        <label>Hostname/ IP address</label>
+                        <input class="small-field" type="text" value="" id="hostname" ng-model="Hostname" placeholder="node1.example.com"/>
+                        <label>Username</label>
+                        <input class="small-field" type="text" value="" id="username" ng-model="Username" placeholder="EXAMPLE\Administrator"/>
+                        <label>Password</label>
+                        <input class="small-field" type="password" placeholder="Password" name="adminpassword" id="adminPassword" ng-model="adminPassword" required>
+                        <label>External virtual switch</label>
+                        <select>
+                            <option value="1">external</option>
+                            <option value="2" disabled="disabled"></option>
+                            <option value="3" disabled="disabled"></option>
+                        </select>
+                        <h6 id="createSwitch" onclick="document.getElementById('page-3 active').style.opacity= '0.4'; document.getElementById('page-4-createSwitch').id = 'page-4-createSwitch active'; document.getElementById('page-4-createSwitch active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4-createSwitch active').style.width= '380px'; showOne(1); document.getElementById('page-4-createSwitch active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
+                    </div>
+
+                    <div class="icon-buttons" align="auto">
+                        <button type="submit" formaction="" id="submit-configform" class="inputButton-icon large" name="nextbtn"  onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0px 30px 0px 0px;"><h2><i class="fa fa-check-circle on-left" style="color:#0099CC"></i>Ok</h2></button>
+                        <button type="submit" formaction="" class="inputButton-icon large" name="nextbtn"  onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0px 30px 0px 0px;"><h2><i class="fa fa-times-circle on-left" style="color:#0099CC"></i>Cancel</h2></button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="content-page" id="page-4-createSwitch">
+        <h2 style="color:#fff;"><i class="fa fa-sitemap on-left"></i>Create Virtual Switch</h2>
+        <form action="#" name="configform" class="small-field">
+            <div class="widget compute-createSwitch">
+                <label>Network Interface</label>
+                <select>
+                    <option value="1">external</option>
+                    <option value="2" disabled="disabled"></option>
+                    <option value="3" disabled="disabled"></option>
+                </select>
+                <label>External Virtual Switch Name</label>
+                <input class="small-field" type="text" value="" placeholder="external"/>
+            </div>
+
+            <div class="icon-buttons" align="auto">
+                <button type="submit" id="create-switch-button"  onclick="document.getElementById('page-4-createSwitch active').id = 'page-4-createSwitch';document.getElementById('host-setup active').style.opacity= '1'; return false" formaction="" class="inputButton-icon large" name="nextbtn" style="padding:0px 20px 0px 0px;"><h2><i class="fa fa-check-circle on-left" style="color:#0099CC"></i>Create</h2></button>
+                <button type="submit" formaction="" class="inputButton-icon large" name="nextbtn" onclick="document.getElementById('page-4-createSwitch active').id = 'page-4-createSwitch';document.getElementById('host-setup active').style.opacity= '1'; return false" style="padding:0px 20px 0px 0px;"><h2><i class="fa fa-times-circle on-left" style="color:#0099CC"></i>Cancel</h2></button>
+            </div>
+        </form>
+    </div>
+
+    <div class="content-page" id="install-page">
+
+        <div class="top">
+            <h1>OpenStack Setup</h1>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
+            </div>
+        </div>
+
+
+        <h2><i class="fa fa-desktop on-left"></i>OpenStack Controller Log</h2>
+        <div class="log" style="height:453px;padding:20px;"></div>
+        <div class="buttons" align="auto">
+            <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="cancel-install"  onclick="document.getElementById('intro').id = 'intro active'; document.getElementById('install-page active').id = 'install-page' ;return false">Cancel<i class="icon-arrow-right-3 on-right"></i></button>
+        </div>
+
+
+    </div>
+
+</div>
+</body>
 </html>
+
