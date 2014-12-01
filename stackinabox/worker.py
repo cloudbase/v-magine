@@ -444,7 +444,7 @@ class Worker(QtCore.QObject):
             self._validate_deployment(rdo_installer)
 
             openstack_cred = dep_actions.get_openstack_credentials(
-                mgmt_ip, ssh_password)
+                mgmt_ip, admin_password)
             self._create_cirros_image(dep_actions, openstack_cred)
 
             self._update_status('Your OpenStack deployment is ready!')
