@@ -47,6 +47,8 @@ class Controller(QtCore.QObject):
     on_install_started_event = QtCore.pyqtSignal()
     on_review_config_event = QtCore.pyqtSignal()
     on_show_config_event = QtCore.pyqtSignal()
+    on_show_eula_event = QtCore.pyqtSignal()
+    on_show_deployment_details_event = QtCore.pyqtSignal()
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -77,6 +79,7 @@ class Controller(QtCore.QObject):
 
     def _install_done(self, success):
         self.on_install_done_event.emit(success)
+        self.show_deployment_details()
 
     def _get_ext_vswitches_completed(self, ext_vswitches):
         self.on_get_ext_vswitches_completed_event.emit(
@@ -90,11 +93,24 @@ class Controller(QtCore.QObject):
         self.on_add_ext_vswitch_completed_event.emit(success)
 
     def start(self):
-        self.show_config()
+        if not self._worker.is_eula_accepted():
+            self.show_eula()
+        elif self._worker.is_openstack_deployed():
+            self.show_deployment_details()
+        else:
+            self.show_config()
+
+    @QtCore.pyqtSlot()
+    def show_deployment_details(self):
+        self.on_show_deployment_details_event.emit()
 
     @QtCore.pyqtSlot()
     def show_config(self):
         self.on_show_config_event.emit()
+
+    @QtCore.pyqtSlot()
+    def show_eula(self):
+        self.on_show_eula_event.emit()
 
     @QtCore.pyqtSlot()
     def review_config(self):

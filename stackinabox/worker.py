@@ -89,6 +89,12 @@ class Worker(QtCore.QObject):
             self.stderr_data_ready.emit(data)
         self._stderr_callback = stderr_callback
 
+    def is_eula_accepted(self):
+        return self._dep_actions.is_eula_accepted()
+
+    def is_openstack_deployed(self):
+        return self._dep_actions.is_openstack_deployed()
+
     def set_term_info(self, term_type, cols, rows):
         self._term_type = term_type
         self._term_cols = cols
@@ -172,13 +178,13 @@ class Worker(QtCore.QObject):
             console_named_pipe)
 
         vnic_ip_info = self._dep_actions.get_openstack_vm_ip_info(
-            vm_network_config, internal_network_config["subnet"])
+            vm_network_config, internal_net_config["subnet"])
 
         LOG.debug("VNIC PXE IP info: %s " % vnic_ip_info)
 
         self._update_status('Starting PXE daemons...')
         self._dep_actions.start_pxe_service(
-            internal_network_config["host_ip"],
+            internal_net_config["host_ip"],
             [vnic_ip[1:] for vnic_ip in vnic_ip_info], pxe_os_id)
 
         self._dep_actions.generate_mac_pxelinux_cfg(
@@ -394,6 +400,7 @@ class Worker(QtCore.QObject):
     def deploy_openstack(self, json_args):
         try:
             self._is_install_done = False
+            self._dep_actions.set_openstack_deployment_status(False)
 
             args = json.loads(str(json_args))
 
@@ -441,6 +448,7 @@ class Worker(QtCore.QObject):
 
             self._update_status('Your OpenStack deployment is ready!')
 
+            self._dep_actions.set_openstack_deployment_status(True)
             self.install_done.emit(True)
         except Exception as ex:
             LOG.exception(ex)

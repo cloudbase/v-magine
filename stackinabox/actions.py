@@ -22,6 +22,7 @@ import sys
 
 from oslo.utils import units
 
+from stackinabox import config
 from stackinabox import glance
 from stackinabox import kickstart
 from stackinabox import pybootdmgr
@@ -74,6 +75,7 @@ class DeploymentActions(object):
         self._pybootd_manager = pybootdmgr.PyBootdManager()
         self._virt_driver = virt_factory.get_virt_driver()
         self._windows_utils = windows.WindowsUtils()
+        self._config = config.AppConfig()
         self._vm_name = None
 
     def check_installed_components(self):
@@ -85,6 +87,15 @@ class DeploymentActions(object):
                     caption.startswith(FREERDP_WEBCONNECT_CAPTION_PREFIX)):
                 installed_products.append((product_id, caption))
         return installed_products
+
+    def is_openstack_deployed(self):
+        bool(self._config.get_config_value("deployment_status"))
+
+    def set_openstack_deployment_status(self, deployed):
+        self._config.set_config_value("deployment_status", deployed)
+
+    def is_eula_accepted(self):
+        bool(self._config.get_config_value("eula"))
 
     def _get_controller_ssh_key_path(self):
         ssh_dir = security.get_user_ssh_dir()

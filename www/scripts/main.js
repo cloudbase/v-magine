@@ -31,6 +31,12 @@ function handleError(msg) {
     });
 }
 
+function showEula() {
+}
+
+function showDeploymentDetails() {
+}
+
 function showConfig() {
     $("#maintabs").tabs({active: 0});
 }
@@ -334,7 +340,10 @@ function ApplicationIsReady() {
 
         initUi();
 
+        controller.on_show_eula_event.connect(showEula);
         controller.on_show_config_event.connect(showConfig);
+        controller.on_show_deployment_details_event.connect(
+            showDeploymentDetails);
         controller.on_review_config_event.connect(reviewConfig);
         controller.on_status_changed_event.connect(statusChanged);
         controller.on_stdout_data_event.connect(gotStdOutData);
