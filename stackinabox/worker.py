@@ -92,6 +92,15 @@ class Worker(QtCore.QObject):
     def is_eula_accepted(self):
         return self._dep_actions.is_eula_accepted()
 
+    def set_eula_accepted(self):
+        self._dep_actions.set_eula_accepted()
+
+    def show_welcome(self):
+        return self._dep_actions.show_welcome()
+
+    def set_show_welcome(self, show):
+        return self._dep_actions.set_show_welcome(show)
+
     def is_openstack_deployed(self):
         return self._dep_actions.is_openstack_deployed()
 

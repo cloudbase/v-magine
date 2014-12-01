@@ -47,6 +47,7 @@ class Controller(QtCore.QObject):
     on_install_started_event = QtCore.pyqtSignal()
     on_review_config_event = QtCore.pyqtSignal()
     on_show_controller_config_event = QtCore.pyqtSignal()
+    on_show_welcome_event = QtCore.pyqtSignal()
     on_show_eula_event = QtCore.pyqtSignal()
     on_show_deployment_details_event = QtCore.pyqtSignal()
 
@@ -93,12 +94,18 @@ class Controller(QtCore.QObject):
         self.on_add_ext_vswitch_completed_event.emit(success)
 
     def start(self):
-        if not self._worker.is_eula_accepted():
-            self.show_eula()
-        elif self._worker.is_openstack_deployed():
-            self.show_deployment_details()
-        else:
-            self.show_config()
+        try:
+            if self._worker.show_welcome():
+                self.show_welcome()
+            elif not self._worker.is_eula_accepted():
+                self.show_eula()
+            elif self._worker.is_openstack_deployed():
+                self.show_deployment_details()
+            else:
+                self.show_config()
+        except Exception as ex:
+            LOG.exception(ex)
+            raise
 
     @QtCore.pyqtSlot()
     def show_deployment_details(self):
@@ -109,8 +116,22 @@ class Controller(QtCore.QObject):
         self.on_show_controller_config_event.emit()
 
     @QtCore.pyqtSlot()
+    def show_welcome(self):
+        self.on_show_welcome_event.emit()
+
+    @QtCore.pyqtSlot()
     def show_eula(self):
+        self._worker.set_show_welcome(False)
         self.on_show_eula_event.emit()
+
+    @QtCore.pyqtSlot()
+    def accept_eula(self):
+        self._worker.set_eula_accepted()
+        show_controller_config()
+
+    @QtCore.pyqtSlot()
+    def refuse_eula(self):
+        self.close()
 
     @QtCore.pyqtSlot()
     def review_config(self):

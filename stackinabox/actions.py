@@ -89,13 +89,22 @@ class DeploymentActions(object):
         return installed_products
 
     def is_openstack_deployed(self):
-        bool(self._config.get_config_value("deployment_status"))
+        return bool(self._config.get_config_value("deployment_status"))
 
     def set_openstack_deployment_status(self, deployed):
         self._config.set_config_value("deployment_status", deployed)
 
     def is_eula_accepted(self):
-        bool(self._config.get_config_value("eula"))
+        return bool(self._config.get_config_value("eula"))
+
+    def set_eula_accepted(self):
+        self._config.set_config_value("eula", True)
+
+    def show_welcome(self):
+        return bool(self._config.get_config_value("show_welcome", default=True))
+
+    def set_show_welcome(self, show):
+        self._config.set_config_value("show_welcome", show)
 
     def _get_controller_ssh_key_path(self):
         ssh_dir = security.get_user_ssh_dir()
