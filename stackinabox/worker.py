@@ -126,8 +126,9 @@ class Worker(QtCore.QObject):
 
         vfd_path = os.path.join(vm_dir, "floppy.vfd")
 
-        #self._update_status('Generating random password...')
-        #password = security.get_random_password()
+        self._update_status('Generating SSH key...')
+        (ssh_key_path,
+         ssh_pub_key_path) = dep_actions.generate_controller_ssh_key()
 
         self._update_status('Generating MD5 password...')
         encrypted_password = security.get_password_md5(admin_password)
@@ -163,7 +164,8 @@ class Worker(QtCore.QObject):
                                          mgmt_int_mac_address,
                                          data_mac_address,
                                          ext_mac_address,
-                                         inst_repo)
+                                         inst_repo,
+                                         ssh_pub_key_path)
 
         self._update_status('Creating the OpenStack controller VM...')
         dep_actions.create_openstack_vm(
@@ -202,11 +204,11 @@ class Worker(QtCore.QObject):
         vm_int_mgmt_ip = [vnic_ip[2] for vnic_ip in vnic_ip_info
                           if vnic_ip[0] == "%s-mgmt-int" % vm_name][0]
 
-        return (vm_int_mgmt_ip, vm_admin_user)
+        return (vm_int_mgmt_ip, vm_admin_user, ssh_key_path)
 
-    def _install_rdo(self, rdo_installer, host, username, password, fip_range,
-                     fip_range_start, fip_range_end, fip_gateway,
-                     fip_name_servers):
+    def _install_rdo(self, rdo_installer, host, ssh_key_path, username,
+                     password, fip_range, fip_range_start, fip_range_end,
+                     fip_gateway, fip_name_servers):
         max_connect_attempts = 10
         reboot_sleep_s = 30
 
@@ -217,7 +219,7 @@ class Worker(QtCore.QObject):
 
             self._update_status(
                 'Enstablishing SSH connection with RDO VM...')
-            rdo_installer.connect(host, username, password,
+            rdo_installer.connect(host, ssh_key_path, username, password,
                                   self._term_type, self._term_cols,
                                   self._term_rows, max_connect_attempts)
 
@@ -239,7 +241,7 @@ class Worker(QtCore.QObject):
 
                 self._update_status(
                     'Enstablishing SSH connection with RDO VM...')
-                rdo_installer.connect(host, username, password,
+                rdo_installer.connect(host, ssh_key_path, username, password,
                                       self._term_type, self._term_cols,
                                       self._term_rows, max_connect_attempts)
 
@@ -418,16 +420,20 @@ class Worker(QtCore.QObject):
             self._curr_step = 0
             self._max_steps = 27
 
-            ssh_password = admin_password
-
             dep_actions.check_platform_requirements()
             rdo_installer = rdo.RDOInstaller(self._stdout_callback,
                                              self._stderr_callback)
 
-            (mgmt_ip, ssh_user) = self._deploy_openstack_vm(
+            (mgmt_ip, ssh_user, ssh_key_path) = self._deploy_openstack_vm(
                 dep_actions, ext_vswitch_name, openstack_vm_mem_mb,
                 openstack_base_dir, admin_password)
-            nova_config = self._install_rdo(rdo_installer, mgmt_ip, ssh_user,
+
+            # Authenticate with the SSH key
+            ssh_password = None
+            #ssh_password = admin_password
+
+            nova_config = self._install_rdo(rdo_installer, mgmt_ip,
+                                            ssh_key_path, ssh_user,
                                             ssh_password, fip_range,
                                             fip_range_start, fip_range_end,
                                             fip_gateway, fip_name_servers)

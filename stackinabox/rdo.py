@@ -49,8 +49,8 @@ class RDOInstaller(object):
     def _exec_cmd(self, cmd):
         return utils.retry_action(lambda: self._exec_cmd_single(cmd))
 
-    def _connect_single(self, host, username, password, term_type, term_cols,
-                        term_rows):
+    def _connect_single(self, host, ssh_key_path, username, password,
+                        term_type, term_cols, term_rows):
         self.disconnect()
         LOG.debug("connecting")
 
@@ -60,15 +60,17 @@ class RDOInstaller(object):
 
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self._ssh.connect(host, username=username, password=password)
+        self._ssh.connect(host, username=username, password=password,
+                          key_filename=ssh_key_path)
         LOG.debug("connected")
 
-    def connect(self, host, username, password, term_type, term_cols,
-                term_rows, max_attempts=1, sleep_interval=30):
+    def connect(self, host, ssh_key_path, username, password, term_type,
+                term_cols, term_rows, max_attempts=1, sleep_interval=30):
         LOG.debug("Connection info: %s" % str((host, username, password)))
         utils.retry_action(
             lambda: self._connect_single(
-                host, username, password, term_type, term_cols, term_rows),
+                host, ssh_key_path, username, password, term_type, term_cols,
+                term_rows),
             max_attempts=max_attempts, interval=sleep_interval)
 
     def disconnect(self):

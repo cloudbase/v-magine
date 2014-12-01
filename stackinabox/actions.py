@@ -25,6 +25,7 @@ from oslo.utils import units
 from stackinabox import glance
 from stackinabox import kickstart
 from stackinabox import pybootdmgr
+from stackinabox import security
 from stackinabox import utils
 from stackinabox import windows
 from stackinabox.virt import base as base_virt_driver
@@ -65,6 +66,7 @@ FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
 OPENSTACK_INSTANCES_DIR = "Instances"
 OPENSTACK_LOG_DIR = "Log"
 
+CONTROLLER_SSH_KEY_NAME = "v-magine_controller_rsa"
 
 class DeploymentActions(object):
 
@@ -83,6 +85,14 @@ class DeploymentActions(object):
                     caption.startswith(FREERDP_WEBCONNECT_CAPTION_PREFIX)):
                 installed_products.append((product_id, caption))
         return installed_products
+
+    def _get_controller_ssh_key_path(self):
+        ssh_dir = security.get_user_ssh_dir()
+        return os.path.join(ssh_dir, CONTROLLER_SSH_KEY_NAME)
+
+    def generate_controller_ssh_key(self):
+        key_path = self._get_controller_ssh_key_path()
+        return security.generate_ssh_key(key_path)
 
     def uninstall_product(self, product_id):
         self._windows_utils.uninstall_product(product_id, "nova_uninstall.log")
@@ -361,9 +371,13 @@ class DeploymentActions(object):
 
     def create_kickstart_vfd(self, vfd_path, encrypted_password,
                              mgmt_ext_mac_address, mgmt_int_mac_address,
-                             data_mac_address, ext_mac_address, inst_repo):
+                             data_mac_address, ext_mac_address, inst_repo,
+                             ssh_pub_key_path):
         def _format_udev_mac(mac):
             return mac.lower().replace('-', ':')
+
+        with open(ssh_pub_key_path, 'rb') as f:
+            ssh_pub_key = f.read()
 
         kickstart.generate_kickstart_vfd(
             vfd_path,
@@ -372,7 +386,8 @@ class DeploymentActions(object):
              "mgmt_int_mac_address": _format_udev_mac(mgmt_int_mac_address),
              "data_mac_address": _format_udev_mac(data_mac_address),
              "ext_mac_address": _format_udev_mac(ext_mac_address),
-             "inst_repo": inst_repo})
+             "inst_repo": inst_repo,
+             "ssh_pub_key": ssh_pub_key})
 
     def create_vswitches(self, external_vswitch_name, internal_network_config):
         virt_driver = virt_factory.get_virt_driver()

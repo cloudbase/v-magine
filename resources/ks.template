@@ -58,5 +58,13 @@ config_network_adapter mgmt-int <%mgmt_int_mac_address%> "yes"
 config_network_adapter data <%data_mac_address%> "no"
 config_network_adapter ext <%ext_mac_address%> "no"
 
+SSH_DIR=/root/.ssh
+if [ ! -d $SSH_DIR ]; then
+    mkdir $SSH_DIR
+    chmod 700 $SSH_DIR
+fi
+
+echo "<%ssh_pub_key%>" >> $SSH_DIR/authorized_keys
+
 /sbin/grubby --update-kernel=ALL --args="console=tty0 console=ttyS0,115200n8 consoleblank=0"
 %end
