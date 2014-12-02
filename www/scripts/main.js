@@ -274,7 +274,12 @@ function initControllerMemSlider() {
             $("#openstackvmmem").text(value + "MB");
             // AngularJs is not performing two way databinding
             $scope.openStackVMMem = value;
-            $('.ui-widget-content').css('background','green');
+
+            var color = '#37A8DF';
+            if (value < $scope.suggestedOpenStackVMMem) {
+                color = '#BC1D2C';
+            }
+            $('.ui-slider-range-min').css('background-color', color);
         }
     });
 
