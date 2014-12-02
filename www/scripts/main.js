@@ -21,15 +21,13 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
 }]);
 
 function handleError(msg) {
-    $('<div />').html(msg).dialog({
-        modal: true,
-        title: "Error",
-        buttons: {
-            Ok: function() {
-                $(this).dialog("close");
-            }
-        }
-    });
+    showMessage('Error', msg);
+}
+
+function showMessage(caption, msg) {
+    $("#showError").addClass("active-page");
+    $("#errorcaption").text(caption);
+    $("#errormessage").text(msg);
 }
 
 function showPage(pageSelector) {
@@ -306,6 +304,11 @@ function initUi() {
         return false;
     });
 
+    $("#errormessageok").click(function(){
+        $("#showError").removeClass("active-page");
+        return false;
+    });
+
     $("#controllerconfignext").click(function(){
         if(validateControllerConfigForm()) {
             //controller.review_config();
@@ -388,18 +391,6 @@ function validateControllerConfigForm() {
         $scope.$apply();
     }
     return true;
-}
-
-function showMessage(title, msg) {
-    $('<div />').html(msg).dialog({
-        modal: true,
-        title: title,
-        buttons: {
-            Ok: function() {
-                $(this).dialog("close");
-            }
-        }
-    });
 }
 
 function ApplicationIsReady() {

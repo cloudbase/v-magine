@@ -23,7 +23,7 @@ li{
      float: left;
  }
 
-.content-page h2{
+.content-page h2, .content-page h4{
     color:#fff;
 }
 
@@ -892,4 +892,22 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 input:required:invalid, input:focus:invalid {
     background-color: #BC1D2C;
     color: #FFFFFF;
+}
+
+#showError {
+    display: none;
+    margin-top: -768px;
+    background-color: rgba(255, 255, 255, 0.4);
+    position: relative;
+}
+
+#errorMessage {
+    display: inline;
+    height: 250px;
+    text-align: center;
+    line-height: 6em;
+    z-index: 1;
+    width: 1020px;
+    margin-left: -60px;
+    margin-top: 180px;
 }
