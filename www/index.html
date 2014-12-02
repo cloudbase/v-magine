@@ -65,28 +65,25 @@
         </div>
 
         <div id="wrap-2">
-            <form action="#" name="setupform" id="setupform" class="field">
+            <form action="#" name="hostconfigform" id="hostconfigform" class="field">
                 <div class="widget" id="left-widget">
                     <label>Host Admin User</label>
-                    <input class="field" type="text" value="" placeholder="DOMAIN\Username"/>
+                    <input class="field" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required/>
                     <label>Host Admin Password</label>
-                    <input class="field" type="text" value="" placeholder="Password"/>
+                    <input class="field" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required/>
                 </div>
                 <div class="widget" id="right-widget">
                     <label>Install Location</label>
-                    <input class="field" type="text" placeholder="C:\v-magine" id="install-location" ng-model="install-Location" required/>
+                    <input class="field" type="text" id="openstackbasedir" ng-model="openstackBaseDir" required/>
                     <label>External virtual switch</label>
-                    <select>
-                        <option value="1">external</option>
-                        <option value="2" disabled="disabled"></option>
-                        <option value="3" disabled="disabled"></option>
+                    <select id="extvswitch" ng-model="extVSwitch" ng-options="vswitch for vswitch in extVSwitches | orderBy" required>
                     </select>
                     <h6 id="createSwitch" onclick="document.getElementById('host-setup active').style.opacity= '0.4'; document.getElementById('page-4-createSwitch').id = 'page-4-createSwitch active'; document.getElementById('page-4-createSwitch active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4-createSwitch active').style.width= '380px'; showOne(1); document.getElementById('page-4-createSwitch active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
                 </div>
 
                 <div class="buttons" align="auto">
-                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="back"  onclick="document.getElementById('page-1').id = 'page-1 active'; document.getElementById('host-setup active').id = 'host-setup' ;return false">Back</button>
-                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="next" onclick="document.getElementById('page-2').id = 'page-2 active'; document.getElementById('host-setup active').id = 'host-setup' ;return false">Next<i class="icon-arrow-right-3 on-right"></i></button>
+                    <button type="submit" formaction="" class="inputButton large back" name="hostconfigback" id="hostconfigback">Back</button>
+                    <button type="submit" formaction="" class="inputButton large next" name="hostconfignext" id="hostconfignext">Next<i class="icon-arrow-right-3 on-right"></i></button>
                 </div>
             </form>
         </div>
@@ -207,7 +204,7 @@
             <h4><span id="errormessage">Please configure your OpenStack installation.</span></h4>
 
             <div class="icon-buttons" align="auto">
-                <button type="submit" formaction="" id="errormessageok" class="inputButton-icon large" style="padding:0px 30px 0px 0px;color:#0099CC"><h2><i class="fa fa-check-circle on-left"></i>Ok</h2></button>               
+                <button type="submit" formaction="" id="errormessageok" class="inputButton-icon large" style="padding:0px 30px 0px 0px;color:#0099CC"><h2><i class="fa fa-check-circle on-left"></i>Ok</h2></button>
             </div>
         </div>
     </div>

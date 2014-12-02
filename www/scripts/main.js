@@ -50,6 +50,10 @@ function showControllerConfig() {
     showPage("#page-2");
 }
 
+function showHostConfig() {
+    showPage("#host-setup");
+}
+
 function reviewConfig() {
 }
 
@@ -76,7 +80,7 @@ function statusChanged(msg, step, maxSteps) {
 }
 
 function getExtVSwitchesCompleted(extVSwitchesJson) {
-    var $scope = angular.element("#maintabs").scope();
+    var $scope = angular.element("#maindiv").scope();
 
     $scope.extVSwitches = JSON.parse(extVSwitchesJson);
     if(!$scope.extVSwitch && $scope.extVSwitches.length > 0) {
@@ -84,7 +88,7 @@ function getExtVSwitchesCompleted(extVSwitchesJson) {
     }
     $scope.$apply();
 
-    $("#extvswitch").selectmenu("refresh", true);
+    //$("#extvswitch").selectmenu("refresh", true);
 }
 
 function getAvailableHostNicsCompleted(hostNicsJson) {
@@ -316,7 +320,19 @@ function initUi() {
 
     $("#controllerconfignext").click(function(){
         if(validateControllerConfigForm()) {
-            //controller.review_config();
+            controller.show_host_config();
+        }
+        return false;
+    });
+
+    $("#hostconfigback").click(function(){
+        controller.show_controller_config();
+        return false;
+    });
+
+    $("#hostconfignext").click(function(){
+        if(validateHostConfigForm()) {
+            controller.review_config();
         }
         return false;
     });
@@ -340,23 +356,6 @@ function initUi() {
         controller.get_available_host_nics();
         return false;
     });
-
-    var $scope = angular.element("#maintabs").scope();
-    $("#openstackvmmemslider").slider({
-        range: "min",
-        value: $scope.openStackVMMem,
-        min: $scope.minOpenStackVMMem,
-        max: $scope.maxOpenStackVMMem,
-        slide: function(event, ui) {
-            var value = ui.value.toString();
-            $("#openstackvmmem").val(value + "MB");
-            // AngularJs is not performing two way databinding
-            $scope.openStackVMMem = value
-        }
-    });
-
-    $("#openstackvmmem").val(
-        $("#openstackvmmemslider").slider("value").toString() + "MB");
 
     $("#maintabs").tabs({ beforeActivate: function(event, ui){
         var oldTabIndex = ui.oldTab.index();
@@ -398,6 +397,18 @@ function validateControllerConfigForm() {
     return true;
 }
 
+function validateHostConfigForm() {
+    if(!$("#hostconfigform")[0].checkValidity()) {
+        showMessage("OpenStack configuration",
+                    "Please provide all the required configuration values");
+        return false;
+    } else {
+        var $scope = angular.element("#hostconfigform").scope();
+        $scope.$apply();
+    }
+    return true;
+}
+
 function ApplicationIsReady() {
     try {
         console.log("ApplicationIsReady!");
@@ -410,6 +421,7 @@ function ApplicationIsReady() {
         controller.on_show_eula_event.connect(showEula);
         controller.on_show_controller_config_event.connect(
             showControllerConfig);
+        controller.on_show_host_config_event.connect(showHostConfig);
         controller.on_show_deployment_details_event.connect(
             showDeploymentDetails);
         controller.on_review_config_event.connect(reviewConfig);
