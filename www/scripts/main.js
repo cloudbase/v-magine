@@ -41,7 +41,7 @@ function showWelcome() {
 }
 
 function showEula() {
-    showPage("#page-1");
+    //showPage("#page-1");
 }
 
 function showDeploymentDetails() {
@@ -233,7 +233,7 @@ function setDefaultConfigValues() {
 
     var defaultConfig = JSON.parse(configJson);
 
-    var $scope = angular.element("#maintabs").scope();
+    var $scope = angular.element("#maindiv").scope();
     $scope.centosMirror = defaultConfig.default_centos_mirror;
     $scope.maxOpenStackVMMem = defaultConfig.max_openstack_vm_mem_mb;
     $scope.minOpenStackVMMem = defaultConfig.min_openstack_vm_mem_mb;
@@ -275,7 +275,34 @@ function initUi() {
         controller.accept_eula();
     });
 
+    $("#controllerconfigeula").click(function(){
+        controller.show_eula();
+    });
+
+    $("#controllerconfignext").click(function(){
+        if(validateControllerConfigForm()) {
+            //controller.review_config();
+        }
+        return false;
+    });
+
     $("#agreement").load("eula.html");
+
+    setPasswordValidation();
+
+    $('#slider-step').noUiSlider({
+        start: [ 2048 ],
+        step: 512,
+        range: {
+            'min': [  512 ],
+            'max': [ 8144 ]
+        },
+        format: wNumb({
+            decimals: 0,
+        })
+    });
+
+    $('#slider-step').Link('lower').to($('#slider-step-value'));
 
     /*
     setDefaultConfigValues();
@@ -336,13 +363,13 @@ function initUi() {
 */
 }
 
-function validateConfigForm() {
-    if(!$("#tabconfigform")[0].checkValidity()) {
+function validateControllerConfigForm() {
+    if(!$("#controllerconfigform")[0].checkValidity()) {
         showMessage("OpenStack configuration",
                     "Please provide all the required configuration values");
         return false;
     } else {
-        var $scope = angular.element("#maintabs").scope();
+        var $scope = angular.element("#controllerconfigform").scope();
         $scope.$apply();
     }
     return true;
@@ -365,6 +392,8 @@ function ApplicationIsReady() {
         console.log("ApplicationIsReady!");
 
         initUi();
+
+        setDefaultConfigValues();
 
         controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);

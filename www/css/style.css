@@ -312,30 +312,30 @@ li{
 /*----------------------------------CSS index-2.html------------------------------------------*/
 
 
-#back{
+.back{
     float: left;
-    margin-left:29%;
+    margin-left:29% !important;
     height:45px;
     color: #BD1E2D;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
-#back:hover {
+.back:hover {
     background-color:#fff;
     color: #201134;
     border: 1px solid #201134;
     border-radius: 5px;
 }
 
-#back:focus {
+.back:focus {
     background-color:#201134;
     color: #fff;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
-#back:active{
+.back:active{
     width: 20%;
     background-color:#201134 !important;
     color: #BD1E2D;
@@ -343,22 +343,22 @@ li{
     border-radius: 5px;
 }
 
-#next{
+.next{
     float: right;
-    margin-right: 29%;
+    margin-right: 29% !important;
     height:45px;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
-#next:hover {
+.next:hover {
     background-color:#fff;
     color: #201134;
     border: 1px solid #201134;
     border-radius: 5px;
 }
 
-#next:focus{
+.next:focus{
     width: 20%;
     background-color:#201134;
     color: #fff;
@@ -366,7 +366,7 @@ li{
     border-radius: 5px;
 }
 
-#next:active{
+.next:active{
     width: 20%;
     background-color:#201134 !important;
     color: #fff;
@@ -404,7 +404,7 @@ li{
     border-radius: 5px;
 }
 
-#back-2{
+.back-2{
     float: left;
     margin-left:29%;
     height:45px;
@@ -413,21 +413,21 @@ li{
     border-radius: 5px;
 }
 
-#back-2:hover {
+.back-2:hover {
     background-color:#fff;
     color: #201134;
     border: 1px solid #201134;
     border-radius: 5px;
 }
 
-#back-2:focus {
+.back-2:focus {
     background-color:#201134;
     color: #fff;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
-#back-2:active{
+.back-2:active{
     width: 20%;
     background-color:#201134 !important;
     color: #BD1E2D;
@@ -435,7 +435,7 @@ li{
     border-radius: 5px;
 }
 
-#next-2{
+.next-2{
     float: right;
     margin-right: 29%;
     height:45px;
@@ -443,14 +443,14 @@ li{
     border-radius: 5px;
 }
 
-#next-2:hover {
+.next-2:hover {
     background-color:#fff;
     color: #201134;
     border: 1px solid #201134;
     border-radius: 5px;
 }
 
-#next-2:focus{
+.next-2:focus{
     width: 20%;
     background-color:#201134;
     color: #fff;
@@ -458,7 +458,7 @@ li{
     border-radius: 5px;
 }
 
-#next:active{
+.next:active{
     width: 20%;
     background-color:#201134 !important;
     color: #fff;
@@ -887,4 +887,9 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     font-size:10px;
     cursor: pointer;
     font-weight:normal;
+}
+
+input:required:invalid, input:focus:invalid {
+    background-color: #BC1D2C;
+    color: #FFFFFF;
 }

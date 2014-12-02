@@ -1,5 +1,5 @@
 <!doctype html>
-<html xmlns="http://www.w3.org/1999/html">
+<html xmlns="http://www.w3.org/1999/html" ng-app="stackInABoxApp">
 <head>
     <meta charset="UTF-8">
     <title>vstack</title>
@@ -19,8 +19,8 @@
     <script src="scripts/jquery.nouislider.all.min.js"></script>
 </head>
 
-<body class="metro"  ng-controller="StackInABoxCtrl">
-<div class="windows">
+<body class="metro" ng-controller="StackInABoxCtrl">
+<div class="windows" id="maindiv">
 
     <div class="content-page" id="intro">
         <div class="v-magine">
@@ -102,45 +102,31 @@
         </div>
 
         <div id="wrap-2">
-            <form action="#" name="setupform" id="setupform" class="field">
+            <form action="#" name="controllerconfigform" id="controllerconfigform" class="field">
                 <div class="widget" id="controller">
                     <h2><i class="fa fa-desktop on-left"></i>Controller</h2>
 
-                    <label>Distribution</label>
+                    <label>Linux distribution</label>
                     <select id="select">
-                        <option value="1">CentOS 7.0 + RDO</option>
-                        <option value="2" >Ubuntu 14.04</option>
-                        <option value="3">OpenSUSE</option>
+                        <option>CentOS 7.0 + RDO</option>
+                        <option disabled>Ubuntu 14.04 LTS</option>
+                        <option disabled>OpenSUSE</option>
                     </select>
 
-                    <label>Image Location</label>
-                    <input class="field" type="text" value="" placeholder="http://centos.org/CentOS-7.0..."/>
-
+                    <label>Repository Location</label>
+                    <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
 
                     <label>Controller and OpenStack Services Password</label>
-                    <input class="field" type="text" value="" placeholder="Password"/>
+                    <input class="field" type="password" id="adminpassword" required />
+
+                    <label>Repeat password</label>
+                    <input class="field" type="password" id="adminpasswordrepeat" />
 
                     <div class="allocated-memory">
                         <label>Allocated Memory:
                             <span class="example-val" id="slider-step-value"></span> MB</label>
                         <div class="view">
                             <div id="slider-step"></div>
-                            <script>
-                                        $('#slider-step').noUiSlider({
-                                            start: [ 2048 ],
-                                            step: 512,
-                                            range: {
-                                                'min': [  512 ],
-                                                'max': [ 8144 ]
-                                            },
-                                            format: wNumb({
-                                                decimals: 0,
-                                            })
-                                        });
-                                        </script>
-                            <script>
-                                            $('#slider-step').Link('lower').to($('#slider-step-value'));
-                                        </script>
                         </div>
 
                         <div class="memory-suggestion">
@@ -152,18 +138,20 @@
                     <h2><i class="fa fa-wifi on-left"></i>Networking</h2>
 
                     <label>Floating IP Subnet</label>
-                    <input class="field" type="text" placeholder="10.7.1.0/16" id="subnet" ng-model="Subnet" required/>
+                    <input class="field" type="text" id="subnet" ng-model="fipRange" required/>
                     <label>Floating IP range start</label>
-                    <input class="field" type="text" name="fiprangestart" placeholder="10.7.1.100" id="fiprangestart" ng-model="fipRangeStart" required>
+                    <input class="field" type="text" name="fiprangestart" id="fiprangestart" ng-model="fipRangeStart" required>
                     <label>Floating IP range end</label>
-                    <input class="field" type="text" name="fiprangeend" placeholder="10.7.1.200" id="fiprangeend" ng-model="fipRangeEnd" required>
-                    <label>Floating IP Subnet DNS Servers</label>
-                    <input class="field" type="text" placeholder="8.8.8.8, 8.8.4.4" id="netmask" ng-model="Netmask" required/>
+                    <input class="field" type="text" name="fiprangeend" id="fiprangeend" ng-model="fipRangeEnd" required>
+                    <label>Floating IP gateway</label>
+                    <input class="field" type="text" id="gateway" ng-model="fipRangeGateway"/>
+                    <label>DNS Servers</label>
+                    <input class="field" type="text" id="nameservers" ng-model="fipRangeNameServers" ng-list/>
                 </div>
 
                 <div class="buttons" align="auto">
-                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="back"  onclick="document.getElementById('host-setup').id = 'host-setup active'; document.getElementById('page-2 active').id = 'page-2' ;return false">Back</button>
-                    <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="next" onclick="document.getElementById('page-3').id = 'page-3 active'; document.getElementById('page-2 active').id = 'page-2' ;return false">Next<i class="icon-arrow-right-3 on-right"></i></button>
+                    <button type="submit" formaction="" class="inputButton large back" name="controllerconfigeula" id="controllerconfigeula">Show EULA</button>
+                    <button type="submit" formaction="" class="inputButton large next" name="controllerconfignext" id="controllerconfignext">Next<i class="icon-arrow-right-3 on-right"></i></button>
                 </div>
             </form>
 
