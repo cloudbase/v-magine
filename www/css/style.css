@@ -916,11 +916,11 @@ select:required:invalid, select:focus:invalid {
     height: 250px;
     text-align: center;
     line-height: 6em;
-    z-index: 1;
     width: 1020px;
-    margin-left: -60px;
     margin-top: 180px;
     z-index: 2001;
+    position: absolute;
+    right: 0px
 }
 
 #createswitchdialog {
