@@ -897,7 +897,8 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     font-weight:normal;
 }
 
-input:required:invalid, input:focus:invalid {
+input:required:invalid, input:focus:invalid
+select:required:invalid, select:focus:invalid {
     background-color: #BC1D2C;
     color: #FFFFFF;
 }
@@ -907,6 +908,7 @@ input:required:invalid, input:focus:invalid {
     margin-top: -768px;
     background-color: rgba(255, 255, 255, 0.4);
     position: relative;
+    z-index: 2000;
 }
 
 #errorMessage {
@@ -918,12 +920,13 @@ input:required:invalid, input:focus:invalid {
     width: 1020px;
     margin-left: -60px;
     margin-top: 180px;
+    z-index: 2001;
 }
 
 #createswitchdialog {
     display: inline;
     top: 0;
-    width: 380px;
+    width: 382px;
     z-index: 1001;
     position: absolute;
     right: 0px

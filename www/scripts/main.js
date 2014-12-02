@@ -2,6 +2,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     ['$scope', function($scope) {
     $scope.extVSwitches = [];
     $scope.extVSwitch = null;
+    $scope.newExtVSwitch = null;
     $scope.hostNics = [];
     $scope.hostNic = null;
     $scope.adminPassword = null;
@@ -33,6 +34,10 @@ function showMessage(caption, msg) {
 function showPage(pageSelector) {
     $(".active-page").removeClass("active-page");
     $(pageSelector).addClass("active-page");
+}
+
+function hidePage(pageSelector) {
+    $(pageSelector).removeClass("active-page");
 }
 
 function showWelcome() {
@@ -92,13 +97,13 @@ function getExtVSwitchesCompleted(extVSwitchesJson) {
 }
 
 function getAvailableHostNicsCompleted(hostNicsJson) {
-    var $scope = angular.element("#addextvswitchdialog").scope();
+    var $scope = angular.element("#createswitch").scope();
 
     $scope.hostNics = JSON.parse(hostNicsJson);
     $scope.hostNic = null;
     $scope.$apply();
 
-    $("#hostnics").selectmenu("refresh", true);
+    //$("#hostnics").selectmenu("refresh", true);
 }
 
 function gotStdOutData(data){
@@ -162,19 +167,25 @@ function setupTerm() {
 }
 
 function enableAddExtVSwitchDialogControls(enable) {
-    var action = enable ? "enable" : "disable";
-    $("#addextvswitchdialogok").button(action);
-    $("#addextvswitchdialogcancel").button(action);
-    $(".ui-dialog-titlebar-close").button(action);
+    if(!enable) {
+        $("#createswitchdialogok").attr('disabled','disabled');
+        $("#createswitchdialogcancel").attr('disabled','disabled');
+    } else {
+        $("#createswitchdialogok").removeAttr('disabled');
+        $("#createswitchdialogcancel").removeAttr('disabled');
+    }
 }
 
 function addExtVSwitch() {
     try {
-        var $scope = angular.element("#addextvswitchdialog").scope();
+        var $scope = angular.element("#createswitchdialog").scope();
         if($("#addextvswitchdialogform")[0].checkValidity()) {
             enableAddExtVSwitchDialogControls(false);
-            controller.add_ext_vswitch($scope.extVSwitch,
+            controller.add_ext_vswitch($scope.newExtVSwitch,
                                        $scope.hostNic.name);
+        } else {
+            showMessage("OpenStack configuration",
+                        "Please provide all the required configuration values");
         }
     }
     catch(ex)
@@ -184,10 +195,11 @@ function addExtVSwitch() {
 }
 
 function addExtVSwitchCompleted(success) {
-    $("#addextvswitchdialog").dialog("close");
     enableAddExtVSwitchDialogControls(true);
+    hidePage("#createswitch");
 }
 
+/*
 function initAddExtVSwitchDialog() {
     dialog = $("#addextvswitchdialog").dialog({
         autoOpen: false,
@@ -228,6 +240,7 @@ function initAddExtVSwitchDialog() {
         }
     });
 }
+*/
 
 function setDefaultConfigValues() {
     var configJson = controller.get_config();
@@ -314,7 +327,7 @@ function initUi() {
     });
 
     $("#errormessageok").click(function(){
-        $("#showError").removeClass("active-page");
+        hidePage("#showError");
         return false;
     });
 
@@ -337,7 +350,26 @@ function initUi() {
         return false;
     });
 
+    $("#createswitchdialogok").click(function(){
+        addExtVSwitch();
+        return false;
+    });
+
+    $("#createswitchdialogcancel").click(function(){
+        // TODO add a controller action
+        hidePage("#createswitch");
+        return false;
+    });
+
     $("#createSwitch").click(function(){
+        // TODO add a controller action
+        controller.get_available_host_nics();
+
+        var $scope = angular.element("#createswitchdialog").scope();
+        $scope.newExtVSwitch = null;
+        $scope.hostNic = null;
+        $scope.$apply();
+
         $("#createswitch").addClass("active-page");
         return false;
     });

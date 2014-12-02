@@ -237,7 +237,7 @@
                             <option value="2" disabled="disabled"></option>
                             <option value="3" disabled="disabled"></option>
                         </select>
-                        <h6 id="createSwitch" onclick="document.getElementById('page-3 active').style.opacity= '0.4'; document.getElementById('page-4-createSwitch').id = 'page-4-createSwitch active'; document.getElementById('page-4-createSwitch active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4-createSwitch active').style.width= '380px'; showOne(1); document.getElementById('page-4-createSwitch active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
+                        <h6 id="createSwitch2" onclick="document.getElementById('page-3 active').style.opacity= '0.4'; document.getElementById('page-4-createSwitch').id = 'page-4-createSwitch active'; document.getElementById('page-4-createSwitch active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4-createSwitch active').style.width= '380px'; showOne(1); document.getElementById('page-4-createSwitch active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
                     </div>
 
                     <div class="icon-buttons" align="auto">
@@ -253,21 +253,20 @@
     <div class="content-page dialogbackground" id="createswitch">
         <div class="content-page" id="createswitchdialog">
             <h2 style="color:#fff;"><i class="fa fa-sitemap on-left"></i>Create Virtual Switch</h2>
-            <form action="#" name="configform" class="small-field">
+            <form action="#" name="addextvswitchdialogform" id="addextvswitchdialogform" class="small-field">
                 <div class="widget compute-createSwitch">
                     <label>Network Interface</label>
-                    <select>
-                        <option value="1">external</option>
-                        <option value="2" disabled="disabled"></option>
-                        <option value="3" disabled="disabled"></option>
+                    <select id="hostnics" ng-model="hostNic" placeholder="Select a host nic" ng-options="hostNic.name group by hostNic.type for hostNic in hostNics | orderBy:name" required>
                     </select>
                     <label>External Virtual Switch Name</label>
-                    <input class="small-field" type="text" value="" placeholder="external"/>
+                    <input class="small-field" type="text" id="vswitchname" ng-model="newExtVSwitch" required/>
                 </div>
 
                 <div class="icon-buttons" align="auto">
-                    <button type="submit" id="create-switch-button"  onclick="document.getElementById('page-4-createSwitch active').id = 'page-4-createSwitch';document.getElementById('host-setup active').style.opacity= '1'; return false" formaction="" class="inputButton-icon large" name="nextbtn" style="padding:0px 20px 0px 0px;"><h2><i class="fa fa-check-circle on-left" style="color:#0099CC"></i>Create</h2></button>
-                    <button type="submit" formaction="" class="inputButton-icon large" name="nextbtn" onclick="document.getElementById('page-4-createSwitch active').id = 'page-4-createSwitch';document.getElementById('host-setup active').style.opacity= '1'; return false" style="padding:0px 20px 0px 0px;"><h2><i class="fa fa-times-circle on-left" style="color:#0099CC"></i>Cancel</h2></button>
+                    <button type="submit" id="createswitchdialogok" formaction="" class="inputButton-icon large" name="createswitchdialogok" style="padding:0px 20px 0px 0px;">
+                    <h2><i class="fa fa-check-circle on-left" style="color:#0099CC"></i>Create</h2></button>
+                    <button type="submit" formaction="" class="inputButton-icon large" id="createswitchdialogcancel" name="createswitchdialogcancel"
+                     style="padding:0px 20px 0px 0px;"><h2><i class="fa fa-times-circle on-left" style="color:#0099CC"></i>Cancel</h2></button>
                 </div>
             </form>
         </div>
