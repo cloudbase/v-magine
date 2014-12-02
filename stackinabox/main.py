@@ -244,6 +244,8 @@ class MainWindow(QtGui.QMainWindow):
         self._thread.start()
 
     def onLoad(self):
+        LOG.debug("onLoad")
+
         page = self._web.page()
         frame = page.mainFrame()
 

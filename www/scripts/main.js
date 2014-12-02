@@ -265,18 +265,22 @@ function initUi() {
 
     $("#deploy").click(function(){
         controller.show_eula();
+        return false;
     });
 
     $("#exit").click(function(){
         controller.refuse_eula();
+        return false;
     });
 
     $("#agree").click(function(){
         controller.accept_eula();
+        return false;
     });
 
     $("#controllerconfigeula").click(function(){
         controller.show_eula();
+        return false;
     });
 
     $("#controllerconfignext").click(function(){
