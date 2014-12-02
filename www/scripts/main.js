@@ -41,7 +41,7 @@ function showWelcome() {
 }
 
 function showEula() {
-    //showPage("#page-1");
+    showPage("#page-1");
 }
 
 function showDeploymentDetails() {
