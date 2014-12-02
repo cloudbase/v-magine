@@ -57,6 +57,10 @@ li{
     display:none;
 }
 
+#review{
+    display: none;
+}
+
 #install-page{
     display: none;
 }
@@ -86,6 +90,10 @@ li{
 }
 
 #page-4-createSwitch #active{
+    display: inline;
+}
+
+#review #active{
     display: inline;
 }
 
@@ -404,6 +412,10 @@ li{
     border-radius: 5px;
 }
 
+#back-review{
+     margin-left:29%;
+}
+
 .back-2{
     float: left;
     margin-left:29%;
@@ -710,7 +722,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 .compute-nodes-header ul {
     color: #4D415D;
-    padding: 10px
+    padding: 10px;
 }
 
 .compute-nodes-header ul li {
@@ -788,6 +800,10 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 .registered-nodes{
     height:453px;
+}
+
+.registered-nodes h6{
+    color:#fff;
 }
 
 .hypervisor button{
@@ -924,3 +940,158 @@ input:required:invalid, input:focus:invalid {
 .ui-slider-horizontal .ui-slider-range-min { left: 0; background-color: #37A8DF; }
 .ui-slider-horizontal .ui-slider-range-max { right: 0; }
 .ui-slider-horizontal { background-color: #1F1033; }
+
+#intro #active{
+    display: inline;
+}
+
+
+.mini-widget{
+    width:180px;
+    height:440px;
+    /*background-color:red;*/
+    display:inline-block;
+    margin-top:60px;
+    vertical-align: top;
+}
+
+#host-details{
+    margin-right:55px;
+}
+
+#controller-details{
+    margin-right:55px;
+}
+
+#networking-details{
+    margin-right:55px;
+}
+
+#wrap-review h2{
+    line-height: 2px;
+    color:#37A8DF;
+    margin-bottom:20px;
+    font-size: 18px;
+    padding-right:2px;
+}
+
+#wrap-review h4{
+    color:#fff;
+}
+
+.AD{
+    margin-top:60px;
+}
+
+.mini-registered-nodes{
+    background-color: #82798D;
+    border: medium none;
+    border-radius: 5px;
+    height: 300px;
+    width: 100%;
+
+}
+
+.mini-compute-nodes-list ul li{
+    float: left;
+    display: inline;
+    width: 50%;
+    color:#fff;
+}
+
+.mini-compute-nodes-header ul li{
+    float: left;
+    display: inline;
+    width: 50%;
+    line-height:30px;
+    color:#fff;
+}
+
+.mini-compute-nodes-header {
+    border-bottom: 1px solid #fff;
+    margin-bottom: 10px;
+    height:30px;
+}
+
+.log{
+    height: 383px;
+    padding: 20px;
+    background-color: #82798D;
+    margin-bottom: 50px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.log p{
+    color:#fff;
+}
+
+.log h2{
+    color:#fff;
+}
+
+.log h3{
+    color:#fff;
+}
+
+#back-review{
+    float: left;
+    margin-left: 29%;
+    height: 45px;
+    color: #BD1E2D;
+    border: 1px solid #BD1E2D;
+    border-radius: 5px;
+}
+
+#back-review:hover {
+    background-color:#fff;
+    color: #201134;
+    border: 1px solid #201134;
+    border-radius: 5px;
+}
+
+#back-review:focus {
+    background-color:#201134;
+    color: #fff;
+    border: 1px solid #BD1E2D;
+    border-radius: 5px;
+}
+
+#back-review:active{
+    width: 20%;
+    background-color:#201134 !important;
+    color: #BD1E2D;
+    border: 1px solid #BD1E2D;
+}
+
+#install{
+     float:right;
+     margin-right:29%;
+     height: 45px;
+     color: #BD1E2D;
+     border: 1px solid #BD1E2D;
+     border-radius: 5px;
+}
+
+#install:hover {
+    background-color:#fff;
+    color: #201134;
+    border: 1px solid #201134;
+    border-radius: 5px;
+}
+
+#install:focus {
+    background-color:#201134;
+    color: #fff;
+    border: 1px solid #BD1E2D;
+    border-radius: 5px;
+}
+
+#install:active{
+    width: 20%;
+    background-color:#201134 !important;
+    color: #BD1E2D;
+    border: 1px solid #BD1E2D;
+    border-radius: 5px;
+}
+
