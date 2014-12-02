@@ -273,6 +273,97 @@
         </div>
     </div>
 
+    <div class="content-page" id="review">
+
+        <div class="top">
+            <h1>Review</h1>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
+            </div>
+        </div>
+
+        <div id="wrap-review">
+            <div class="mini-widget" id="host-details">
+                <h2 style="font-size: 2.5rem;color:#fff;margin:0;"><i class="fa fa-windows on-left"></i>Host</h2>
+                <h4>Hostname</h4>
+                <h2>WindowsServer2012R2</h2>
+
+                <h4>User</h4>
+                <h2>EXAMPLE\Admin</h2>
+
+                <h4>Hostname</h4>
+                <h2>WindowsServer2012R2</h2>
+
+                <h4>Install location</h4>
+                <h2>C:\v-magine</h2>
+
+                <h4>External vSwitch</h4>
+                <h2>external</h2>
+            </div>
+            <div class="mini-widget" id="controller-details">
+                <div class="controller">
+                    <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-desktop on-left"></i>Controller</h2>
+                    <h4>Distrbution</h4>
+                    <h2>CentOS 7.0 + RDO</h2>
+
+                    <h4>Image location</h4>
+                    <h2>http://centos.org/...</h2>
+
+                    <h4>Allocated Memory</h4>
+                    <h2>4GB</h2>
+                </div>
+                <div class="AD">
+                    <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-lock on-left"></i>Active Directory</h2>
+                    <h4>Active Directory Identity</h4>
+                    <h2>Yes</h2>
+                </div>
+            </div>
+            <div class="mini-widget" id="networking-details">
+                <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-wifi on-left"></i>Networking</h2>
+                <h4>Floating IP Subnet</h4>
+                <h2>10.7.0.0/16</h2>
+
+                <h4>Floating IP Range Start</h4>
+                <h2>10.7.1.100</h2>
+
+                <h4>Floating IP Range End</h4>
+                <h2>10.7.1.200</h2>
+
+                <h4>Floating IP DNS</h4>
+                <h2>8.8.8.8</h2>
+                <h2>8.8.4.4</h2>
+            </div>
+            <div class="mini-widget" id="nodes-details">
+                <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-cubes on-left"></i>Nodes</h2>
+                <div class="mini-registered-nodes">
+                    <div>
+                        <div class="mini-compute-nodes-header">
+                            <ul>
+                                <li>Hostname</li>
+                                <li>Type</li>
+                            </ul>
+                        </div>
+                        <div class="mini-compute-nodes-list">
+                            <ul>
+                                <li>localhost</li>
+                                <li>HV</li>
+                            </ul>
+                            <ul>
+                                <li>localhost</li>
+                                <li>KVM</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="buttons" align="auto">
+            <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="back-review" onclick="document.getElementById('page-3').id = 'page-3 active'; document.getElementById('review active').id = 'review' ;return false">Back</button>
+            <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="install"  onclick="document.getElementById('install-page').id = 'install-page active'; document.getElementById('review active').id = 'review' ;return false">Install<i class="icon-arrow-right-3 on-right"></i></button>
+        </div>
+    </div>
+
     <div class="content-page" id="install-page">
 
         <div class="top">
@@ -284,7 +375,7 @@
 
 
         <h2><i class="fa fa-desktop on-left"></i>OpenStack Controller Log</h2>
-        <div class="log" style="height:453px;padding:20px;"></div>
+        <div class="log"></div>
         <div class="buttons" align="auto">
             <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="cancel-install"  onclick="document.getElementById('intro').id = 'intro active'; document.getElementById('install-page active').id = 'install-page' ;return false">Cancel<i class="icon-arrow-right-3 on-right"></i></button>
         </div>
