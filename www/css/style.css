@@ -1,3 +1,18 @@
+@font-face {
+    font-family: "Segoe UI Light_";
+    src: url('../fonts/segoeuil.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: "Segoe UI_";
+    src: url('../fonts/segoeui.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Ubuntu Mono Regular';
+  src: url('../fonts/UbuntuMono-R.ttf') format('truetype');
+}
+
 ul
 {
     list-style-type: none;
@@ -63,34 +78,6 @@ li{
 
 .active-page{
     display: inline !important;
-}
-
-#page-1 #active{
-    display: inline;
-}
-
-#host-setup #active{
-    display: inline;
-}
-
-#page-2 #active{
-    display: inline;
-}
-
-#page-3 #active{
-    display: inline;
-}
-
-#page-4 #active{
-    display: inline;
-}
-
-#review #active{
-    display: inline;
-}
-
-#install-page #active{
-    display: inline;
 }
 
 /*----------------------------------------------------------------------------------*/
@@ -1110,3 +1097,32 @@ select:required:invalid, select:focus:invalid {
     border-radius: 5px;
 }
 
+/* Terminal */
+
+.terminal {
+    float: left;
+    font-family: "Ubuntu Mono Regular", monospace !important;
+    font-size: 12px;
+    border: 0px;
+    color: white;
+    background: #4C405C !important;
+}
+
+.terminal-cursor {
+    color: white;
+    background: #4C405C;
+}
+
+#term {
+    background: #4C405C !important;
+    text-align: left;
+    color: white;
+    margin: 10px;
+    height: 300px;
+    overflow: auto;
+    font-family: "Ubuntu Mono Regular", monospace !important;
+}
+
+#term div {
+    font-family: "Ubuntu Mono Regular", monospace !important;
+}

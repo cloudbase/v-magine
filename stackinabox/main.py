@@ -142,6 +142,10 @@ class Controller(QtCore.QObject):
         self._main_window.close()
 
     @QtCore.pyqtSlot()
+    def cancel_deployment(self):
+        self._main_window.close()
+
+    @QtCore.pyqtSlot()
     def review_config(self):
         self.on_review_config_event.emit()
 
@@ -197,7 +201,7 @@ class MainWindow(QtGui.QMainWindow):
 
         app_icon_path = os.path.join(utils.get_resources_dir(), "app.ico")
         self.setWindowIcon(QtGui.QIcon(app_icon_path))
-        self.setWindowTitle('Stack in a Box - OpenStack Installer')
+        self.setWindowTitle('V-Magine - OpenStack Installer')
 
         self._web = QtWebKit.QWebView()
 
@@ -214,6 +218,8 @@ class MainWindow(QtGui.QMainWindow):
         page = self._web.page()
         page.settings().setAttribute(
             QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
+        page.settings().setAttribute(
+            QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
 
         frame = page.mainFrame()
         page.setViewportSize(frame.contentsSize())

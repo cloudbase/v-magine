@@ -6,16 +6,15 @@
     <link rel="stylesheet" href="css/metro-bootstrap.css">
     <link rel="stylesheet" href="css/font-awesome.min.css">
     <link rel="stylesheet" href="scripts/jquery/jquery-ui.css">
-    <link rel="stylesheet" href="css/jquery.nouislider.min.css"></script>
     <link rel="stylesheet" href="css/style.css">
 
     <script src="scripts/jquery-1.11.1.min.js"></script>
     <script src="scripts/jquery-ui-1.11.2.min.js"></script>
     <script src="scripts/angular.min.js"></script>
+    <script src="scripts/term.js"></script>
     <script src="scripts/main.js"></script>
     <!-- ui widgets -->
     <script src="scripts/metro/metro-progressbar.js"></script>
-    <script src="scripts/jquery.nouislider.all.min.js"></script>
 </head>
 
 <body class="metro" ng-controller="StackInABoxCtrl">
@@ -113,7 +112,7 @@
                     <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
 
                     <label>Controller and OpenStack Services Password</label>
-                    <input class="field" type="password" id="adminpassword" required />
+                    <input class="field" type="password" id="adminpassword" ng-model="adminPassword" required />
 
                     <label>Repeat password</label>
                     <input class="field" type="password" id="adminpasswordrepeat" />
@@ -367,14 +366,12 @@
             </div>
         </div>
 
-
-        <h2><i class="fa fa-desktop on-left"></i>OpenStack Controller Log</h2>
-        <div class="log"></div>
+        <h2><span id="status">Deployment console Log</h2>
+        <div id="term"></div>
+        <div id="mainprogressbar"></div>
         <div class="buttons" align="auto">
-            <button type="submit" formaction="" class="inputButton large" name="nextbtn" id="cancel-install"  onclick="document.getElementById('intro').id = 'intro active'; document.getElementById('install-page active').id = 'install-page' ;return false">Cancel<i class="icon-arrow-right-3 on-right"></i></button>
+            <button type="submit" formaction="" class="inputButton large" name="cancel-install" id="cancel-install"></i></button>
         </div>
-
-
     </div>
 
 </div>

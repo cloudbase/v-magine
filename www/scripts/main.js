@@ -65,7 +65,7 @@ function reviewConfig() {
 }
 
 function installDone(success) {
-    $('#getopenstackbutton').button("enable");
+    //$('#getopenstackbutton').button("enable");
     $("#mainprogressbar").progressbar({ value: 0 });
 
     if(success) {
@@ -76,9 +76,9 @@ function installDone(success) {
 }
 
 function installStarted() {
-    showPage("#review");
-    $("#getopenstackbutton").attr("disable", "disable");
+    //$("#getopenstackbutton").attr("disable", "disable");
     showPage("#install-page");
+    //setupTerm();
 }
 
 function statusChanged(msg, step, maxSteps) {
@@ -110,12 +110,12 @@ function getAvailableHostNicsCompleted(hostNicsJson) {
 }
 
 function gotStdOutData(data){
-    //console.log(data);
+    console.log(data);
     term.write(data.replace('\n', '\r\n'));
 }
 
 function gotStdErrData(data){
-    //console.log("err: " + data);
+    console.log("err: " + data);
     term.write(data.replace('\n', '\r\n'));
 }
 
@@ -388,17 +388,20 @@ function initUi() {
         return false;
     });
 
+    $("#cancel-install").click(function(){
+        controller.cancel_deployment()
+        return false;
+    });
+
     $("#agreement").load("eula.html");
+
+    $("#mainprogressbar").progressbar({ value: 0 });
 
     setPasswordValidation();
 
     initControllerMemSlider();
 
-    /*
     setupTerm();
-
-    $("#mainprogressbar").progressbar({ value: 0 });
-    */
 }
 
 function validateControllerConfigForm() {
