@@ -207,7 +207,10 @@ class MainWindow(QtGui.QMainWindow):
 
         self._web.setPage(QWebPageWithoutJsWarning(self._web))
 
-        self.resize(1020, 768)
+        width = 1020
+        heigth = 768
+
+        self.resize(width, heigth)
         self.setCentralWidget(self._web)
 
         self._web.loadFinished.connect(self.onLoad)
@@ -232,6 +235,8 @@ class MainWindow(QtGui.QMainWindow):
         self._web.load(QtCore.QUrl("www/index.html"))
 
         self._web.show()
+
+        self.setFixedSize(width, heigth)
 
     def closeEvent(self, event):
         if self._worker.can_close():
