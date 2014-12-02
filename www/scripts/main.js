@@ -332,8 +332,13 @@ function initUi() {
 
     $("#hostconfignext").click(function(){
         if(validateHostConfigForm()) {
-            controller.review_config();
+            controller.on_review_config_eventfig();
         }
+        return false;
+    });
+
+    $("#createSwitch").click(function(){
+        $("#createswitch").addClass("active-page");
         return false;
     });
 

@@ -53,10 +53,6 @@ li{
     display:none;
 }
 
-#page-4-createSwitch {
-    display:none;
-}
-
 #install-page{
     display: none;
 }
@@ -82,10 +78,6 @@ li{
 }
 
 #page-4 #active{
-    display: inline;
-}
-
-#page-4-createSwitch #active{
     display: inline;
 }
 
@@ -910,6 +902,26 @@ input:required:invalid, input:focus:invalid {
     width: 1020px;
     margin-left: -60px;
     margin-top: 180px;
+}
+
+#createswitchdialog {
+    display: inline;
+    top: 0;
+    width: 380px;
+    z-index: 1001;
+    position: absolute;
+    right: 0px
+}
+
+.dialogbackground {
+    display: none;
+    background-color: rgba(255, 255, 255, 0.4);
+    position: absolute;
+    z-index: 1000;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    left: 0px;
 }
 
 /* slider */
