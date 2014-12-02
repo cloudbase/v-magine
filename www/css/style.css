@@ -916,8 +916,9 @@ input:required:invalid, input:focus:invalid {
     line-height: 6em;
     z-index: 1;
     width: 1020px;
-    margin-left: -60px;
     margin-top: 180px;
+    position: absolute;
+    right: 0px
 }
 
 #createswitchdialog {
