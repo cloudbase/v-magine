@@ -8,6 +8,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.centosMirror = null;
     $scope.maxOpenStackVMMem = 0;
     $scope.minOpenStackVMMem = 0;
+    $scope.suggestedOpenStackVMMem = 0;
     $scope.openStackVMMem = 0;
     $scope.fipRange = null;
     $scope.fipRangeStart = null;
@@ -238,6 +239,7 @@ function setDefaultConfigValues() {
     $scope.maxOpenStackVMMem = defaultConfig.max_openstack_vm_mem_mb;
     $scope.minOpenStackVMMem = defaultConfig.min_openstack_vm_mem_mb;
     $scope.openStackVMMem = defaultConfig.suggested_openstack_vm_mem_mb;
+    $scope.suggestedOpenStackVMMem = $scope.openStackVMMem
     $scope.openstackBaseDir = defaultConfig.default_openstack_base_dir;
     $scope.hypervHostUsername = defaultConfig.default_hyperv_host_username;
     $scope.fipRange = defaultConfig.default_fip_range;
@@ -259,6 +261,27 @@ function setPasswordValidation() {
             p2.setCustomValidity('');
         }
     });
+}
+
+function initControllerMemSlider() {
+
+    var $scope = angular.element("#maindiv").scope();
+    $("#openstackvmmemslider").slider({
+        range: "min",
+        value: $scope.openStackVMMem,
+        min: $scope.minOpenStackVMMem,
+        max: $scope.maxOpenStackVMMem,
+        slide: function(event, ui) {
+            var value = ui.value.toString();
+            $("#openstackvmmem").text(value + "MB");
+            // AngularJs is not performing two way databinding
+            $scope.openStackVMMem = value;
+            $('.ui-widget-content').css('background','green');
+        }
+    });
+
+    $("#openstackvmmem").val(
+        $("#openstackvmmemslider").slider("value").toString() + "MB");
 }
 
 function initUi() {
@@ -294,19 +317,7 @@ function initUi() {
 
     setPasswordValidation();
 
-    $('#slider-step').noUiSlider({
-        start: [ 2048 ],
-        step: 512,
-        range: {
-            'min': [  512 ],
-            'max': [ 8144 ]
-        },
-        format: wNumb({
-            decimals: 0,
-        })
-    });
-
-    $('#slider-step').Link('lower').to($('#slider-step-value'));
+    initControllerMemSlider();
 
     /*
     setDefaultConfigValues();
@@ -395,9 +406,9 @@ function ApplicationIsReady() {
     try {
         console.log("ApplicationIsReady!");
 
-        initUi();
-
         setDefaultConfigValues();
+
+        initUi();
 
         controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);

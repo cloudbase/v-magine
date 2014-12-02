@@ -15,7 +15,6 @@
     <script src="scripts/main.js"></script>
     <!-- ui widgets -->
     <script src="scripts/metro/metro-progressbar.js"></script>
-    <script src="scripts/metro/metro-scroll.js"></script>
     <script src="scripts/jquery.nouislider.all.min.js"></script>
 </head>
 
@@ -123,14 +122,10 @@
                     <input class="field" type="password" id="adminpasswordrepeat" />
 
                     <div class="allocated-memory">
-                        <label>Allocated Memory:
-                            <span class="example-val" id="slider-step-value"></span> MB</label>
-                        <div class="view">
-                            <div id="slider-step"></div>
-                        </div>
-
+                        Allocated memory: <span id="openstackvmmem" ng-bind="openStackVMMem + 'MB'"></span>
+                        <div id="openstackvmmemslider"></div>
                         <div class="memory-suggestion">
-                            Minimum recommended memory: 2048 MB
+                            Recommended memory: <span ng-bind="suggestedOpenStackVMMem + 'MB'"></span>
                         </div>
                     </div>
                 </div>
