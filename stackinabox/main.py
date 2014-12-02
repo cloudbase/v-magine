@@ -47,6 +47,7 @@ class Controller(QtCore.QObject):
     on_install_started_event = QtCore.pyqtSignal()
     on_review_config_event = QtCore.pyqtSignal()
     on_show_controller_config_event = QtCore.pyqtSignal()
+    on_show_host_config_event = QtCore.pyqtSignal()
     on_show_welcome_event = QtCore.pyqtSignal()
     on_show_eula_event = QtCore.pyqtSignal()
     on_show_deployment_details_event = QtCore.pyqtSignal()
@@ -115,6 +116,12 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def show_controller_config(self):
         self.on_show_controller_config_event.emit()
+
+    @QtCore.pyqtSlot()
+    def show_host_config(self):
+        LOG.debug("show_host_config")
+        self.get_ext_vswitches();
+        self.on_show_host_config_event.emit()
 
     @QtCore.pyqtSlot()
     def show_welcome(self):
