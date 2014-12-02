@@ -19,6 +19,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.openstackBaseDir = null;
     $scope.hypervHostUsername = null;
     $scope.hypervHostPassword = null;
+    $scope.hypervHostName = null;
 }]);
 
 function handleError(msg) {
@@ -60,6 +61,7 @@ function showHostConfig() {
 }
 
 function reviewConfig() {
+    showPage("#review");
 }
 
 function installDone(success) {
@@ -74,8 +76,9 @@ function installDone(success) {
 }
 
 function installStarted() {
-    $("#getopenstackbutton").button("disable");
-    $("#maintabs").tabs({active: 2});
+    showPage("#review");
+    $("#getopenstackbutton").attr("disable", "disable");
+    showPage("#install-page");
 }
 
 function statusChanged(msg, step, maxSteps) {
@@ -121,7 +124,7 @@ function startInstall() {
     try {
         term.reset();
 
-        var $scope = angular.element("#maintabs").scope();
+        var $scope = angular.element("#maindiv").scope();
 
         var dict = {};
         dict["ext_vswitch_name"] = $scope.extVSwitch;
@@ -262,6 +265,7 @@ function setDefaultConfigValues() {
     $scope.fipRangeEnd = defaultConfig.default_fip_range_end;
     $scope.fipRangeGateway = defaultConfig.default_fip_range_gateway;
     $scope.fipRangeNameServers = defaultConfig.default_fip_range_name_servers;
+    $scope.hypervHostName = defaultConfig.localhost;
 
     $scope.$apply();
 }
@@ -345,7 +349,7 @@ function initUi() {
 
     $("#hostconfignext").click(function(){
         if(validateHostConfigForm()) {
-            controller.on_review_config_eventfig();
+            controller.review_config();
         }
         return false;
     });
@@ -374,6 +378,16 @@ function initUi() {
         return false;
     });
 
+    $("#configbutton").click(function(){
+        controller.show_host_config()
+        return false;
+    });
+
+    $("#getopenstackbutton").click(function(){
+        startInstall();
+        return false;
+    });
+
     $("#agreement").load("eula.html");
 
     setPasswordValidation();
@@ -381,45 +395,10 @@ function initUi() {
     initControllerMemSlider();
 
     /*
-    setDefaultConfigValues();
     setupTerm();
-    controller.get_ext_vswitches();
-
-    setPasswordValidation();
-
-    $("#extvswitch").selectmenu();
-    $("#addextvswitch").button().click(function(){
-        $("#addextvswitchdialog").dialog("open");
-        controller.get_available_host_nics();
-        return false;
-    });
-
-    $("#maintabs").tabs({ beforeActivate: function(event, ui){
-        var oldTabIndex = ui.oldTab.index();
-        if(oldTabIndex == 0) {
-            return validateConfigForm();
-        }
-    }});
-
-    $("#reviewbutton").button().click(function(){
-        if(validateConfigForm()) {
-            controller.review_config();
-        }
-        return false;
-    });
-
-    $("#configbutton").button().click(function(){
-        controller.show_config()
-        return false;
-    });
-
-    initAddExtVSwitchDialog();
 
     $("#mainprogressbar").progressbar({ value: 0 });
-    $("#getopenstackbutton").button().click(function(){
-        startInstall();
-    });
-*/
+    */
 }
 
 function validateControllerConfigForm() {

@@ -17,6 +17,7 @@ import logging
 import os
 import platform
 import pythoncom
+import socket
 import threading
 import time
 import sys
@@ -357,7 +358,8 @@ class Worker(QtCore.QObject):
                 "default_fip_range_start": fip_range_start,
                 "default_fip_range_end": fip_range_end,
                 "default_fip_range_gateway": fip_gateway,
-                "default_fip_range_name_servers": OPENDNS_NAME_SERVERS
+                "default_fip_range_name_servers": OPENDNS_NAME_SERVERS,
+                "localhost": socket.gethostname()
             }
         except Exception as ex:
             LOG.exception(ex)
