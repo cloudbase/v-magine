@@ -47,6 +47,7 @@ function showWelcome() {
 
 function showEula() {
     showPage("#page-1");
+    $(".nano").nanoScroller();
 }
 
 function showDeploymentDetails() {

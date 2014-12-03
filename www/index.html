@@ -15,6 +15,8 @@
     <script src="scripts/main.js"></script>
     <!-- ui widgets -->
     <script src="scripts/metro/metro-progressbar.js"></script>
+    <script src="scripts/jquery.nanoscroller.js"></script>
+
 </head>
 
 <body class="metro" ng-controller="StackInABoxCtrl">
@@ -38,7 +40,9 @@
 
         <div id="wrap">
             <h2>Licence agreement</h2>
-            <div class="content-text" id="agreement"></div>
+            <div id="wrapforscroll" class="nano">
+                <div class="content-text" id="agreement"></div>
+            </div>
 
             <div class="row">
                 <div class="logo"><img src="images/cbsl-logo.svg"></div>
@@ -375,6 +379,7 @@
     </div>
 
 </div>
+
 </body>
 </html>
 

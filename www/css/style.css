@@ -153,6 +153,11 @@ li{
     height: 608px;
 }
 
+#wrapforscroll {
+    display: block;
+    height: 300px;
+}
+
 #wrap-2{
     color: #FFFFFF;
 }
@@ -165,8 +170,8 @@ li{
 .content-text{
     margin-top: 5%;
     max-width: 960px;
-    height: 300px;
-    overflow-y: scroll;
+    height: 320px;
+    overflow-y: auto;
 }
 
 #agreement h1, #agreement h2, #agreement h5{
@@ -292,7 +297,7 @@ li{
 }
 
 .row{
-    margin-top: 20px;
+    margin-top: 57px;
 }
 
 
@@ -675,11 +680,8 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     float:left;
     display: none;
     padding: 10px;
-
     color: red;
-
     background-color: red;
-
     width: 300px;
     height: 300px;
     position: absolute;
@@ -1126,3 +1128,65 @@ select:required:invalid, select:focus:invalid {
 #term div {
     font-family: "Ubuntu Mono Regular", monospace !important;
 }
+
+/** initial setup **/
+.nano {
+  position : relative;
+  width    : 100%;
+  height   : 100%;
+  overflow : hidden;
+}
+.nano > .content-text {
+  position      : absolute;
+  overflow      : scroll;
+  overflow-x    : hidden;
+  margin-right  : 18px;
+  padding-right : 18px
+  top           : 0;
+  right         : 0;
+  bottom        : 0;
+  left          : 0;
+}
+.nano > .content-text:focus {
+  outline: thin dotted;
+}
+.nano > .content-text::-webkit-scrollbar {
+  display: none;
+}
+.has-scrollbar > .content-text::-webkit-scrollbar {
+  display: block;
+}
+.nano > .nano-pane {
+  background : rgba(0,0,0,.25);
+  position   : absolute;
+  width      : 10px;
+  right      : 0;
+  top        : 0;
+  bottom     : 0;
+  visibility : hidden\9; /* Target only IE7 and IE8 with this hack */
+  opacity    : .01;
+  -webkit-transition    : .2s;
+  -moz-transition       : .2s;
+  -o-transition         : .2s;
+  transition            : .2s;
+  -moz-border-radius    : 5px;
+  -webkit-border-radius : 5px;
+  border-radius         : 5px;
+  display: block;
+}
+.nano > .nano-pane > .nano-slider {
+  background: #444;
+  background: rgba(0,0,0,.5);
+  position              : relative;
+  margin                : 0 1px;
+  -moz-border-radius    : 3px;
+  -webkit-border-radius : 3px;
+  border-radius         : 3px;
+}
+.nano:hover > .nano-pane, .nano-pane.active, .nano-pane.flashed {
+  visibility : visible\9; /* Target only IE7 and IE8 with this hack */
+  opacity    : 0.99;
+}
+
+.nano .nano-pane   { background: gray; }
+.nano .nano-slider { background: black; }
