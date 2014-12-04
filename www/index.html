@@ -286,7 +286,7 @@
 
         <div id="wrap-review">
             <div class="mini-widget" id="host-details">
-                <h2 style="font-size: 2.5rem;color:#fff;margin:0;"><i class="fa fa-windows on-left"></i>Host</h2>
+                <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
                 <h4>Hostname</h4>
                 <h2 ng-bind="hypervHostName"></h2>
 
@@ -301,7 +301,7 @@
             </div>
             <div class="mini-widget" id="controller-details">
                 <div class="controller">
-                    <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-desktop on-left"></i>Controller</h2>
+                    <h2 style="color:#fff;"><i class="fa fa-desktop on-left"></i>Controller</h2>
                     <h4>Distrbution</h4>
                     <h2>CentOS 7.0 + RDO</h2>
 
@@ -312,7 +312,7 @@
                     <h2 ng-bind="openStackVMMem + 'MB'"></h2>
                 </div>
                 <div class="AD">
-                    <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-lock on-left"></i>Active Directory</h2>
+                    <h2 style="color:#fff;"><i class="fa fa-lock on-left"></i>Active Directory</h2>
                     <h4>Active Directory Identity</h4>
                     <h2>No</h2>
                 </div>
@@ -375,6 +375,65 @@
         <div id="mainprogressbar"></div>
         <div class="buttons" align="auto">
             <button type="submit" formaction="" class="inputButton large" name="cancel-install" id="cancel-install">Cancel</i></button>
+        </div>
+    </div>
+
+    <div class="content-page" id="control-panel">
+
+        <div class="top">
+            <h1>Control Panel</h1>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
+            </div>
+        </div>
+
+        <div id="wrap-control-panel">
+            <div class="widget" id="control-panel-controller">
+                <div class="controller">
+                    <h2 style="color:#fff;"><i class="fa fa-desktop on-left"></i>Controller</h2>
+                    <h4 style="margin-top:30px;">Address</h4>
+                    <h2>10.73.12.23</h2>
+                    <h6 style="cursor: pointer;"><i class="fa fa-share-square-o on-left" style="color:#37A8DF;"></i>Open SSHConsole</h6>
+
+                    <h4 style="margin-top:30px;">Horizon Web Interface</h4>
+                    <h2><a href="#">http://10.73.12.23</a></h2>
+
+                    <h4 style="margin-top:30px;">OpenStack Tenant Username</h4>
+                    <h2>demo</h2>
+                </div>
+                <div class="buttons-wrap" align="auto">
+                    <button type="submit" formaction="" class="inputButton large" name="" id="remove">Remove</button>
+                    <button type="submit" formaction="" class="inputButton large" name="" id="redeploy">Redeploy</button>
+                </div>
+            </div>
+            <div class="widget" id="control-panel-nodes">
+                <div class="registered-nodes">
+                    <h2 style="color:#fff;"><i class="fa fa-cubes on-left"></i>Nodes</h2>
+                    <div class="compute-nodes-header">
+                        <ul>
+                            <li class="hostname-col">Hostname</li>
+                            <li class="hypervisor-col">Hypervisor Type</li>
+                            <li class="os-col">Operating System</li>
+                        </ul>
+                    </div>
+                    <div class="compute-nodes-list">
+                        <ul>
+                            <li class="hostname-col">localhost</li>
+                            <li class="hypervisor-col">Hyper-V</li>
+                            <li class="os-col">Windows Server 2012 R2</li>
+                        </ul>
+                        <ul>
+                            <li class="hostname-col">localhost</li>
+                            <li class="hypervisor-col">Hyper-V</li>
+                            <li class="os-col">Windows Server 2012 R2</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="buttons-wrap" align="auto">
+                    <button type="submit" formaction="" class="inputButton large" name="" id="add-edit">Add/Edit Nodes</button>
+                    <button type="submit" formaction="" class="inputButton large" name="" id="migrate">Migrate to Azure</button>
+                </div>
+            </div>
         </div>
     </div>
 

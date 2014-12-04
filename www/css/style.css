@@ -31,11 +31,11 @@ li{
 }
 
 .content-page{
-     background-color:#201134;
-     padding: 60px 60px 0px 60px;
-     width:100%;
-     height:100%;
-     float: left;
+    background-color:#201134;
+    padding: 60px 60px 0px 60px;
+    width:100%;
+    height:100%;
+    float: left;
  }
 
 .content-page h2, .content-page h4{
@@ -65,6 +65,14 @@ li{
 }
 
 #page-4 {
+    display:none;
+}
+
+#page-4-createSwitch {
+    display:none;
+}
+
+#control-panel{
     display:none;
 }
 
@@ -101,9 +109,9 @@ li{
 }
 
 .v-magine{
-  width:100%;
-  height:400px;
-  margin-top: 150px;
+    width:100%;
+    height:400px;
+    margin-top: 150px;
 }
 
 .v-magine img{
@@ -465,6 +473,8 @@ li{
 .widget{
     width:430px;
     height:500px;
+    display:inline-block;
+    vertical-align: top;
 }
 
 .widget h2{
@@ -475,7 +485,6 @@ li{
 
 .widget h6{
     color:#fff;
-    margin-top: 30px;
     line-height: 5px;
     font-weight: bold;
 }
@@ -873,9 +882,9 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 .widget label{
     color:#fff;
     margin-top: 30px;
-    line-height: 5px;
+    line-height: 10px;
     font-weight: bold;
-    font-size: 10px;
+    font-size: 13px;
 }
 
 #createSwitch{
@@ -1190,3 +1199,105 @@ select:required:invalid, select:focus:invalid {
 
 .nano .nano-pane   { background: gray; }
 .nano .nano-slider { background: black; }
+
+
+/*-----------------------------Control Panel CSS-----------------------------*/
+#wrap-control-panel h2{
+    line-height: 2px;
+    color:#37A8DF;
+    margin-bottom:20px;
+    font-size: 18px;
+    padding-right:2px;
+}
+
+#wrap-control-panel h4{
+    color:#fff;
+}
+
+#control-panel-controller{
+    width:35%;
+    margin-top:60px;
+    position:relative;
+}
+
+#control-panel-nodes{
+    width:50%;
+    float:right;
+    margin-top:60px;
+    position:relative;
+}
+
+.hostname-col{
+    width:100px !important;
+    color:#fff;
+}
+
+.hypervisor-col{
+    width:140px !important;
+    color:#fff;
+}
+
+.os-col{
+    width:180px !important;
+    color:#fff;
+}
+
+#add-edit{
+    float:left;
+    width:170px;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 5px;
+}
+
+#migrate{
+    float:right;
+    width:170px;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 5px;
+}
+
+
+#redeploy{
+    float:right;
+    width:100px;
+}
+
+#remove{
+    float:left;
+    width:100px;
+}
+
+.buttons-wrap{
+    position:absolute;
+    bottom:0;
+    width:100%;
+}
+
+#migrate:hover, #add-edit:hover{
+        color: #201134;
+}
+
+.buttons-wrap button:hover {
+    background-color:#fff;
+    color: #201134;
+    border: 1px solid #201134;
+    border-radius: 5px;
+}
+
+.buttons-wrap button:focus{
+    width: 20%;
+    background-color:#201134;
+    color: #BD1E2D;
+    border: 1px solid #BD1E2D;
+    border-radius: 5px;
+}
+
+.buttons-wrap button:active{
+    width: 20%;
+    background-color:#201134 !important;
+    color: #fff;
+    border: 1px solid #fff;
+    border-radius: 5px;
+}
