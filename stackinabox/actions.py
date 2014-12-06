@@ -161,8 +161,8 @@ class DeploymentActions(object):
         properties["HTTPS_PORT"] = FREERDP_WEBCONNECT_HTTPS_PORT
         properties["ENABLE_FIREWALL_RULES"] = "1"
 
-        properties["OPENSTACK_AUTH_URL"] = nova_config["DEFAULT"][
-            "neutron_admin_auth_url"]
+        properties["OPENSTACK_AUTH_URL"] = nova_config["neutron"][
+            "admin_auth_url"]
         properties["OPENSTACK_TENANT_NAME"] = nova_config[
             "keystone_authtoken"]["admin_tenant_name"]
         properties["OPENSTACK_USERNAME"] = nova_config["keystone_authtoken"][
@@ -210,7 +210,7 @@ class DeploymentActions(object):
         properties["RPCBACKENDHOST"] = rabbit_host
         properties["RPCBACKENDPORT"] = rabbit_port
 
-        glance_hosts = nova_config["DEFAULT"]["glance_api_servers"]
+        glance_hosts = nova_config["glance"]["api_servers"]
         (glance_host, glance_port) = glance_hosts.split(",")[0].split(':')
 
         properties["GLANCEHOST"] = glance_host
@@ -235,15 +235,15 @@ class DeploymentActions(object):
         properties["ENABLELOGGING"] = "1"
         properties["VERBOSELOGGING"] = "1"
 
-        properties["NEUTRONURL"] = nova_config["DEFAULT"]["neutron_url"]
-        properties["NEUTRONADMINTENANTNAME"] = nova_config["DEFAULT"][
-            "neutron_admin_tenant_name"]
-        properties["NEUTRONADMINUSERNAME"] = nova_config["DEFAULT"][
-            "neutron_admin_username"]
-        properties["NEUTRONADMINPASSWORD"] = nova_config["DEFAULT"][
-            "neutron_admin_password"]
-        properties["NEUTRONADMINAUTHURL"] = nova_config["DEFAULT"][
-            "neutron_admin_auth_url"]
+        properties["NEUTRONURL"] = nova_config["neutron"]["url"]
+        properties["NEUTRONADMINTENANTNAME"] = nova_config["neutron"][
+            "admin_tenant_name"]
+        properties["NEUTRONADMINUSERNAME"] = nova_config["neutron"][
+            "admin_username"]
+        properties["NEUTRONADMINPASSWORD"] = nova_config["neutron"][
+            "admin_password"]
+        properties["NEUTRONADMINAUTHURL"] = nova_config["neutron"][
+            "admin_auth_url"]
 
         if hyperv_host_username:
             properties["NOVACOMPUTESERVICEUSER"] = self._check_username(

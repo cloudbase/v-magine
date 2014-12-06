@@ -110,13 +110,17 @@ class RDOInstaller(object):
         config_names = {"DEFAULT": [
                             "rabbit_hosts",
                             "rabbit_userid",
-                            "rabbit_password",
-                            "glance_api_servers",
-                            "neutron_url",
-                            "neutron_admin_auth_url",
-                            "neutron_admin_tenant_name",
-                            "neutron_admin_username",
-                            "neutron_admin_password"
+                            "rabbit_password"
+                            ],
+                        "neutron": [
+                            "url",
+                            "admin_auth_url",
+                            "admin_tenant_name",
+                            "admin_username",
+                            "admin_password"
+                            ],
+                        "glance": [
+                            "api_servers"
                             ],
                         "keystone_authtoken": [
                             "admin_tenant_name",

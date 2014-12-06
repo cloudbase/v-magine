@@ -222,8 +222,8 @@ class Worker(QtCore.QObject):
         return (vm_int_mgmt_ip, vm_admin_user, ssh_key_path)
 
     def _install_rdo(self, rdo_installer, host, ssh_key_path, username,
-                     password, fip_range, fip_range_start, fip_range_end,
-                     fip_gateway, fip_name_servers):
+                     password, rdo_admin_password, fip_range, fip_range_start,
+                     fip_range_end, fip_gateway, fip_name_servers):
         max_connect_attempts = 10
         reboot_sleep_s = 30
 
@@ -242,12 +242,12 @@ class Worker(QtCore.QObject):
             rdo_installer.update_os()
 
             self._update_status('Installing RDO...')
-            rdo_installer.install_rdo(password, fip_range, fip_range_start,
-                                      fip_range_end, fip_gateway,
-                                      fip_name_servers)
+            rdo_installer.install_rdo(rdo_admin_password, fip_range,
+                                      fip_range_start, fip_range_end,
+                                      fip_gateway, fip_name_servers)
 
-            self._update_status('Checking if rebooting the RDO VM is '
-                                     'required...')
+            self._update_status(
+                'Checking if rebooting the RDO VM is required...')
             if rdo_installer.check_new_kernel():
                 self._update_status('Rebooting RDO VM...')
                 rdo_installer.reboot()
@@ -444,9 +444,12 @@ class Worker(QtCore.QObject):
 
             nova_config = self._install_rdo(rdo_installer, mgmt_ip,
                                             ssh_key_path, ssh_user,
-                                            ssh_password, fip_range,
-                                            fip_range_start, fip_range_end,
-                                            fip_gateway, fip_name_servers)
+                                            ssh_password, admin_password,
+                                            fip_range, fip_range_start,
+                                            fip_range_end, fip_gateway,
+                                            fip_name_servers)
+            LOG.debug("OpenStack config: %s" % nova_config)
+
             self._install_local_hyperv_compute(nova_config,
                                                openstack_base_dir,
                                                hyperv_host_username,
