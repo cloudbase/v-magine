@@ -1114,7 +1114,7 @@ select:required:invalid, select:focus:invalid {
     float: left;
     font-family: "Ubuntu Mono Regular", monospace !important;
     font-size: 12px;
-    border: 0px;
+    border: #4C405C solid 5px;
     color: white;
     background: #4C405C !important;
 }
