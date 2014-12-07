@@ -416,7 +416,7 @@ class Worker(QtCore.QObject):
             args = json.loads(str(json_args))
 
             ext_vswitch_name = args.get("ext_vswitch_name")
-            openstack_vm_mem_mb = args.get("openstack_vm_mem_mb")
+            openstack_vm_mem_mb = int(args.get("openstack_vm_mem_mb"))
             openstack_base_dir = args.get("openstack_base_dir")
             admin_password = args.get("admin_password")
             hyperv_host_username = args.get("hyperv_host_username")
