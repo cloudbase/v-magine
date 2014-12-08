@@ -194,10 +194,11 @@ li{
     line-height: 30px;
 }
 
-#agreement p, li{
+#agreement p, #agreement li{
     color: #827A8D;
     text-align: justify;
     list-style-type: disc;
+    font-family: Ubuntu Mono Regular;
 }
 
 #agreement a{
@@ -536,14 +537,14 @@ input{
 }
 
 .field select{
-    /*line-height: 35px;*/
     font-size:18px;
     vertical-align: middle;
-    width: 100%;
-    height: 35px;
+    width: 435px;
+    height: 35px !important;
     padding: 5px;
     border-radius: 5px;
     border: solid 1px #707070;
+    font-size: 0.9em;
 }
 
 .small-field{
@@ -559,7 +560,7 @@ input{
     /*line-height: 35px;*/
     font-size:18px;
     vertical-align: middle;
-    width: 100%;
+    width: 260px;
     height: 35px;
     padding: 5px;
     border-radius: 5px;
@@ -1114,7 +1115,7 @@ select:required:invalid, select:focus:invalid {
     float: left;
     font-family: "Ubuntu Mono Regular", monospace !important;
     font-size: 12px;
-    border: #4C405C solid 5px;
+    border: 0px;
     color: white;
     background: #4C405C !important;
 }
@@ -1150,7 +1151,6 @@ select:required:invalid, select:focus:invalid {
   overflow      : scroll;
   overflow-x    : hidden;
   margin-right  : 18px;
-  padding-right : 18px
   top           : 0;
   right         : 0;
   bottom        : 0;

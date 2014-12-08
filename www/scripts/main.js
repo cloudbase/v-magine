@@ -398,6 +398,8 @@ function initUi() {
 
     $("#mainprogressbar").progressbar({ value: 0 });
 
+    $("select").selectmenu();
+
     setPasswordValidation();
 
     initControllerMemSlider();
