@@ -97,7 +97,7 @@ function getExtVSwitchesCompleted(extVSwitchesJson) {
     }
     $scope.$apply();
 
-    //$("#extvswitch").selectmenu("refresh", true);
+    $("#extvswitch").selectmenu("refresh", true);
 }
 
 function getAvailableHostNicsCompleted(hostNicsJson) {
@@ -107,7 +107,7 @@ function getAvailableHostNicsCompleted(hostNicsJson) {
     $scope.hostNic = null;
     $scope.$apply();
 
-    //$("#hostnics").selectmenu("refresh", true);
+    $("#hostnics").selectmenu("refresh", true);
 }
 
 function gotStdOutData(data){
@@ -203,49 +203,6 @@ function addExtVSwitchCompleted(success) {
     hidePage("#createswitch");
 }
 
-/*
-function initAddExtVSwitchDialog() {
-    dialog = $("#addextvswitchdialog").dialog({
-        autoOpen: false,
-        height: 300,
-        width: 800,
-        modal: true,
-
-        buttons: [
-        {
-            id: "addextvswitchdialogok",
-            text: "Ok",
-            click: function() {
-                addExtVSwitch();
-                return false;
-                }
-        },
-        {
-            id: "addextvswitchdialogcancel",
-            text: "Cancel",
-            click: function() {
-                dialog.dialog("close");
-                }
-        }],
-        close: function() {
-            dialog.find("form")[0].reset();
-        }
-    });
-
-    $("#hostnics").selectmenu({
-        change: function(event, ui) {
-            // AngularJs two way databinding does not work
-            // with selectmenu
-            var value = $(this).val();
-            var $scope = angular.element(this).scope();
-            $scope.$apply(function() {
-                $scope.hostNic = $scope.hostNics[value];
-            });
-        }
-    });
-}
-*/
-
 function setDefaultConfigValues() {
     var configJson = controller.get_config();
     if(!configJson)
@@ -307,6 +264,34 @@ function initControllerMemSlider() {
 
     $("#openstackvmmem").val(
         $("#openstackvmmemslider").slider("value").toString() + "MB");
+}
+
+function initHostNicsSelect() {
+    $("#hostnics").selectmenu({
+        change: function(event, ui) {
+            // AngularJs two way databinding does not work
+            // with selectmenu
+            var value = $(this).val();
+            var $scope = angular.element(this).scope();
+            $scope.$apply(function() {
+                $scope.hostNic = $scope.hostNics[value];
+            });
+        }
+    });
+}
+
+function initExtVSwitchSelect() {
+    $("#extvswitch").selectmenu({
+        change: function(event, ui) {
+            // AngularJs two way databinding does not work
+            // with selectmenu
+            var value = $(this).val();
+            var $scope = angular.element(this).scope();
+            $scope.$apply(function() {
+                $scope.extVSwitch = $scope.extVSwitches[value];
+            });
+        }
+    });
 }
 
 function initUi() {
@@ -398,11 +383,12 @@ function initUi() {
 
     $("#mainprogressbar").progressbar({ value: 0 });
 
-    $("select").selectmenu();
-
     setPasswordValidation();
-
     initControllerMemSlider();
+
+    $("#selectdistro").selectmenu();
+    initExtVSwitchSelect();
+    initHostNicsSelect();
 
     setupTerm();
 }
