@@ -628,6 +628,7 @@ button.ui-button::-moz-focus-inner {
 }
 .ui-selectmenu-open {
     display: block;
+    z-index: 1005;
 }
 .ui-selectmenu-button {
     display: inline-block;

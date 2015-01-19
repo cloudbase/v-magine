@@ -1232,6 +1232,10 @@ select:required:invalid, select:focus:invalid {
     color:#fff;
 }
 
+#hostnics-menu {
+    width: 310px;
+}
+
 .hypervisor-col{
     width:140px !important;
     color:#fff;
