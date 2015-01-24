@@ -193,6 +193,20 @@ class Controller(QtCore.QObject):
                                         QtCore.Q_ARG(str, vswitch_name),
                                         QtCore.Q_ARG(str, nic_name))
 
+    @QtCore.pyqtSlot()
+    def open_horizon_url(self):
+        LOG.debug("open_horizon_url called")
+        QtCore.QMetaObject.invokeMethod(self._worker,
+                                        'open_horizon_url',
+                                        QtCore.Qt.QueuedConnection)
+
+    @QtCore.pyqtSlot()
+    def open_controller_ssh(self):
+        LOG.debug("open_controller_ssh called")
+        QtCore.QMetaObject.invokeMethod(self._worker,
+                                        'open_controller_ssh',
+                                        QtCore.Qt.QueuedConnection)
+
 
 class MainWindow(QtGui.QMainWindow):
 

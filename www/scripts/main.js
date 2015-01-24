@@ -20,6 +20,8 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.hypervHostUsername = null;
     $scope.hypervHostPassword = null;
     $scope.hypervHostName = null;
+    $scope.horizonUrl = "http://aaa.aa/aaa";
+    $scope.controllerIp = "10.0.0.10";
 }]);
 
 function handleError(msg) {
@@ -51,6 +53,7 @@ function showEula() {
 }
 
 function showDeploymentDetails() {
+    showPage("#control-panel");
 }
 
 function showControllerConfig() {
@@ -382,6 +385,16 @@ function initUi() {
     $("#agreement").load("eula.html");
 
     $("#mainprogressbar").progressbar({ value: 0 });
+
+    $('#showhorizonbutton').click(function(){
+        controller.open_horizon_url();
+        return false;
+    });
+
+    $('#opencontrollersshbutton').click(function(){
+        controller.open_controller_ssh();
+        return false;
+    });
 
     setPasswordValidation();
     initControllerMemSlider();

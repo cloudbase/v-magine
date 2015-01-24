@@ -33,6 +33,7 @@ LOG = logging
 
 DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/7/os/x86_64"
 OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
+OPENSTACK_CONTROLLER_VM_NAME = "openstack-controller"
 
 OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
 
@@ -132,7 +133,7 @@ class Worker(QtCore.QObject):
     def _deploy_openstack_vm(self, ext_vswitch_name,
                              openstack_vm_mem_mb, openstack_base_dir,
                              admin_password):
-        vm_name = "openstack-controller"
+        vm_name = OPENSTACK_CONTROLLER_VM_NAME
         vm_admin_user = "root"
         vm_dir = os.path.join(openstack_base_dir, vm_name)
 
@@ -407,6 +408,23 @@ class Worker(QtCore.QObject):
             self.error.emit(ex)
             self.add_ext_vswitch_completed.emit(False)
             raise
+
+    def _get_controller_ip(self):
+        return self._dep_actions.get_vm_ip_address(
+            OPENSTACK_CONTROLLER_VM_NAME)
+
+    @QtCore.pyqtSlot()
+    def open_horizon_url(self):
+        controller_ip = self._get_controller_ip()
+
+        # TODO(alexpilotti): This changes between Ubuntu and RDO
+        horizon_url = "http://%s" % controller_ip
+        self._dep_actions.open_url(horizon_url)
+
+    @QtCore.pyqtSlot()
+    def open_controller_ssh(self):
+        controller_ip = self._get_controller_ip()
+        self._dep_actions.open_controller_ssh(controller_ip)
 
     @QtCore.pyqtSlot(str)
     def deploy_openstack(self, json_args):

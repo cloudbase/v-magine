@@ -113,6 +113,30 @@ class DeploymentActions(object):
         ssh_dir = security.get_user_ssh_dir()
         return os.path.join(ssh_dir, CONTROLLER_SSH_KEY_NAME)
 
+    def get_vm_ip_address(self, vm_name):
+        (ipv4_addresses,
+         ipv6_addresses) = self._virt_driver.get_guest_ip_addresses(vm_name)
+
+        if ipv4_addresses:
+            return ipv4_addresses[0]
+        elif ipv6_addresses:
+            return ipv6_addresses[0]
+
+    def open_controller_ssh(self, host_address):
+        key_path = self._get_controller_ssh_key_path()
+
+        ssh_user = "root"
+
+        bin_dir = utils.get_bin_dir()
+        ssh_path = os.path.join(bin_dir, "ssh.exe")
+
+        self._windows_utils.run_safe_process(
+            ssh_path,
+            ('-o StrictHostKeyChecking=no -i "%(key_path)s" %(user)s@%(host)s '
+             '-t bash --rcfile keystonerc_admin -i') %
+            {"key_path": key_path, "user": ssh_user, "host": host_address},
+            new_console=True)
+
     def generate_controller_ssh_key(self):
         key_path = self._get_controller_ssh_key_path()
         return security.generate_ssh_key(key_path)
