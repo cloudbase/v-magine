@@ -175,7 +175,7 @@ class VMUtils(object):
     def _lookup_vm_check(self, vm_name):
         vm = self._lookup_vm(vm_name)
         if not vm:
-            raise exception.NotFound(_('VM not found: %s') % vm_name)
+            raise HyperVException(_('VM not found: %s') % vm_name)
         return vm
 
     def _lookup_vm(self, vm_name):
@@ -725,3 +725,6 @@ class VMUtils(object):
 
     def get_vm_state(self, vm_name):
         return self._enabled_states_map[self._lookup_vm(vm_name).EnabledState]
+
+    def get_guest_info(self, vm_name):
+        raise NotImplementedError()

@@ -151,3 +151,9 @@ class HyperVDriver(base.BaseDriver):
                 "OpenStack to work properly on this host. Please see: "
                 "http://support.microsoft.com/?kbid=%(hotfix_id)s" %
                 {"hotfix_id": VLAN_HOTFIX_ID})
+
+    def get_guest_ip_addresses(self, vm_name):
+        guest_info = self._vmutils.get_guest_info(vm_name)
+        ipv4_addresses = guest_info.get("NetworkAddressIPv4").split(";")
+        ipv6_addresses = guest_info.get("NetworkAddressIPv6").split(";")
+        return (ipv4_addresses, ipv6_addresses)

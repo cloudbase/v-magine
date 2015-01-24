@@ -42,3 +42,6 @@ class BaseDriver(object):
 
     def set_vswitch_host_ip(self, vswitch_name, host_ip, subnet_mask):
         raise NotImplementedError()
+
+    def get_guest_ip_addresses(self, vm_name):
+        raise NotImplementedError()

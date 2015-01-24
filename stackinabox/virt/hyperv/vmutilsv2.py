@@ -23,6 +23,8 @@ import sys
 import uuid
 import wmi
 
+from xml.etree import ElementTree
+
 from stackinabox.virt.hyperv import constants
 from stackinabox.virt.hyperv import vmutils
 
@@ -301,3 +303,14 @@ class VMUtilsV2(vmutils.VMUtils):
             Subject=element.path_(),
             Definition=definition_path,
             MetricCollectionEnabled=self._METRIC_ENABLED)
+
+    def get_guest_info(self, vm_name):
+        guest_info = {}
+        vm = self._lookup_vm_check(vm_name)
+        kvp = vm.associators(wmi_result_class="Msvm_KvpExchangeComponent")[0]
+        for item in kvp.GuestIntrinsicExchangeItems:
+            et = ElementTree.fromstring(item)
+            name = et.find(".//PROPERTY[@NAME='Name']/VALUE").text
+            value = et.find(".//PROPERTY[@NAME='Data']/VALUE").text
+            guest_info[name] = value
+        return guest_info
