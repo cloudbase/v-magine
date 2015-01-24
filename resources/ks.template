@@ -27,6 +27,7 @@ reboot
 %packages
 @Core
 wget
+hypervkvpd
 %end
 %post --log=/root/post.log --erroronfail
 
