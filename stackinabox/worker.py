@@ -69,6 +69,7 @@ class Worker(QtCore.QObject):
     get_ext_vswitches_completed = QtCore.pyqtSignal(list)
     get_available_host_nics_completed = QtCore.pyqtSignal(list)
     add_ext_vswitch_completed = QtCore.pyqtSignal(bool)
+    get_deployment_details_completed = QtCore.pyqtSignal(str, str)
 
     def __init__(self):
         super(Worker, self).__init__()
@@ -414,11 +415,20 @@ class Worker(QtCore.QObject):
             OPENSTACK_CONTROLLER_VM_NAME)
 
     @QtCore.pyqtSlot()
+    def get_deployment_details(self):
+        controller_ip = self._get_controller_ip()
+        self.get_deployment_details_completed.emit(
+            controller_ip,
+            self._get_horizon_url(controller_ip))
+
+    def _get_horizon_url(self, controller_ip):
+        # TODO(alexpilotti): This changes between Ubuntu and RDO
+        return "http://%s" % controller_ip
+
+    @QtCore.pyqtSlot()
     def open_horizon_url(self):
         controller_ip = self._get_controller_ip()
-
-        # TODO(alexpilotti): This changes between Ubuntu and RDO
-        horizon_url = "http://%s" % controller_ip
+        horizon_url = self._get_horizon_url(controller_ip)
         self._dep_actions.open_url(horizon_url)
 
     @QtCore.pyqtSlot()

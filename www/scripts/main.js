@@ -20,8 +20,8 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.hypervHostUsername = null;
     $scope.hypervHostPassword = null;
     $scope.hypervHostName = null;
-    $scope.horizonUrl = "http://aaa.aa/aaa";
-    $scope.controllerIp = "10.0.0.10";
+    $scope.controllerIp = null;
+    $scope.horizonUrl = null;
 }]);
 
 function handleError(msg) {
@@ -52,7 +52,14 @@ function showEula() {
     $(".nano").nanoScroller();
 }
 
-function showDeploymentDetails() {
+function showDeploymentDetails(controllerIp, horizonUrl) {
+
+    // TODO: move data retrieveal to a separate event
+    var $scope = angular.element("#maindiv").scope();
+    $scope.controllerIp = controllerIp;
+    $scope.horizonUrl = horizonUrl;
+    $scope.$apply();
+
     showPage("#control-panel");
 }
 

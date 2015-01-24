@@ -50,7 +50,7 @@ class Controller(QtCore.QObject):
     on_show_host_config_event = QtCore.pyqtSignal()
     on_show_welcome_event = QtCore.pyqtSignal()
     on_show_eula_event = QtCore.pyqtSignal()
-    on_show_deployment_details_event = QtCore.pyqtSignal()
+    on_show_deployment_details_event = QtCore.pyqtSignal(str, str)
 
     def __init__(self, main_window, worker):
         super(Controller, self).__init__()
@@ -67,6 +67,8 @@ class Controller(QtCore.QObject):
             self._get_available_host_nics_completed)
         self._worker.add_ext_vswitch_completed.connect(
             self._add_ext_vswitch_completed)
+        self._worker.get_deployment_details_completed.connect(
+            self._get_deployment_details_completed)
 
     def _send_stdout_data(self, data):
         self.on_stdout_data_event.emit(data)
@@ -95,6 +97,9 @@ class Controller(QtCore.QObject):
     def _add_ext_vswitch_completed(self, success):
         self.on_add_ext_vswitch_completed_event.emit(success)
 
+    def _get_deployment_details_completed(self, controller_ip, horizon_url):
+        self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
+
     def start(self):
         try:
             if self._worker.show_welcome():
@@ -111,7 +116,9 @@ class Controller(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def show_deployment_details(self):
-        self.on_show_deployment_details_event.emit()
+        LOG.debug("show_deployment_details called")
+        QtCore.QMetaObject.invokeMethod(self._worker, 'get_deployment_details',
+                                        QtCore.Qt.QueuedConnection)
 
     @QtCore.pyqtSlot()
     def show_controller_config(self):
