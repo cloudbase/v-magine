@@ -120,7 +120,7 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def show_host_config(self):
         LOG.debug("show_host_config")
-        self.get_ext_vswitches();
+        self.get_ext_vswitches()
         self.on_show_host_config_event.emit()
 
     @QtCore.pyqtSlot()
@@ -271,6 +271,7 @@ class MainWindow(QtGui.QMainWindow):
         frame.evaluateJavaScript("ApplicationIsReady()")
 
         self._controller.start()
+
 
 class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
     def __init__(self, parent=None):

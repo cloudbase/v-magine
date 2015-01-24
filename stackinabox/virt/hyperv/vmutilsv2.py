@@ -52,7 +52,7 @@ class VMUtilsV2(vmutils.VMUtils):
 
     _STORAGE_ALLOC_SETTING_DATA_CLASS = 'Msvm_StorageAllocationSettingData'
     _ETHERNET_PORT_ALLOCATION_SETTING_DATA_CLASS = \
-    'Msvm_EthernetPortAllocationSettingData'
+        'Msvm_EthernetPortAllocationSettingData'
 
     _AUTO_STARTUP_NONE = 2
     _AUTO_STARTUP_RESTART_ACTIVE = 3

@@ -127,14 +127,14 @@ class VHDUtilsV2(vhdutils.VHDUtils):
         if vhd_format == constants.DISK_FORMAT_VHD:
             return super(VHDUtilsV2,
                          self).get_internal_vhd_size_by_file_size(
-                            vhd_path, new_vhd_file_size)
+                             vhd_path, new_vhd_file_size)
         else:
             vhd_info = self.get_vhd_info(vhd_path)
             vhd_type = vhd_info['Type']
             if vhd_type == self._VHD_TYPE_DIFFERENCING:
                 vhd_parent = self.get_vhd_parent_path(vhd_path)
-                return self.get_internal_vhd_size_by_file_size(vhd_parent,
-                    new_vhd_file_size)
+                return self.get_internal_vhd_size_by_file_size(
+                    vhd_parent, new_vhd_file_size)
             else:
                 try:
                     with open(vhd_path, 'rb') as f:
@@ -149,9 +149,9 @@ class VHDUtilsV2(vhdutils.VHDUtils):
                         chunk_ratio = (1 << 23) * lss / bs
                         size = new_vhd_file_size
 
-                        max_internal_size = (bs * chunk_ratio * (size - hs -
-                            ls - ms - bes - bes / chunk_ratio) / (bs *
-                            chunk_ratio + bes * chunk_ratio + bes))
+                        max_internal_size = (bs * chunk_ratio * (
+                            size - hs - ls - ms - bes - bes / chunk_ratio) /
+                            (bs * chunk_ratio + bes * chunk_ratio + bes))
 
                         return max_internal_size - (max_internal_size % bs)
 
@@ -160,8 +160,8 @@ class VHDUtilsV2(vhdutils.VHDUtils):
                                                     "internal size from VHDX: "
                                                     "%(vhd_path)s. Exception: "
                                                     "%(ex)s") %
-                                                    {"vhd_path": vhd_path,
-                                                     "ex": ex})
+                                                  {"vhd_path": vhd_path,
+                                                   "ex": ex})
 
     def _get_vhdx_current_header_offset(self, vhdx_file):
         sequence_numbers = []

@@ -2,6 +2,7 @@ from six.moves import winreg
 
 BASE_KEY = 'SOFTWARE\\Cloudbase Solutions\\V-Magine\\'
 
+
 class AppConfig(object):
     def _get_config_key_name(self, section):
         key_name = BASE_KEY

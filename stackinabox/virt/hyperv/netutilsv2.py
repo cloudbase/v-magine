@@ -21,6 +21,7 @@ from stackinabox.virt.hyperv import vmutils
 
 LOG = logging.getLogger(__name__)
 
+
 class NetworkUtilsV2(netutils.NetworkUtils):
 
     _EXTERNAL_PORT = 'Msvm_ExternalEthernetPort'
@@ -168,7 +169,7 @@ class NetworkUtilsV2(netutils.NetworkUtils):
                         wmi_result_class=self._ETHERNET_SWITCH_PORT)
                     if len(vswitch_ports):
                         vswitches = vswitch_ports[0].associators(
-                        wmi_result_class='Msvm_VirtualEthernetSwitch')
+                            wmi_result_class='Msvm_VirtualEthernetSwitch')
                         if vswitches:
                             ext_vswitches.append(vswitches[0])
         return ext_vswitches
@@ -425,13 +426,13 @@ class NetworkUtilsV2(netutils.NetworkUtils):
         vs_man_svc = self._conn.Msvm_VirtualSystemManagementService()[0]
         vmsettings = port.associators(
             wmi_result_class=self._VIRTUAL_SYSTEM_SETTING_DATA)
-        #See http://msdn.microsoft.com/en-us/library/cc160706%28VS.85%29.aspx
+        # See http://msdn.microsoft.com/en-us/library/cc160706%28VS.85%29.aspx
         (ret_val, summary_info) = vs_man_svc.GetSummaryInformation(
             [self._VM_SUMMARY_ENABLED_STATE],
             [v.path_() for v in vmsettings])
         if ret_val or not summary_info:
             raise vmutils.HyperVException(_('Cannot get VM summary data '
-                                                'for: %s') % port.ElementName)
+                                            'for: %s') % port.ElementName)
 
         return summary_info[0].EnabledState is self._HYPERV_VM_STATE_ENABLED
 

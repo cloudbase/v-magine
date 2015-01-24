@@ -70,6 +70,7 @@ OPENSTACK_LOG_DIR = "Log"
 
 CONTROLLER_SSH_KEY_NAME = "v-magine_controller_rsa"
 
+
 class DeploymentActions(object):
 
     def __init__(self):
@@ -102,7 +103,8 @@ class DeploymentActions(object):
         self._config.set_config_value("eula", True)
 
     def show_welcome(self):
-        return bool(self._config.get_config_value("show_welcome", default=True))
+        return bool(self._config.get_config_value("show_welcome",
+                                                  default=True))
 
     def set_show_welcome(self, show):
         self._config.set_config_value("show_welcome", show)
@@ -155,7 +157,7 @@ class DeploymentActions(object):
         features = ['FreeRDPWebConnect', 'VC120Redist']
         properties = {}
 
-        #properties["REDIRECT_HTTPS"] = "1"
+        # properties["REDIRECT_HTTPS"] = "1"
 
         properties["HTTP_PORT"] = FREERDP_WEBCONNECT_HTTP_PORT
         properties["HTTPS_PORT"] = FREERDP_WEBCONNECT_HTTPS_PORT
@@ -180,7 +182,7 @@ class DeploymentActions(object):
 
     def _check_username(self, username):
         username = username.strip()
-        if not "\\" in username:
+        if "\\" not in username:
             username = "%(host)s\\%(username)s" % {
                 "host": socket.gethostname(),
                 "username": username}

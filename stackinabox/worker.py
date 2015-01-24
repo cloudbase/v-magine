@@ -36,6 +36,7 @@ OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
 
 OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
 
+
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
         super(_VMConsoleThread, self).__init__()
@@ -273,7 +274,7 @@ class Worker(QtCore.QObject):
                                       openstack_base_dir, hyperv_host_username,
                                       hyperv_host_password):
         self._update_status('Checking if the OpenStack components for '
-                                 'Hyper-V are already installed...')
+                            'Hyper-V are already installed...')
         for msi_info in self._dep_actions.check_installed_components():
             self._update_status('Uninstalling %s' % msi_info[1])
             self._dep_actions.uninstall_product(msi_info[0])
@@ -400,11 +401,11 @@ class Worker(QtCore.QObject):
             self._dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
             # Refresh VSwitch list
             self.get_ext_vswitches()
-            self.add_ext_vswitch_completed.emit(True);
+            self.add_ext_vswitch_completed.emit(True)
         except Exception as ex:
             LOG.exception(ex)
             self.error.emit(ex)
-            self.add_ext_vswitch_completed.emit(False);
+            self.add_ext_vswitch_completed.emit(False)
             raise
 
     @QtCore.pyqtSlot(str)
@@ -440,7 +441,7 @@ class Worker(QtCore.QObject):
 
             # Authenticate with the SSH key
             ssh_password = None
-            #ssh_password = admin_password
+            # ssh_password = admin_password
 
             nova_config = self._install_rdo(rdo_installer, mgmt_ip,
                                             ssh_key_path, ssh_user,

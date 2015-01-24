@@ -15,6 +15,7 @@
 
 from stackinabox.virt.hyperv import driver
 
+
 def get_virt_driver():
     # TODO(alexpilotti): Add logic for additional virt drivers later on
     return driver.HyperVDriver()

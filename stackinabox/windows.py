@@ -364,6 +364,7 @@ class WindowsUtils(object):
             else:
                 raise
 
+
 def kill_process(pid):
     hProc = None
     try:
