@@ -37,6 +37,10 @@ class HyperVDriver(base.BaseDriver):
     def vm_exists(self, vm_name):
         return self._vmutils.vm_exists(vm_name)
 
+    def get_vm_memory_usage(self, vm_name):
+        return (self._vmutils.get_vm_summary_info(
+            vm_name).get('MemoryUsage') or 0) * 1024 * 1024
+
     def vm_is_stopped(self, vm_name):
         return (self._vmutils.get_vm_state(vm_name) ==
                 constants.HYPERV_VM_STATE_DISABLED)

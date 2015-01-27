@@ -284,11 +284,16 @@ class DeploymentActions(object):
                                         "nova_install.log")
         LOG.info("Nova compute installed")
 
-    def get_openstack_vm_memory_mb(self):
+    def get_openstack_vm_memory_mb(self, vm_name):
         mem_info = psutil.virtual_memory()
         LOG.info("Host memory: %s" % str(mem_info))
 
-        max_mem_mb = min(mem_info.available / units.Mi - MIN_OS_FREE_MEMORY_MB,
+        mem_available = mem_info.available
+        if self._virt_driver.vm_exists(vm_name):
+            # If the controller VM exists, add its memory as it will be deleted
+            mem_available += self._virt_driver.get_vm_memory_usage(vm_name)
+
+        max_mem_mb = min(mem_available / units.Mi - MIN_OS_FREE_MEMORY_MB,
                          OPENSTACK_MAX_VM_MEM_MB)
         # Get the best option considering host limits
         suggested_mem_mb = min(max_mem_mb, OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
