@@ -131,6 +131,7 @@ class HyperVDriver(base.BaseDriver):
 
     def check_platform(self):
         VLAN_HOTFIX_ID = '2982439'
+        OCT14_RLP_HOTFIX_ID = '2995388'
 
         if not self._windows_utils.check_os_version(
                 6, 2, comparison=windows.VER_GREATER_EQUAL):
@@ -145,7 +146,8 @@ class HyperVDriver(base.BaseDriver):
                             "installing OpenStack")
 
         if (self._windows_utils.check_os_version(6, 3) and
-                not self._windows_utils.check_hotfix(VLAN_HOTFIX_ID)):
+                not (self._windows_utils.check_hotfix(VLAN_HOTFIX_ID) or
+                     self._windows_utils.check_hotfix(OCT14_RLP_HOTFIX_ID))):
             raise Exception(
                 "Windows update KB%(hotfix_id)s needs to be installed for "
                 "OpenStack to work properly on this host. Please see: "
