@@ -59,6 +59,11 @@ class VMUtilsV2(vmutils.VMUtils):
     _AUTO_STARTUP_NONE = 2
     _AUTO_STARTUP_RESTART_ACTIVE = 3
 
+    _BOOT_ORDER_FLOPPY = 0
+    _BOOT_ORDER_CDROM = 1
+    _BOOT_ORDER_HDD = 2
+    _BOOT_ORDER_PXE = 3
+
     _vm_power_states_map = {constants.HYPERV_VM_STATE_ENABLED: 2,
                             constants.HYPERV_VM_STATE_DISABLED: 3,
                             constants.HYPERV_VM_STATE_SHUTTING_DOWN: 4,
@@ -105,7 +110,10 @@ class VMUtilsV2(vmutils.VMUtils):
         vs_data.AutomaticStartupAction = self._AUTO_STARTUP_RESTART_ACTIVE
 
         vs_data.VirtualNumaEnabled = False
-
+        vs_data.BootOrder = [self._BOOT_ORDER_HDD,
+                             self._BOOT_ORDER_PXE,
+                             self._BOOT_ORDER_FLOPPY,
+                             self._BOOT_ORDER_CDROM]
         (job_path,
          vm_path,
          ret_val) = vs_man_svc.DefineSystem(ResourceSettings=[],
