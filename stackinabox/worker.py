@@ -342,7 +342,8 @@ class Worker(QtCore.QObject):
     def get_config(self):
         try:
             (min_mem_mb, suggested_mem_mb,
-             max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb()
+             max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb(
+                OPENSTACK_CONTROLLER_VM_NAME)
 
             (fip_range,
              fip_range_start,
