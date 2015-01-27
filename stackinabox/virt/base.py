@@ -25,7 +25,8 @@ class BaseDriver(object):
         raise NotImplementedError()
 
     def create_vm(self, vm_name, vm_path, max_disk_size, max_memory_mb,
-                  min_memory_mb, vcpus_num, vmnic_info, vfd_path):
+                  min_memory_mb, vcpus_num, vmnic_info, vfd_path,
+                  iso_path, console_named_pipe):
         raise NotImplementedError()
 
     def vswitch_exists(self, vswitch_name):

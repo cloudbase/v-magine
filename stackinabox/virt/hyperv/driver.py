@@ -52,7 +52,7 @@ class HyperVDriver(base.BaseDriver):
         self._vmutils.destroy_vm(vm_name)
 
     def create_vm(self, vm_name, vm_path, max_disk_size, max_memory_mb,
-                  min_memory_mb, vcpus_num, vmnic_info, vfd_path,
+                  min_memory_mb, vcpus_num, vmnic_info, vfd_path, iso_path,
                   console_named_pipe):
         vhd_path = os.path.join(vm_path, "%s.vhdx" % vm_name)
 
@@ -73,6 +73,10 @@ class HyperVDriver(base.BaseDriver):
 
         if vfd_path:
             self._vmutils.attach_floppy_drive(vm_name, vfd_path, 0, 0)
+
+        if iso_path:
+            self._vmutils.attach_ide_drive(vm_name, iso_path, 0, 1,
+                                           constants.IDE_DVD)
 
         for (vmswitch_name, vmnic_name, mac_address, pxe, allow_mac_spoofing,
              access_vlan_id, trunk_vlan_ids, private_vlan_id) in vmnic_info:

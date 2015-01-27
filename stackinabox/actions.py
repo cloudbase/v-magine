@@ -363,7 +363,7 @@ class DeploymentActions(object):
 
         self._virt_driver.create_vm(vm_name, vm_dir, vhd_max_size,
                                     max_mem_mb, min_mem_mb, vcpu_count,
-                                    vm_network_config, vfd_path,
+                                    vm_network_config, vfd_path, None,
                                     console_named_pipe)
         self._vm_name = vm_name
 
