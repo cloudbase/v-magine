@@ -180,6 +180,10 @@ class Controller(QtCore.QObject):
             raise
 
     @QtCore.pyqtSlot()
+    def redeploy_openstack(self):
+        self.show_controller_config()
+
+    @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
         LOG.debug("get_ext_vswitches called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'get_ext_vswitches',

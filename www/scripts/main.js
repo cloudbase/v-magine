@@ -162,7 +162,7 @@ var term;
 
 function setupTerm() {
     term_cols = 136
-    term_rows = 36
+    term_rows = 25
 
     term = new Terminal({
         cols: term_cols,
@@ -400,6 +400,11 @@ function initUi() {
 
     $('#opencontrollersshbutton').click(function(){
         controller.open_controller_ssh();
+        return false;
+    });
+
+    $('#redeployopenstack').click(function(){
+        controller.redeploy_openstack();
         return false;
     });
 

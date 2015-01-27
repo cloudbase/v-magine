@@ -1130,7 +1130,7 @@ select:required:invalid, select:focus:invalid {
     text-align: left;
     color: white;
     margin: 10px;
-    height: 300px;
+    height: 380px;
     overflow: auto;
     font-family: "Ubuntu Mono Regular", monospace !important;
 }
@@ -1263,12 +1263,12 @@ select:required:invalid, select:focus:invalid {
 }
 
 
-#redeploy{
+#redeployopenstack{
     float:right;
     width:100px;
 }
 
-#remove{
+#removeopenstack{
     float:left;
     width:100px;
 }
