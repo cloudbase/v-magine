@@ -22,7 +22,7 @@ import threading
 import time
 import sys
 
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 from stackinabox import actions
 from stackinabox import rdo

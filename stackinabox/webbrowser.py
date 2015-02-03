@@ -1,14 +1,16 @@
 import ctypes
 import os
 
-from PyQt4 import QtCore
-from PyQt4 import QtGui
-from PyQt4 import QtWebKit
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWebKit
+from PyQt5 import QtWidgets
+from PyQt5 import QtWebKitWidgets
 
 from stackinabox import utils
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, url):
         super(MainWindow, self).__init__()
@@ -19,11 +21,11 @@ class MainWindow(QtGui.QMainWindow):
 
         self.resize(1024, 768)
 
-        self._web = QtWebKit.QWebView()
+        self._web = QtWebKitWidgets.QWebView()
 
-        self._status_bar_label = QtGui.QLabel('Loading...   ')
+        self._status_bar_label = QtWidgets.QLabel('Loading...   ')
 
-        self._progressbar = QtGui.QProgressBar()
+        self._progressbar = QtWidgets.QProgressBar()
         self._progressbar.setMinimum(0)
         self._progressbar.setMaximum(100)
 
@@ -69,11 +71,11 @@ class MainWindow(QtGui.QMainWindow):
         self._status_bar_label.hide()
 
     def closeEvent(self, event):
-        reply = QtGui.QMessageBox.question(
+        reply = QtWidgets.QMessageBox.question(
             self, 'Message',
             "Are you sure you want to close this window?",
-            QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+            QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
             event.accept()
         else:
             event.ignore()

@@ -23,9 +23,11 @@ import pkg_resources
 import xmlrpclib
 
 from pybootd import daemons as pybootd_daemons
-from PyQt4 import QtCore
-from PyQt4 import QtGui
-from PyQt4 import QtWebKit
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWebKit
+from PyQt5 import QtWidgets
+from PyQt5 import QtWebKitWidgets
 
 import stackinabox
 from stackinabox import utils
@@ -219,7 +221,7 @@ class Controller(QtCore.QObject):
                                         QtCore.Qt.QueuedConnection)
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -228,7 +230,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(app_icon_path))
         self.setWindowTitle('V-Magine - OpenStack Installer')
 
-        self._web = QtWebKit.QWebView()
+        self._web = QtWebKitWidgets.QWebView()
 
         self._web.setPage(QWebPageWithoutJsWarning(self._web))
 
@@ -257,7 +259,9 @@ class MainWindow(QtGui.QMainWindow):
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                 appid)
 
-        self._web.load(QtCore.QUrl("www/index.html"))
+        base_dir = os.path.dirname(sys.executable)
+        self._web.setUrl(QtCore.QUrl.fromLocalFile(
+            os.path.join(base_dir, "www\\index.html")))
 
         self._web.show()
 
@@ -267,12 +271,12 @@ class MainWindow(QtGui.QMainWindow):
         if self._worker.can_close():
             event.accept()
         else:
-            reply = QtGui.QMessageBox.question(
+            reply = QtWidgets.QMessageBox.question(
                 self, 'Message',
                 "Are you sure to quit and interrupt the OpenStack "
                 "installation?",
-                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-            if reply == QtGui.QMessageBox.Yes:
+                QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.Yes:
                 event.accept()
             else:
                 event.ignore()
@@ -298,7 +302,7 @@ class MainWindow(QtGui.QMainWindow):
         self._controller.start()
 
 
-class QWebPageWithoutJsWarning(QtWebKit.QWebPage):
+class QWebPageWithoutJsWarning(QtWebKitWidgets.QWebPage):
     def __init__(self, parent=None):
         super(QWebPageWithoutJsWarning, self).__init__(parent)
 
@@ -318,7 +322,7 @@ def _config_logging(log_dir):
 
 
 def main(url=None):
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
 
     if url:
         main_window = webbrowser.MainWindow(url)
