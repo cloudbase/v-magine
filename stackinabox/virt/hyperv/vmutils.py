@@ -100,14 +100,14 @@ class VMUtils(object):
 
     @property
     def _conn(self):
-        if self._wmi_conn is None:
-            self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
+        # if self._wmi_conn is None:
+        self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
         return self._wmi_conn
 
     @property
     def _conn_cimv2(self):
-        if self._wmi_conn_cimv2 is None:
-            self._wmi_conn_cimv2 = wmi.WMI(moniker=self._wmi_cimv2_namespace)
+        # if self._wmi_conn_cimv2 is None:
+        self._wmi_conn_cimv2 = wmi.WMI(moniker=self._wmi_cimv2_namespace)
         return self._wmi_conn_cimv2
 
     def get_host_config(self):
