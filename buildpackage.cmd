@@ -1,6 +1,6 @@
 @echo off
 
-pyinstaller --noconfirm --log-level=WARN --onedir --noconsole --hidden-import=pybootd --hidden-import=socket --icon=resources\app.ico stackinabox.spec 
+pyinstaller --noconfirm --log-level=WARN --onedir stackinabox.spec
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 xcopy /S /E /Y www dist\stackinabox\www\
