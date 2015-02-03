@@ -54,8 +54,8 @@ class VHDUtils(object):
 
     @property
     def _conn(self):
-        if self._wmi_conn is None:
-            self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
+        # if self._wmi_conn is None:
+        self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
         return self._wmi_conn
 
     def validate_vhd(self, vhd_path):

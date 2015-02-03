@@ -29,6 +29,8 @@ LOG = logging.getLogger(__name__)
 
 class HyperVDriver(base.BaseDriver):
     def __init__(self):
+        LOG.debug("Initializing HyperVDriver")
+
         self._vmutils = vmutilsv2.VMUtilsV2()
         self._vhdutils = vhdutilsv2.VHDUtilsV2()
         self._netutils = netutilsv2.NetworkUtilsV2()
