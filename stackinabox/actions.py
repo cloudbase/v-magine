@@ -114,13 +114,15 @@ class DeploymentActions(object):
         return os.path.join(ssh_dir, CONTROLLER_SSH_KEY_NAME)
 
     def get_vm_ip_address(self, vm_name):
-        (ipv4_addresses,
-         ipv6_addresses) = self._virt_driver.get_guest_ip_addresses(vm_name)
+        if self._virt_driver.vm_exists(vm_name):
+            (ipv4_addresses,
+             ipv6_addresses) = self._virt_driver.get_guest_ip_addresses(
+                vm_name)
 
-        if ipv4_addresses:
-            return ipv4_addresses[0]
-        elif ipv6_addresses:
-            return ipv6_addresses[0]
+            if ipv4_addresses:
+                return ipv4_addresses[0]
+            elif ipv6_addresses:
+                return ipv6_addresses[0]
 
     def open_controller_ssh(self, host_address):
         key_path = self._get_controller_ssh_key_path()
@@ -355,7 +357,7 @@ class DeploymentActions(object):
     def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
                             vm_network_config, console_named_pipe):
         (min_mem_mb, max_mem_mb_auto,
-         max_mem_mb_limit) = self.get_openstack_vm_memory_mb()
+         max_mem_mb_limit) = self.get_openstack_vm_memory_mb(vm_name)
 
         if not max_mem_mb:
             max_mem_mb = max_mem_mb_auto

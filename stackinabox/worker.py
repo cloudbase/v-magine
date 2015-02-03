@@ -413,10 +413,11 @@ class Worker(QtCore.QObject):
 
     def _get_controller_ip(self):
         return self._dep_actions.get_vm_ip_address(
-            OPENSTACK_CONTROLLER_VM_NAME)
+            OPENSTACK_CONTROLLER_VM_NAME) or ""
 
     @QtCore.pyqtSlot()
     def get_deployment_details(self):
+        LOG.debug("get_deployment_details called")
         controller_ip = self._get_controller_ip()
         self.get_deployment_details_completed.emit(
             controller_ip,
