@@ -86,7 +86,8 @@ class Controller(QtCore.QObject):
 
     def _install_done(self, success):
         self.on_install_done_event.emit(success)
-        self.show_deployment_details()
+        if success:
+            self.show_deployment_details()
 
     def _get_ext_vswitches_completed(self, ext_vswitches):
         self.on_get_ext_vswitches_completed_event.emit(
