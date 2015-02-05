@@ -274,11 +274,16 @@
                     <input class="small-field" type="text" id="vswitchname" ng-model="newExtVSwitch" required/>
                 </div>
 
+                <div class="spinner-wrapper">
+                    <i class="fa fa-circle-o-notch fa-3x fa-spin margin-bottom" id="spinner" style="color:#0099CC"></i>
+                </div>
+
                 <div class="icon-buttons" align="auto">
                     <button type="submit" id="createswitchdialogok" formaction="" class="inputButton-icon large" name="createswitchdialogok" style="padding:0px 20px 0px 0px;">
-                    <h2><i class="fa fa-check-circle on-left" style="color:#0099CC"></i>Create</h2></button>
+                    <h2 id="createswitchdialogokwrap"><i class="fa fa-check-circle on-left" style="color:#0099CC" id="createswitchdialogokicon"></i>Create</h2></button>
+
                     <button type="submit" formaction="" class="inputButton-icon large" id="createswitchdialogcancel" name="createswitchdialogcancel"
-                     style="padding:0px 20px 0px 0px;"><h2><i class="fa fa-times-circle on-left" style="color:#0099CC"></i>Cancel</h2></button>
+                     style="padding:0px 20px 0px 0px;"><h2 id="createswitchdialogcancelwrap"><i class="fa fa-times-circle on-left" style="color:#0099CC" id="createswitchdialogcancelicon"></i>Cancel</h2></button>
                 </div>
             </form>
         </div>

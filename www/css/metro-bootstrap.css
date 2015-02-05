@@ -1658,9 +1658,8 @@ a {
 }
 .metro .button:disabled,
 .metro .button.disabled {
-  background-color: #eaeaea !important;
-  color: #bebebe !important;
-  cursor: not-allowed !important;
+  color: #A0A0A0  !important;
+  cursor: default !important;
 }
 .metro .button * {
   color: inherit;
@@ -1743,9 +1742,8 @@ a {
 }
 .metro button:disabled,
 .metro button.disabled {
-  background-color: #eaeaea !important;
-  color: #bebebe !important;
-  cursor: not-allowed !important;
+  color: #A0A0A0  !important;
+  cursor: default !important;
 }
 .metro button * {
   color: inherit;

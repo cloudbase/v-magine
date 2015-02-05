@@ -184,9 +184,19 @@ function enableAddExtVSwitchDialogControls(enable) {
     if(!enable) {
         $("#createswitchdialogok").attr('disabled','disabled');
         $("#createswitchdialogcancel").attr('disabled','disabled');
+        $("#createswitchdialogokwrap").css('color','#A0A0A0')
+        $("#createswitchdialogokicon").css('color','#A0A0A0')
+        $("#createswitchdialogcancelwrap").css('color','#A0A0A0')
+        $("#createswitchdialogcancelicon").css('color','#A0A0A0')
+        $("#spinner").css('display','inline-block')
     } else {
         $("#createswitchdialogok").removeAttr('disabled');
         $("#createswitchdialogcancel").removeAttr('disabled');
+        $("#createswitchdialogokwrap").css('color','#FFFFFF')
+        $("#createswitchdialogokicon").css('color','#0099CC')
+        $("#createswitchdialogcancelwrap").css('color','#FFFFFF')
+        $("#createswitchdialogcancelicon").css('color','#0099CC')
+        $("#spinner").css('display','none')
     }
 }
 

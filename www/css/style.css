@@ -56,7 +56,7 @@ li{
     display: none;
 }
 
-#host-setup{        /* done */
+#host-setup{
    display: none;
 }
 
@@ -683,6 +683,20 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     top:-42px;
 }
 
+#spinner {
+    display: none;
+}
+
+.spinner-wrapper {
+    height: 54px;
+    margin: 400px 0 0 85px;
+    position: absolute;
+}
+
+.icon-buttons {
+    margin-left: 15px;
+}
+
 /* Tool Tip */
 #rangevalue {
     color: white;
@@ -810,7 +824,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 .compute-createSwitch{
     float: left;
     width: 100%;
-    height: 580px;
+    height: 540px;
 }
 
 .compute-rightside{
