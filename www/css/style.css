@@ -737,18 +737,10 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     top:-42px;
 }
 
-#spinner {
-    display: none;
-}
-
-.spinner-wrapper {
-    height: 54px;
-    margin: 400px 0 0 85px;
-    position: absolute;
-}
 
 .icon-buttons {
-    margin-left: 15px;
+    margin-left: 25px;
+    width: 250px;
 }
 
 /* Tool Tip */
@@ -1423,4 +1415,85 @@ select:required:invalid, select:focus:invalid {
 
 #log{
     height: 520px;
+}
+
+
+/* ------------------ spinner ------------------------ */
+
+.spinner-wrapper {
+    height: 54px;
+    margin: 460px 0 0 30px;
+    position: absolute;
+}
+
+#spinner{
+    position:relative;
+    width:223px;
+    display: none;
+    height:27px
+}
+
+.spinner{
+    position:absolute;
+    top:0;
+    background-color:#FFFFFF;
+    width:15px;
+    height:15px;
+    -webkit-animation-name:bounce_fountainG;
+    -webkit-animation-duration:1.3s;
+    -webkit-animation-iteration-count:infinite;
+    -webkit-animation-direction:linear;
+    -webkit-transform:scale(.3);
+    -webkit-border-radius:18px;
+}
+
+#fountainG_1{
+    left:0;
+    -webkit-animation-delay:0.52s;
+}
+
+#fountainG_2{
+    left:28px;
+    -webkit-animation-delay:0.65s;
+}
+
+#fountainG_3{
+    left:56px;
+    -webkit-animation-delay:0.78s;
+}
+
+#fountainG_4{
+    left:84px;
+    -webkit-animation-delay:0.91s;
+}
+
+#fountainG_5{
+    left:112px;
+    -webkit-animation-delay:1.04s;
+}
+
+#fountainG_6{
+    left:139px;
+    -webkit-animation-delay:1.17s;
+}
+
+#fountainG_7{
+    left:167px;
+    -webkit-animation-delay:1.3s;
+}
+
+#fountainG_8{
+    left:195px;
+    -webkit-animation-delay:1.43s;
+}
+
+@-webkit-keyframes bounce_fountainG{
+0%{
+    -webkit-transform:scale(1);
+    background-color:#FFFFFF;
+}
+
+100%{
+    -webkit-transform:scale(.3);
+    background-color:#00AEFF;
 }
