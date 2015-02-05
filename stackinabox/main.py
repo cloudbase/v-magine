@@ -71,6 +71,8 @@ class Controller(QtCore.QObject):
             self._add_ext_vswitch_completed)
         self._worker.get_deployment_details_completed.connect(
             self._get_deployment_details_completed)
+        self._worker.platform_requirements_checked.connect(
+            self._platform_requirements_checked)
 
     def _send_stdout_data(self, data):
         self.on_stdout_data_event.emit(data)
@@ -103,6 +105,14 @@ class Controller(QtCore.QObject):
     def _get_deployment_details_completed(self, controller_ip, horizon_url):
         self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
 
+    def _platform_requirements_checked(self):
+        self.show_controller_config()
+
+    def _check_platform_requirements(self):
+        QtCore.QMetaObject.invokeMethod(self._worker,
+                                        'check_platform_requirements',
+                                        QtCore.Qt.QueuedConnection)
+
     def start(self):
         try:
             if self._worker.show_welcome():
@@ -112,7 +122,7 @@ class Controller(QtCore.QObject):
             elif self._worker.is_openstack_deployed():
                 self.show_deployment_details()
             else:
-                self.show_controller_config()
+                self._check_platform_requirements()
         except Exception as ex:
             LOG.exception(ex)
             raise
@@ -145,7 +155,7 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def accept_eula(self):
         self._worker.set_eula_accepted()
-        self.show_controller_config()
+        self._check_platform_requirements()
 
     @QtCore.pyqtSlot()
     def refuse_eula(self):
