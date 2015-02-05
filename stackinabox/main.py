@@ -54,10 +54,11 @@ class Controller(QtCore.QObject):
     on_show_eula_event = QtCore.pyqtSignal()
     on_show_deployment_details_event = QtCore.pyqtSignal(str, str)
 
-    def __init__(self, main_window, worker):
+    def __init__(self, worker):
         super(Controller, self).__init__()
-        self._main_window = main_window
         self._worker = worker
+        self._main_window = None
+        self._splash_window = None
         self._worker.stdout_data_ready.connect(self._send_stdout_data)
         self._worker.stderr_data_ready.connect(self._send_stderr_data)
         self._worker.status_changed.connect(self._status_changed)
@@ -73,6 +74,12 @@ class Controller(QtCore.QObject):
             self._get_deployment_details_completed)
         self._worker.platform_requirements_checked.connect(
             self._platform_requirements_checked)
+
+    def set_main_window(self, main_window):
+        self._main_window = main_window
+
+    def set_splash_window(self, splash_window):
+        self._splash_window = splash_window
 
     def _send_stdout_data(self, data):
         self.on_stdout_data_event.emit(data)
@@ -104,14 +111,27 @@ class Controller(QtCore.QObject):
 
     def _get_deployment_details_completed(self, controller_ip, horizon_url):
         self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
+        self.hide_splash()
 
     def _platform_requirements_checked(self):
         self.show_controller_config()
+        self.hide_splash()
 
     def _check_platform_requirements(self):
         QtCore.QMetaObject.invokeMethod(self._worker,
                                         'check_platform_requirements',
                                         QtCore.Qt.QueuedConnection)
+
+    def show_splash(self):
+        self._splash_window.show()
+
+    def hide_splash(self):
+        LOG.debug("hide_splash called")
+        self._splash_window.hide()
+        self._main_window.show()
+
+    def can_close(self):
+        return self._worker.can_close()
 
     def start(self):
         try:
@@ -146,11 +166,13 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def show_welcome(self):
         self.on_show_welcome_event.emit()
+        self.hide_splash()
 
     @QtCore.pyqtSlot()
     def show_eula(self):
         self._worker.set_show_welcome(False)
         self.on_show_eula_event.emit()
+        self.hide_splash()
 
     @QtCore.pyqtSlot()
     def accept_eula(self):
@@ -234,8 +256,11 @@ class Controller(QtCore.QObject):
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, controller):
         super(MainWindow, self).__init__()
+
+        self._controller = controller
+        self._controller.set_main_window(self)
 
         app_icon_path = os.path.join(utils.get_resources_dir(), "app.ico")
         self.setWindowIcon(QtGui.QIcon(app_icon_path))
@@ -253,9 +278,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._web.loadFinished.connect(self.onLoad)
 
-        self._init_worker()
-        self._controller = Controller(self, self._worker)
-
         page = self._web.page()
         page.settings().setAttribute(
             QtWebKit.QWebSettings.DeveloperExtrasEnabled, True)
@@ -270,16 +292,16 @@ class MainWindow(QtWidgets.QMainWindow):
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                 appid)
 
-        base_dir = os.path.dirname(sys.executable)
+        web_dir = utils.get_web_dir()
         self._web.setUrl(QtCore.QUrl.fromLocalFile(
-            os.path.join(base_dir, "www\\index.html")))
-
-        self._web.show()
+            os.path.join(web_dir, "index.html")))
 
         self.setFixedSize(width, heigth)
 
+        self._web.show()
+
     def closeEvent(self, event):
-        if self._worker.can_close():
+        if self._controller.can_close():
             event.accept()
         else:
             reply = QtWidgets.QMessageBox.question(
@@ -291,15 +313,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 event.accept()
             else:
                 event.ignore()
-
-    def _init_worker(self):
-        self._thread = QtCore.QThread()
-        self._worker = deployment_worker.Worker()
-        self._worker.moveToThread(self._thread)
-
-        self._worker.finished.connect(self._thread.quit)
-        self._thread.started.connect(self._worker.started)
-        self._thread.start()
 
     def onLoad(self):
         LOG.debug("onLoad")
@@ -332,19 +345,41 @@ def _config_logging(log_dir):
     logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 
+def _init_worker():
+    thread = QtCore.QThread()
+    worker = deployment_worker.Worker(thread)
+    thread.start()
+    return worker
+
+
+def _create_splash_window(main_window):
+    res_dir = utils.get_resources_dir()
+    splash_img_path = os.path.join(res_dir, "v-magine-splash.png")
+
+    image = QtGui.QPixmap(splash_img_path)
+    splash = QtWidgets.QSplashScreen(main_window, image)
+    splash.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+    splash.setMask(image.mask())
+    return splash
+
+
 def main(url=None):
     app = QtWidgets.QApplication(sys.argv)
 
     if url:
         main_window = webbrowser.MainWindow(url)
     else:
-        base_dir = os.path.dirname(sys.executable)
+        worker = _init_worker()
+        controller = Controller(worker)
+
+        base_dir = utils.get_base_dir()
         os.chdir(base_dir)
         _config_logging(base_dir)
 
-        main_window = MainWindow()
-
-    main_window.show()
+        main_window = MainWindow(controller)
+        splash = _create_splash_window(main_window)
+        controller.set_splash_window(splash)
+        controller.show_splash()
 
     sys.exit(app.exec_())
 

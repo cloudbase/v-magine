@@ -72,8 +72,13 @@ class Worker(QtCore.QObject):
     get_deployment_details_completed = QtCore.pyqtSignal(str, str)
     platform_requirements_checked = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, thread):
         super(Worker, self).__init__()
+
+        self._tread = thread
+        self.moveToThread(self._tread)
+        self.finished.connect(self._tread.quit)
+        self._tread.started.connect(self.started)
 
         self._term_type = None
         self._term_cols = None
