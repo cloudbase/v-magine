@@ -70,6 +70,7 @@ class Worker(QtCore.QObject):
     get_available_host_nics_completed = QtCore.pyqtSignal(list)
     add_ext_vswitch_completed = QtCore.pyqtSignal(bool)
     get_deployment_details_completed = QtCore.pyqtSignal(str, str)
+    platform_requirements_checked = QtCore.pyqtSignal()
 
     def __init__(self):
         super(Worker, self).__init__()
@@ -369,6 +370,16 @@ class Worker(QtCore.QObject):
             LOG.exception(ex)
             self.error.emit(ex)
             raise
+
+    @QtCore.pyqtSlot()
+    def check_platform_requirements(self):
+        try:
+            LOG.debug("check_platform_requirements called")
+            self._dep_actions.check_platform_requirements()
+            self.platform_requirements_checked.emit()
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
 
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
