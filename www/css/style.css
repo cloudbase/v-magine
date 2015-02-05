@@ -4,7 +4,7 @@
 }
 
 @font-face {
-    font-family: "Segoe UI SemiLight_";
+    font-family: "Segoe UI SemiLight";
     src: url('../fonts/segoeuisl.ttf') format('truetype');
 }
 
@@ -14,7 +14,7 @@
 }
 
 @font-face {
-    font-family: "Segoe UI SemiBold_";
+    font-family: "Segoe UI SemiBold";
     src: url('../fonts/seguisb.ttf') format('truetype');
 }
 
@@ -22,7 +22,6 @@
     font-family: "Segoe UI Bold_";
     src: url('../fonts/segoeuib.ttf') format('truetype');
 }
-
 
 @font-face {
   font-family: 'Ubuntu Mono Regular';
@@ -737,20 +736,15 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     top:-42px;
 }
 
-#spinner {
-    display: none;
-}
-
-.spinner-wrapper {
-    height: 54px;
-    margin: 400px 0 0 85px;
-    position: absolute;
-}
 
 .icon-buttons {
-    margin-left: 15px;
+    margin-left: 25px;
+    width: 250px;
 }
 
+#errorMessage .icon-buttons {
+    margin-left: 340px;
+}
 /* Tool Tip */
 #rangevalue {
     color: white;
@@ -989,10 +983,10 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 .widget label{
     color:#fff;
+    font-family: "Segoe UI SemiBold", Arial !important;
     margin-top: 20px;
     line-height: 10px;
-    font-weight: bold;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 #createSwitch{
@@ -1095,17 +1089,21 @@ select:required:invalid, select:focus:invalid {
     /*margin-right:55px; */
 }
 
-#wrap-review h2{
-    line-height: 2px;
-    color:#37A8DF;
-    margin-bottom:20px;
-    font-size: 18px;
-    padding-right:2px;
+#wrap-review h4{            /*white header*/
+    color:#fff;
+    font-family: "Segoe UI SemiBold", Arial !important;
+    font-weight: normal;
+    margin-bottom: 0px !important;
 }
 
-#wrap-review h4{
-    color:#fff;
-    font-weight: normal;
+#wrap-review h2{            /*blue text*/
+    /*line-height: 2px;*/
+    color:#37A8DF;
+    margin-top: 0px !important;
+    margin-bottom:20px;
+    font-family: "Segoe UI SemiLight", Arial !important;
+    font-size: 18px;
+    padding-right:2px;
 }
 
 .AD{
@@ -1423,4 +1421,85 @@ select:required:invalid, select:focus:invalid {
 
 #log{
     height: 520px;
+}
+
+
+/* ------------------ spinner ------------------------ */
+
+.spinner-wrapper {
+    height: 54px;
+    margin: 460px 0 0 30px;
+    position: absolute;
+}
+
+#spinner{
+    position:relative;
+    width:223px;
+    display: none;
+    height:27px
+}
+
+.spinner{
+    position:absolute;
+    top:0;
+    background-color:#FFFFFF;
+    width:15px;
+    height:15px;
+    -webkit-animation-name:bounce_fountainG;
+    -webkit-animation-duration:1.3s;
+    -webkit-animation-iteration-count:infinite;
+    -webkit-animation-direction:linear;
+    -webkit-transform:scale(.3);
+    -webkit-border-radius:18px;
+}
+
+#fountainG_1{
+    left:0;
+    -webkit-animation-delay:0.52s;
+}
+
+#fountainG_2{
+    left:28px;
+    -webkit-animation-delay:0.65s;
+}
+
+#fountainG_3{
+    left:56px;
+    -webkit-animation-delay:0.78s;
+}
+
+#fountainG_4{
+    left:84px;
+    -webkit-animation-delay:0.91s;
+}
+
+#fountainG_5{
+    left:112px;
+    -webkit-animation-delay:1.04s;
+}
+
+#fountainG_6{
+    left:139px;
+    -webkit-animation-delay:1.17s;
+}
+
+#fountainG_7{
+    left:167px;
+    -webkit-animation-delay:1.3s;
+}
+
+#fountainG_8{
+    left:195px;
+    -webkit-animation-delay:1.43s;
+}
+
+@-webkit-keyframes bounce_fountainG{
+0%{
+    -webkit-transform:scale(1);
+    background-color:#FFFFFF;
+}
+
+100%{
+    -webkit-transform:scale(.3);
+    background-color:#00AEFF;
 }
