@@ -61,13 +61,16 @@
 
     <div class="content-page" id="host-setup">
         <div class="top">
-            <h1>Hyper-V Host Setup</h1>
+            <div class="header">
+                <h1>Hyper-V Host Setup</h1>
+                <h3>Please specify your host details, including install location and Hyper-V virtual switch</h3>
+            </div>
             <div class="v-magine-logo">
                 <img src="images/v-magine-logo.svg">
             </div>
         </div>
 
-        <div id="wrap-2">
+        <div class="content">
             <form action="#" name="hostconfigform" id="hostconfigform" class="field">
                 <div class="widget" id="left-widget">
                     <label>Host Admin User</label>
@@ -90,17 +93,25 @@
                 </div>
             </form>
         </div>
+
+        <div class="progress_bar">
+            <h4>Select an administrator username for OpenStack Hyper-V services</h4>
+        </div>
+
     </div>
 
     <div class="content-page" id="page-2">
         <div class="top">
-            <h1>OpenStack Setup</h1>
+            <div class="header">
+                <h1>OpenStack Setup</h1>
+                <h3>Please specify vm details and OpenStack networking setup</h3>
+            </div>
             <div class="v-magine-logo">
                 <img src="images/v-magine-logo.svg">
             </div>
         </div>
 
-        <div id="wrap-2">
+        <div class="content">
             <form action="#" name="controllerconfigform" id="controllerconfigform" class="field">
                 <div class="widget" id="controller">
                     <h2><i class="fa fa-desktop on-left"></i>Controller</h2>
