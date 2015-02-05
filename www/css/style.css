@@ -40,6 +40,10 @@ li{
     list-style-type: none;
 }
 
+label {
+    cursor: default;
+}
+
 .windows{
     width: 1020px;
     height: 768px;
@@ -58,6 +62,21 @@ li{
     color:#fff;
 }
 
+.icon-awesome{
+    display: inline-block;
+    width: auto;
+    height: auto;
+    line-height: 20px;
+    position:absolute;
+    top:5px;
+    z-index:3;
+    margin-left: 92%;
+    color: #000000;
+}
+
+.input-container {
+  position:relative;
+}
 
 /*------------------------------------page display---------------------------------------*/
 #splash{
@@ -66,6 +85,7 @@ li{
 
 #intro{
     display: none;
+
 }
 
 #page-1{
@@ -73,11 +93,13 @@ li{
 }
 
 #host-setup{
+
    display: none;
 }
 
 #page-2{
     display: none;
+
 }
 
 #page-3{
@@ -101,6 +123,7 @@ li{
 }
 
 #install-page{
+
     display: none;
 }
 
@@ -120,6 +143,7 @@ li{
     font-size: 14px;
     line-height: 30px;
     font-weight: normal;
+    text-align: center;
 }
 
 .top{
@@ -206,7 +230,9 @@ li{
 
 #wrap {
     overflow: hidden;
-    height: 608px;
+    color: #FFFFFF;
+    height: 530px;
+    position: relative;
 }
 
 #wrapforscroll {
@@ -257,10 +283,12 @@ li{
 
 .inputButton.large{
     width: 20%;
+    height: 35px;
     background-color:#201134;
     color: #BD1E2D;
     border: 1px solid #BD1E2D;
     border-radius: 2px;
+    line-height: 0px;
 }
 
 .inputButton-icon.large{
@@ -362,7 +390,7 @@ li{
 }
 
 .row{
-    margin-top: 57px;
+    margin-top: 30px;
 }
 
 
@@ -371,7 +399,7 @@ li{
 
 .back{
     float: left;
-    margin-left:29% !important;
+    margin-left:28% !important;
     height:45px;
     color: #BD1E2D;
     border: 1px solid #BD1E2D;
@@ -402,17 +430,17 @@ li{
 
 .next{
     float: right;
-    margin-right: 29% !important;
+    margin-right: 28% !important;
     height:45px;
     border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    border-radius: 5px !important;
 }
 
 .next:hover {
     background-color:#fff;
     color: #201134;
     border: 1px solid #201134;
-    border-radius: 5px;
+    border-radius: 5px !important;
 }
 
 .next:focus{
@@ -420,7 +448,7 @@ li{
     background-color:#201134;
     color: #fff;
     border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    border-radius: 5px !important;
 }
 
 .next:active{
@@ -432,7 +460,7 @@ li{
 }
 
 #cancel-install{
-    height:45px;
+    height:35px;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
     display:block;
@@ -535,8 +563,8 @@ li{
 
 .widget h2{
     color:#fff;
-    line-height:80px;
     cursor: pointer;
+    margin-top: 40px;
 }
 
 .widget h6{
@@ -563,12 +591,12 @@ li{
 
 #left-widget{
     float:left;
-    padding-top:40px;
+    /* padding-top:67px; */
 }
 
 #right-widget{
     float:right;
-    padding-top:40px;
+    padding-top:67px;
 }
 
 .metro .input-control.select select{
@@ -627,7 +655,17 @@ input{
 }
 
 .allocated-memory{
-    margin-top: 40px;
+    margin-top: 20px;
+    line-height: 10px;
+    font-size: 13px;
+}
+
+.memory-suggestion{
+    margin-top: 5px;
+}
+
+#openstackvmmemslider{
+    margin-top: 8px;
 }
 
 progress[value] {
@@ -951,7 +989,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 .widget label{
     color:#fff;
-    margin-top: 30px;
+    margin-top: 20px;
     line-height: 10px;
     font-weight: bold;
     font-size: 13px;
@@ -1030,24 +1068,31 @@ select:required:invalid, select:focus:invalid {
 
 
 .mini-widget{
-    width:180px;
+    width:33%;
     height:440px;
     /*background-color:red;*/
     display:inline-block;
-    margin-top:60px;
+    /*margin-top:30px; */
     vertical-align: top;
 }
 
+.headline{
+    color:#fff !important;
+    margin-top: 40px !important;
+    font-size:2.5rem !important;
+    cursor: pointer !important;
+}
+
 #host-details{
-    margin-right:55px;
+    /*margin-right:55px; */
 }
 
 #controller-details{
-    margin-right:55px;
+    /*margin-right:55px; */
 }
 
 #networking-details{
-    margin-right:55px;
+    /*margin-right:55px; */
 }
 
 #wrap-review h2{
@@ -1060,6 +1105,7 @@ select:required:invalid, select:focus:invalid {
 
 #wrap-review h4{
     color:#fff;
+    font-weight: normal;
 }
 
 .AD{
@@ -1198,7 +1244,7 @@ select:required:invalid, select:focus:invalid {
     background: #4C405C !important;
     text-align: left;
     color: white;
-    margin: 10px;
+    border-radius: 5px;
     height: 380px;
     overflow: auto;
     font-family: "Ubuntu Mono Regular", monospace !important;
@@ -1373,4 +1419,8 @@ select:required:invalid, select:focus:invalid {
     color: #fff;
     border: 1px solid #fff;
     border-radius: 5px;
+}
+
+#log{
+    height: 520px;
 }

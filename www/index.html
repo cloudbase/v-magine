@@ -39,7 +39,9 @@
 
     <div class="content-page" id="page-1">
         <div class="top">
-            <h1>Welcome</h1>
+            <div class="header">
+                <h1>Welcome</h1>
+            </div>
             <div class="v-magine-logo">
                 <img src="images/v-magine-logo.svg">
             </div>
@@ -80,14 +82,22 @@
         <div class="content">
             <form action="#" name="hostconfigform" id="hostconfigform" class="field">
                 <div class="widget" id="left-widget">
+                    <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
+
                     <label>Host Admin User</label>
                     <input class="field" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required/>
                     <label>Host Admin Password</label>
-                    <input class="field" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required/>
+                    <div class="input-container">
+                        <div class="icon-awesome"><i class="fa fa-eye on-right"></i></div>
+                        <input class="field" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required/>
+                    </div>
                 </div>
                 <div class="widget" id="right-widget">
                     <label>Install Location</label>
-                    <input class="field" type="text" id="openstackbasedir" ng-model="openstackBaseDir" required/>
+                    <div class="input-container">
+                        <div class="icon-awesome"><i class="fa fa-folder-open on-right"></i></div>
+                        <input class="field" type="text" id="openstackbasedir" ng-model="openstackBaseDir" required/>
+                    </div>
                     <label>External virtual switch</label>
                     <select id="extvswitch" ng-model="extVSwitch" ng-options="vswitch for vswitch in extVSwitches | orderBy" required>
                     </select>
@@ -126,14 +136,21 @@
                     <label>Linux distribution</label>
                     <select id="selectdistro">
                         <option>CentOS 7.0 + RDO</option>
-                        <option disabled>Ubuntu 14.04 LTS (Coming soon!)</option>
+                        <option disabled>Ubuntu 14.04 LTS</option>
+                        <option disabled>OpenSUSE</option>
                     </select>
 
                     <label>Repository Location</label>
-                    <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
+                    <div class="input-container">
+                        <div class="icon-awesome"><i class="fa fa-folder-open on-right"></i></div>
+                        <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
+                    </div>
 
                     <label>Controller and OpenStack Services Password</label>
-                    <input class="field" type="password" id="adminpassword" ng-model="adminPassword" required />
+                    <div class="input-container">
+                        <div class="icon-awesome"><i class="fa fa-eye on-right"></i></div>
+                        <input class="field" type="password" id="adminpassword" ng-model="adminPassword" required />
+                    </div>
 
                     <label>Repeat password</label>
                     <input class="field" type="password" id="adminpasswordrepeat" />
@@ -163,12 +180,17 @@
 
                 <div class="buttons" align="auto">
                     <button type="submit" formaction="" class="inputButton large back" name="controllerconfigeula" id="controllerconfigeula">Show EULA</button>
-                    <button type="submit" formaction="" class="inputButton large next" name="controllerconfignext" id="controllerconfignext">Next<i class="icon-arrow-right-3 on-right"></i></button>
+                    <button type="submit" formaction="" class="inputButton large next" name="controllerconfignext" id="controllerconfignext">Next<i style="color:#ffffff;" class="icon-arrow-right-3 on-right"></i></button>
                 </div>
             </form>
 
 
         </div>
+
+        <div class="progress_bar">
+            <h4>Set the password for all the controller VM and OpenStack services.</h4>
+        </div>
+
     </div>
 
     <!--
@@ -219,6 +241,18 @@
         </div>
     </div>
     -->
+
+    <div class="content-page dialogbackground" id="showError">
+        <div class="content-page" id="errorMessage">
+            <h2><span id="errorcaption">Error</span></h2>
+            <h4><span id="errormessage">Please configure your OpenStack installation.</span></h4>
+
+            <div class="icon-buttons" align="auto">
+                <button type="submit" formaction="" id="errormessageok" class="inputButton-icon large" style="padding:0px 30px 0px 0px;color:#0099CC"><h2><i class="fa fa-check-circle on-left"></i>Ok</h2></button>
+            </div>
+        </div>
+    </div>
+
 <!--
     <div class="content-page" id="page-4">
         <div id="wrap-4">
@@ -282,6 +316,7 @@
                     <button type="submit" id="createswitchdialogok" formaction="" class="inputButton-icon large" name="createswitchdialogok" style="padding:0px 20px 0px 0px;">
                     <h2 id="createswitchdialogokwrap"><i class="fa fa-check-circle on-left" style="color:#0099CC" id="createswitchdialogokicon"></i>Create</h2></button>
 
+
                     <button type="submit" formaction="" class="inputButton-icon large" id="createswitchdialogcancel" name="createswitchdialogcancel"
                      style="padding:0px 20px 0px 0px;"><h2 id="createswitchdialogcancelwrap"><i class="fa fa-times-circle on-left" style="color:#0099CC" id="createswitchdialogcancelicon"></i>Cancel</h2></button>
                 </div>
@@ -290,17 +325,19 @@
     </div>
 
     <div class="content-page" id="review">
-
         <div class="top">
-            <h1>Review</h1>
+            <div class="header">
+                <h1>Review &emsp;&emsp;&emsp;&emsp;&emsp;</h1>
+                <h3>Please review your v-magine installation details</h3>
+            </div>
             <div class="v-magine-logo">
                 <img src="images/v-magine-logo.svg">
             </div>
         </div>
 
-        <div id="wrap-review">
+        <div class="content" id="wrap-review">
             <div class="mini-widget" id="host-details">
-                <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
+                <h2 class="headline"><i class="fa fa-windows on-left"></i>Host</h2>
                 <h4>Hostname</h4>
                 <h2 ng-bind="hypervHostName"></h2>
 
@@ -315,7 +352,7 @@
             </div>
             <div class="mini-widget" id="controller-details">
                 <div class="controller">
-                    <h2 style="color:#fff;"><i class="fa fa-desktop on-left"></i>Controller</h2>
+                    <h2 class="headline"><i class="fa fa-desktop on-left"></i>Controller</h2>
                     <h4>Distrbution</h4>
                     <h2>CentOS 7.0 + RDO</h2>
 
@@ -325,14 +362,14 @@
                     <h4>Allocated Memory</h4>
                     <h2 ng-bind="openStackVMMem + 'MB'"></h2>
                 </div>
-                <div class="AD">
-                    <h2 style="color:#fff;"><i class="fa fa-lock on-left"></i>Active Directory</h2>
+            <!--    <div class="AD">
+                    <h2 class="headline"><i class="fa fa-lock on-left"></i>Active Directory</h2>
                     <h4>Active Directory Identity</h4>
                     <h2>No</h2>
-                </div>
+                </div> -->
             </div>
             <div class="mini-widget" id="networking-details">
-                <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-wifi on-left"></i>Networking</h2>
+                <h2 class="headline"><i class="fa fa-wifi on-left"></i>Networking</h2>
                 <h4>Floating IP Subnet</h4>
                 <h2 ng-bind="fipRange"></h2>
 
@@ -348,47 +385,60 @@
                 <h4>Floating IP DNS</h4>
                 <h2 ng-repeat="fipRangeNameServer in fipRangeNameServers">{{fipRangeNameServer}}</h2>
             </div>
-            <div class="mini-widget" id="nodes-details">
-                <h2 style="font-size: 20px;color:#fff;margin:0;"><i class="fa fa-cubes on-left"></i>Nodes</h2>
-                <div class="mini-registered-nodes">
-                    <div>
-                        <div class="mini-compute-nodes-header">
-                            <ul>
-                                <li>Hostname</li>
-                                <li>Type</li>
-                            </ul>
-                        </div>
-                        <div class="mini-compute-nodes-list">
-                            <ul>
-                                <li>localhost</li>
-                                <li>Hyper-V</li>
-                            </ul>
+
+                <!-- <div class="mini-widget" id="nodes-details">
+                    <h2 class="headline"><i class="fa fa-cubes on-left"></i>Nodes</h2>
+                    <div class="mini-registered-nodes">
+                        <div>
+                            <div class="mini-compute-nodes-header">
+                                <ul>
+                                    <li>Hostname</li>
+                                    <li>Type</li>
+                                </ul>
+                            </div>
+                            <div class="mini-compute-nodes-list">
+                                <ul>
+                                    <li>localhost</li>
+                                    <li>Hyper-V</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
+
+            <div class="buttons" align="auto">
+                <button type="submit" formaction="" class="inputButton large back" name="configbutton" id="configbutton">Back</button>
+                <button type="submit" formaction="" class="inputButton large next" name="getopenstackbutton" id="getopenstackbutton">Install<i class="icon-arrow-right-3 on-right"></i></button>
             </div>
         </div>
 
-        <div class="buttons" align="auto">
-            <button type="submit" formaction="" class="inputButton large back" name="configbutton" id="configbutton">Back</button>
-            <button type="submit" formaction="" class="inputButton large next" name="getopenstackbutton" id="getopenstackbutton">Install<i class="icon-arrow-right-3 on-right"></i></button>
+        <div class="progress_bar">
+            <h4>Completly removes any v-magine component.</h4>
         </div>
+
     </div>
 
     <div class="content-page" id="install-page">
 
         <div class="top">
-            <h1>OpenStack Setup</h1>
+            <div class="header">
+                <h1>OpenStack Setup &emsp;&emsp;&emsp;&emsp;&emsp;</h1>
+            </div>
             <div class="v-magine-logo">
                 <img src="images/v-magine-logo.svg">
             </div>
         </div>
 
-        <h2><span id="status">Deployment console Log</h2>
-        <div id="term"></div>
-        <div id="mainprogressbar"></div>
-        <div class="buttons" align="auto">
-            <button type="submit" formaction="" class="inputButton large" name="cancel-install" id="cancel-install">Cancel</i></button>
+        <div class="content" id="log">
+            <h2><i class="fa fa-desktop on-left"></i><span id="status">OpenStack Controller Log</span></h2>
+            <div id="term"></div>
+            <div class="buttons" align="auto">
+                <button type="submit" formaction="" class="inputButton large" name="cancel-install" id="cancel-install">Cancel</i></button>
+            </div>
+        </div>
+
+        <div class="progress_bar">
+            <h4>Creating the OpenStack controller VM</h4>
         </div>
     </div>
 
@@ -410,7 +460,7 @@
                     <h6 style="cursor: pointer;" id="opencontrollersshbutton"><i class="fa fa-share-square-o on-left" style="color:#37A8DF;"></i>Open SSH Console</h6>
 
                     <h4 style="margin-top:30px;">Horizon Web Interface</h4>
-                    <a href="#"><h2 id="showhorizonbutton" ng-bind="horizonUrl"></a>
+                    <a href="#"><h2 id="showhorizonbutton" ng-bind="horizonUrl"></h2></a>
 
                     <h4 style="margin-top:30px;">OpenStack Tenant Username</h4>
                     <h2>demo</h2>
@@ -456,6 +506,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 </body>
