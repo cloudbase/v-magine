@@ -4,9 +4,25 @@
 }
 
 @font-face {
+    font-family: "Segoe UI SemiLight_";
+    src: url('../fonts/segoeuisl.ttf') format('truetype');
+}
+
+@font-face {
     font-family: "Segoe UI_";
     src: url('../fonts/segoeui.ttf') format('truetype');
 }
+
+@font-face {
+    font-family: "Segoe UI SemiBold_";
+    src: url('../fonts/seguisb.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: "Segoe UI Bold_";
+    src: url('../fonts/segoeuib.ttf') format('truetype');
+}
+
 
 @font-face {
   font-family: 'Ubuntu Mono Regular';
