@@ -742,6 +742,9 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     width: 250px;
 }
 
+#errorMessage .icon-buttons {
+    margin-left: 340px;
+}
 /* Tool Tip */
 #rangevalue {
     color: white;
