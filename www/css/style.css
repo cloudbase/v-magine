@@ -56,8 +56,8 @@ li{
     display: none;
 }
 
-#host-setup{
-    display: none;
+#host-setup{        /* done */
+   display: none;
 }
 
 #page-2{
@@ -93,20 +93,48 @@ li{
 }
 
 /*----------------------------------------------------------------------------------*/
+
+.progress_bar{
+    background-color: #82798D;
+    height: 30px;
+    margin: 28px -60px 0px -60px;
+}
+
+.progress_bar h4{
+    font-size: 14px;
+    line-height: 30px;
+    font-weight: normal;
+}
+
 .top{
-    width:100%;
-    height:100px;
+    width: 100%;
+    height: 120px;
 }
 
 .top h1{
     color: #ffffff;
     font-weight: bold;
+    line-height: 70px;
     float:left;
-    line-height: 100px;
     margin: auto;
 }
 
+.top h3{
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1.9rem;
+    float:left;
+    margin: auto;
+}
+
+.header{
+    display: inline-block;
+    height: 100px;
+    width: 750px;
+}
+
 .v-magine-logo{
+    display: inline-block;
     float:right;
     width: 100px;
     height: 100px;
@@ -170,8 +198,10 @@ li{
     height: 300px;
 }
 
-#wrap-2{
+.content{
     color: #FFFFFF;
+    height: 530px;
+    position: relative;
 }
 
 #wrap-4{
@@ -288,6 +318,12 @@ li{
     color: #BD1E2D;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
+}
+
+.buttons{
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
 }
 
 .buttons:after{
@@ -477,7 +513,6 @@ li{
 
 .widget{
     width:430px;
-    height:500px;
     display:inline-block;
     vertical-align: top;
 }
