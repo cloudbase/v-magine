@@ -4,7 +4,7 @@
 }
 
 @font-face {
-    font-family: "Segoe UI SemiLight_";
+    font-family: "Segoe UI SemiLight";
     src: url('../fonts/segoeuisl.ttf') format('truetype');
 }
 
@@ -14,7 +14,7 @@
 }
 
 @font-face {
-    font-family: "Segoe UI SemiBold_";
+    font-family: "Segoe UI SemiBold";
     src: url('../fonts/seguisb.ttf') format('truetype');
 }
 
@@ -22,7 +22,6 @@
     font-family: "Segoe UI Bold_";
     src: url('../fonts/segoeuib.ttf') format('truetype');
 }
-
 
 @font-face {
   font-family: 'Ubuntu Mono Regular';
@@ -981,10 +980,10 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 .widget label{
     color:#fff;
+    font-family: "Segoe UI SemiBold", Arial !important;
     margin-top: 20px;
     line-height: 10px;
-    font-weight: bold;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 #createSwitch{
@@ -1087,17 +1086,21 @@ select:required:invalid, select:focus:invalid {
     /*margin-right:55px; */
 }
 
-#wrap-review h2{
-    line-height: 2px;
-    color:#37A8DF;
-    margin-bottom:20px;
-    font-size: 18px;
-    padding-right:2px;
+#wrap-review h4{            /*white header*/
+    color:#fff;
+    font-family: "Segoe UI SemiBold", Arial !important;
+    font-weight: normal;
+    margin-bottom: 0px !important;
 }
 
-#wrap-review h4{
-    color:#fff;
-    font-weight: normal;
+#wrap-review h2{            /*blue text*/
+    /*line-height: 2px;*/
+    color:#37A8DF;
+    margin-top: 0px !important;
+    margin-bottom:20px;
+    font-family: "Segoe UI SemiLight", Arial !important;
+    font-size: 18px;
+    padding-right:2px;
 }
 
 .AD{
