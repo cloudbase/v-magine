@@ -132,17 +132,46 @@ label {
 
 /*----------------------------------------------------------------------------------*/
 
-.progress_bar{
+.progress_bar {
     background-color: #82798D;
     height: 30px;
+    padding: 4px;
     margin: 28px -60px 0px -60px;
 }
 
-.progress_bar h4{
-    font-size: 14px;
-    line-height: 30px;
-    font-weight: normal;
-    text-align: center;
+.progress_bar span {
+    display: inline-block;
+    height: 100%;
+    width:1020px;
+    transition: width .4s ease-in-out;
+}
+
+.stripes span {
+    background-size: 31px 30px;
+    margin: -4px;
+    height: 30px;
+    background-color: #4D415D;
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
+                        transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+                        transparent 75%, transparent);
+
+    -webkit-animation: animate-stripes 1s linear infinite;
+}
+
+@-webkit-keyframes animate-stripes {
+    0% {background-position: 0 0;} 100% {background-position: 60px 0;}
+}
+
+.progress_bar_text {
+    margin: -25px 0 0 240px;
+}
+
+.progress_bar_text p {
+    color: #FFFFFF;
+}
+
+#progress_bar_id {
+    display: none;
 }
 
 .top{
@@ -665,39 +694,6 @@ input{
 
 #openstackvmmemslider{
     margin-top: 8px;
-}
-
-progress[value] {
-    background-color: #4D415D;
-    width: 400px;
-    height: 20px;
-    border-radius: 5px;
-    border-color: #72697F;
-    border-width: 1px;
-}
-
-progress[value]::-moz-progress-bar {
-  background-image:
-    -moz-linear-gradient(
-      135deg,
-      transparent 33%,
-      rgba(0, 0, 0, 0.1) 33%,
-      rgba(0, 0, 0, 0.1) 66%,
-      transparent 66%
-    ),
-    -moz-linear-gradient(
-      top,
-      rgba(255, 255, 255, 0.25),
-      rgba(0, 0, 0, 0.25)
-    ),
-    -moz-linear-gradient(
-      left,
-      #f44,
-      #f44
-    );
-
-  border-radius: 2px;
-  background-size: 35px 20px, 100% 100%, 100% 100%;
 }
 
 input[type=range] {
