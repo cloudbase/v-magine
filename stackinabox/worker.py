@@ -71,6 +71,7 @@ class Worker(QtCore.QObject):
     add_ext_vswitch_completed = QtCore.pyqtSignal(bool)
     get_deployment_details_completed = QtCore.pyqtSignal(str, str)
     platform_requirements_checked = QtCore.pyqtSignal()
+    progress_status_update = QtCore.pyqtSignal(bool, int, int, str)
 
     def __init__(self, thread):
         super(Worker, self).__init__()
@@ -391,6 +392,9 @@ class Worker(QtCore.QObject):
         try:
             LOG.debug("get_ext_vswitches called")
 
+            self.progress_status_update.emit(True, 0, 0,
+                'Loading virtual switches...')
+
             ext_vswitches = self._dep_actions.get_ext_vswitches()
             LOG.debug("External vswitches: %s" % str(ext_vswitches))
             self.get_ext_vswitches_completed.emit(ext_vswitches)
@@ -398,6 +402,8 @@ class Worker(QtCore.QObject):
             LOG.exception(ex)
             self.error.emit(ex)
             raise
+        finally:
+            self.progress_status_update.emit(False, 0, 0, '')
 
     @QtCore.pyqtSlot()
     def get_available_host_nics(self):

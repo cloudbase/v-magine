@@ -53,12 +53,15 @@ class Controller(QtCore.QObject):
     on_show_welcome_event = QtCore.pyqtSignal()
     on_show_eula_event = QtCore.pyqtSignal()
     on_show_deployment_details_event = QtCore.pyqtSignal(str, str)
+    on_show_progress_status_event = QtCore.pyqtSignal(bool, int, int, str)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
         self._worker = worker
         self._main_window = None
         self._splash_window = None
+        self._progress_counter = 0
+
         self._worker.stdout_data_ready.connect(self._send_stdout_data)
         self._worker.stderr_data_ready.connect(self._send_stderr_data)
         self._worker.status_changed.connect(self._status_changed)
@@ -74,12 +77,31 @@ class Controller(QtCore.QObject):
             self._get_deployment_details_completed)
         self._worker.platform_requirements_checked.connect(
             self._platform_requirements_checked)
+        self._worker.progress_status_update.connect(
+            self._progress_status_update)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
 
     def set_splash_window(self, splash_window):
         self._splash_window = splash_window
+
+    def _progress_status_update(self, enable, step, total_steps, msg):
+        # TODO: synchronize this method
+        send_update_event = False
+
+        if enable:
+            self._progress_counter += 1
+            send_update_event = True
+        else:
+            if self._progress_counter:
+                self._progress_counter -= 1
+            if not self._progress_counter:
+                send_update_event = True
+
+        if send_update_event:
+            self.on_show_progress_status_event.emit(
+                enable, step, total_steps, msg)
 
     def _send_stdout_data(self, data):
         self.on_stdout_data_event.emit(data)

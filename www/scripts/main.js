@@ -82,7 +82,7 @@ function installDone(success) {
     if(success) {
         $('#status').text('Your OpenStack is ready!');
     } else {
-        $('#status').text('Ops, something went wrong. :-(');
+        $('#status').text('OpenStack deployment failed');
     }
 }
 
@@ -221,6 +221,17 @@ function addExtVSwitch() {
 function addExtVSwitchCompleted(success) {
     enableAddExtVSwitchDialogControls(true);
     hidePage("#createswitch");
+}
+
+function showProgressStatus(enable, step, total_steps, msg) {
+    if(enable) {
+        $('#progress_bar_id').css('display', 'inline-block');
+        $('#progress_bar_msg').text(msg);
+    }
+    else {
+        $('#progress_bar_id').css('display','none');
+        $('#progress_bar_msg').text('');
+    }
 }
 
 function setDefaultConfigValues() {
@@ -488,6 +499,8 @@ function ApplicationIsReady() {
             getAvailableHostNicsCompleted);
         controller.on_add_ext_vswitch_completed_event.connect(
             addExtVSwitchCompleted);
+        controller.on_show_progress_status_event.connect(
+            showProgressStatus);
      }
     catch(ex)
     {
