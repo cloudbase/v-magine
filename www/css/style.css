@@ -523,6 +523,14 @@ label {
     border-radius: 5px;
 }
 
+#reconfigbutton {
+    display: none;
+}
+
+#retry-install {
+    display: none;
+}
+
 #back-review{
      margin-left:29%;
 }
