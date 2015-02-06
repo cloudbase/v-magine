@@ -86,9 +86,9 @@
                 <div class="widget" id="left-widget">
                     <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
 
-                    <label>Host Admin User</label>
+                    <label>Host Admin username</label>
                     <input class="field" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required/>
-                    <label>Host Admin Password</label>
+                    <label>Host Admin password</label>
 
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
@@ -96,7 +96,7 @@
                     </div>
                 </div>
                 <div class="widget" id="right-widget">
-                    <label>Install Location</label>
+                    <label>Install location</label>
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-folder-open on-right"></i></div>
                         <input class="field" type="text" id="openstackbasedir" ng-model="openstackBaseDir" required/>
@@ -147,13 +147,13 @@
                         <option disabled>OpenSUSE</option>
                     </select>
 
-                    <label>Repository Location</label>
+                    <label>Repository location</label>
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-folder-open on-right" ></i></div>
                         <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
                     </div>
 
-                    <label>Controller and OpenStack Services Password</label>
+                    <label>Controller and OpenStack services password</label>
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpassword)" onmouseout="hidePassword(adminpassword)"></i></div>
                         <input class="field" type="password" id="adminpassword" ng-model="adminPassword" required />
@@ -176,7 +176,7 @@
                 <div class="widget" id="networking">
                     <h2><i class="fa fa-wifi on-left"></i>Networking</h2>
 
-                    <label>Floating IP Subnet</label>
+                    <label>Floating IP subnet</label>
                     <input class="field" type="text" id="subnet" ng-model="fipRange" required/>
                     <label>Floating IP range start</label>
                     <input class="field" type="text" name="fiprangestart" id="fiprangestart" ng-model="fipRangeStart" required>
@@ -184,7 +184,7 @@
                     <input class="field" type="text" name="fiprangeend" id="fiprangeend" ng-model="fipRangeEnd" required>
                     <label>Floating IP gateway</label>
                     <input class="field" type="text" id="gateway" ng-model="fipRangeGateway"/>
-                    <label>DNS Servers</label>
+                    <label>DNS servers</label>
                     <input class="field" type="text" id="nameservers" ng-model="fipRangeNameServers" ng-list/>
                 </div>
 
@@ -390,7 +390,7 @@
                     <h4>Repository location</h4>
                     <h2 ng-bind="centosMirror.substr(0,20) + '...'"></h2>
 
-                    <h4>Allocated Memory</h4>
+                    <h4>Allocated memory</h4>
                     <h2 ng-bind="openStackVMMem + 'MB'"></h2>
                 </div>
             <!--    <div class="AD">
@@ -401,19 +401,19 @@
             </div>
             <div class="mini-widget" id="networking-details">
                 <h2 class="headline"><i class="fa fa-wifi on-left"></i>Networking</h2>
-                <h4>Floating IP Subnet</h4>
+                <h4>Floating IP subnet</h4>
                 <h2 ng-bind="fipRange"></h2>
 
-                <h4>Floating IP Range Start</h4>
+                <h4>Floating IP range start</h4>
                 <h2 ng-bind="fipRangeStart"></h2>
 
-                <h4>Floating IP Range End</h4>
+                <h4>Floating IP range end</h4>
                 <h2 ng-bind="fipRangeEnd"></h2>
 
-                <h4>Floating IP Gateway</h4>
+                <h4>Floating IP gateway</h4>
                 <h2 ng-bind="fipRangeGateway"></h2>
 
-                <h4>Floating IP DNS</h4>
+                <h4>DNS servers</h4>
                 <h2 ng-repeat="fipRangeNameServer in fipRangeNameServers">{{fipRangeNameServer}}</h2>
             </div>
 
