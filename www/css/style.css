@@ -259,13 +259,13 @@ label {
 #wrap {
     overflow: hidden;
     color: #FFFFFF;
-    height: 530px;
+    height: 550px;
     position: relative;
 }
 
 #wrapforscroll {
     display: block;
-    height: 300px;
+    height: 355px;
 }
 
 .content{
@@ -309,6 +309,14 @@ label {
     color: #BD1E2D;
 }
 
+#wrap h2 {
+    margin-bottom: -15px;
+}
+
+#wrap .buttons {
+    bottom: 20px;
+}
+
 .inputButton.large{
     width: 20%;
     height: 35px;
@@ -330,11 +338,10 @@ label {
 
 #exit{
     float: left;
-    margin-left:29%;
-    height:45px;
+    margin-left:28%;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
-    margin-top: 28px;
+    margin-top: 10px;
 }
 
 #exit:hover {
@@ -362,11 +369,10 @@ label {
 
 #agree{
     float: right;
-    margin-right: 29%;
-    height:45px;
+    margin-right: 28%;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
-    margin-top: 28px;
+    margin-top: 10px;
 }
 
 #agree:hover {
@@ -418,7 +424,7 @@ label {
 }
 
 .row{
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
 
@@ -431,7 +437,7 @@ label {
     height:45px;
     color: #BD1E2D;
     border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    border-radius: 5px !important;
 }
 
 .back:hover {
