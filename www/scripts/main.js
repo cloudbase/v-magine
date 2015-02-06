@@ -247,15 +247,12 @@ function showProgressStatus(enable, step, total_steps, msg) {
 
 function tooltips() {
     $(".has_tooltip").hover(function(){
-        console.log("this good")
         if(!$('#progress_bar_msg').text()) {
             $('#progress_bar_msg').text($(this).attr('title'));
-            console.log($(this).attr('title'))
         }
     }, function(){
         if(($('#progress_bar_msg').text()) == ($(this).attr('title'))) {
             $('#progress_bar_msg').text('');
-            console.log("this good 333")
         }
     });
 }
