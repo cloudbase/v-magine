@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="scripts/jquery/jquery-ui.css">
     <link rel="stylesheet" href="css/style.css">
 
+
+
+    <script src="scripts/javascript.js"></script>
     <script src="scripts/jquery-1.11.1.min.js"></script>
     <script src="scripts/jquery-ui-1.11.2.min.js"></script>
     <script src="scripts/angular.min.js"></script>
@@ -87,8 +90,9 @@
                     <label>Host Admin User</label>
                     <input class="field" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required/>
                     <label>Host Admin Password</label>
+
                     <div class="input-container">
-                        <div class="icon-awesome"><i class="fa fa-eye on-right"></i></div>
+                        <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
                         <input class="field" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required/>
                     </div>
                 </div>
@@ -142,18 +146,21 @@
 
                     <label>Repository Location</label>
                     <div class="input-container">
-                        <div class="icon-awesome"><i class="fa fa-folder-open on-right"></i></div>
+                        <div class="icon-awesome"><i class="fa fa-folder-open on-right" ></i></div>
                         <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
                     </div>
 
                     <label>Controller and OpenStack Services Password</label>
                     <div class="input-container">
-                        <div class="icon-awesome"><i class="fa fa-eye on-right"></i></div>
+                        <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpassword)" onmouseout="hidePassword(adminpassword)"></i></div>
                         <input class="field" type="password" id="adminpassword" ng-model="adminPassword" required />
                     </div>
 
                     <label>Repeat password</label>
-                    <input class="field" type="password" id="adminpasswordrepeat" />
+                    <div class="input-container">
+                        <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpasswordrepeat)" onmouseout="hidePassword(adminpasswordrepeat)"></i></div>
+                        <input class="field" type="password" id="adminpasswordrepeat" />
+                    </div>
 
                     <div class="allocated-memory">
                         Allocated memory: <span id="openstackvmmem" ng-bind="openStackVMMem + 'MB'"></span>
