@@ -38,7 +38,6 @@ LOG = logging
 
 
 class Controller(QtCore.QObject):
-    on_status_changed_event = QtCore.pyqtSignal(str, int, int)
     on_stdout_data_event = QtCore.pyqtSignal(str)
     on_stderr_data_event = QtCore.pyqtSignal(str)
     on_error_event = QtCore.pyqtSignal(str)
@@ -64,7 +63,6 @@ class Controller(QtCore.QObject):
 
         self._worker.stdout_data_ready.connect(self._send_stdout_data)
         self._worker.stderr_data_ready.connect(self._send_stderr_data)
-        self._worker.status_changed.connect(self._status_changed)
         self._worker.error.connect(self._error)
         self._worker.install_done.connect(self._install_done)
         self._worker.get_ext_vswitches_completed.connect(
@@ -108,9 +106,6 @@ class Controller(QtCore.QObject):
 
     def _send_stderr_data(self, data):
         self.on_stderr_data_event.emit(data)
-
-    def _status_changed(self, msg, step, max_steps):
-        self.on_status_changed_event.emit(msg, step, max_steps)
 
     def _error(self, ex):
         self.on_error_event.emit(ex.message)
@@ -207,7 +202,10 @@ class Controller(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def cancel_deployment(self):
-        self._main_window.close()
+        LOG.debug("cancel_deployment called")
+        # Cannot use the worker's queue, consider a separate worker
+        # to avoid blocking the UI
+        self._worker.cancel_openstack_deployment()
 
     @QtCore.pyqtSlot()
     def review_config(self):
@@ -361,7 +359,7 @@ class QWebPageWithoutJsWarning(QtWebKitWidgets.QWebPage):
 def _config_logging(log_dir):
     log_format = ("%(asctime)-15s %(levelname)s %(module)s %(funcName)s "
                   "%(lineno)d %(thread)d %(threadName)s %(message)s")
-    log_file = os.path.join(log_dir, 'stackinabox.log')
+    log_file = os.path.join(log_dir, 'v-magine.log')
     logging.basicConfig(filename=log_file, level=logging.DEBUG,
                         format=log_format)
     logging.getLogger("paramiko").setLevel(logging.WARNING)
@@ -391,12 +389,12 @@ def main(url=None):
     if url:
         main_window = webbrowser.MainWindow(url)
     else:
-        worker = _init_worker()
-        controller = Controller(worker)
-
         base_dir = utils.get_base_dir()
         os.chdir(base_dir)
         _config_logging(base_dir)
+
+        worker = _init_worker()
+        controller = Controller(worker)
 
         main_window = MainWindow(controller)
         splash = _create_splash_window(main_window)

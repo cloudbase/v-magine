@@ -38,6 +38,12 @@ OPENSTACK_CONTROLLER_VM_NAME = "openstack-controller"
 OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
 
 
+class CancelDeploymentException(Exception):
+    def __init__(self):
+        msg = "Deployment cancelled by the user"
+        super(CancelDeploymentException, self).__init__(msg)
+
+
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
         super(_VMConsoleThread, self).__init__()
@@ -63,7 +69,6 @@ class Worker(QtCore.QObject):
     finished = QtCore.pyqtSignal()
     stdout_data_ready = QtCore.pyqtSignal(str)
     stderr_data_ready = QtCore.pyqtSignal(str)
-    status_changed = QtCore.pyqtSignal(str, int, int)
     error = QtCore.pyqtSignal(Exception)
     install_done = QtCore.pyqtSignal(bool)
     get_ext_vswitches_completed = QtCore.pyqtSignal(list)
@@ -135,8 +140,18 @@ class Worker(QtCore.QObject):
                 if vnic_cfg[1] == vnic_name][0]
 
     def _update_status(self, msg):
+        if self._cancel_deployment:
+            raise CancelDeploymentException()
+
         self._curr_step += 1
-        self.status_changed.emit(msg, self._curr_step, self._max_steps)
+        self.progress_status_update.emit(
+            True, self._curr_step, self._max_steps, msg)
+
+    def _start_progress_status(self, msg=''):
+        self.progress_status_update.emit(True, 0, 0, msg)
+
+    def _stop_progress_status(self):
+        self.progress_status_update.emit(False, 0, 0, '')
 
     def _deploy_openstack_vm(self, ext_vswitch_name,
                              openstack_vm_mem_mb, openstack_base_dir,
@@ -392,8 +407,7 @@ class Worker(QtCore.QObject):
         try:
             LOG.debug("get_ext_vswitches called")
 
-            self.progress_status_update.emit(True, 0, 0,
-                'Loading virtual switches...')
+            self._start_progress_status('Loading virtual switches...')
 
             ext_vswitches = self._dep_actions.get_ext_vswitches()
             LOG.debug("External vswitches: %s" % str(ext_vswitches))
@@ -403,15 +417,13 @@ class Worker(QtCore.QObject):
             self.error.emit(ex)
             raise
         finally:
-            self.progress_status_update.emit(False, 0, 0, '')
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot()
     def get_available_host_nics(self):
         try:
             LOG.debug("get_available_host_nics called")
-
-            self.progress_status_update.emit(True, 0, 0,
-                'Loading host nics...')
+            self._start_progress_status('Loading host nics...')
 
             self.get_available_host_nics_completed.emit([])
 
@@ -423,7 +435,7 @@ class Worker(QtCore.QObject):
             self.error.emit(ex)
             raise
         finally:
-            self.progress_status_update.emit(False, 0, 0, '')
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot(str, str)
     def add_ext_vswitch(self, vswitch_name, nic_name):
@@ -432,8 +444,7 @@ class Worker(QtCore.QObject):
                       "%(vswitch_name)s, nic_name: %(nic_name)s" %
                       {"vswitch_name": vswitch_name, "nic_name": nic_name})
 
-            self.progress_status_update.emit(True, 0, 0,
-                'Creating virtual switch...')
+            self._start_progress_status('Creating virtual switch...')
 
             ext_vswitches = self._dep_actions.get_ext_vswitches()
             if vswitch_name in ext_vswitches:
@@ -450,7 +461,7 @@ class Worker(QtCore.QObject):
             self.add_ext_vswitch_completed.emit(False)
             raise
         finally:
-            self.progress_status_update.emit(False, 0, 0, '')
+            self._stop_progress_status()
 
     def _get_controller_ip(self):
         return self._dep_actions.get_vm_ip_address(
@@ -479,10 +490,26 @@ class Worker(QtCore.QObject):
         controller_ip = self._get_controller_ip()
         self._dep_actions.open_controller_ssh(controller_ip)
 
+    @QtCore.pyqtSlot()
+    def cancel_openstack_deployment(self):
+        try:
+            LOG.debug("cancel_openstack_deployment called")
+            # TODO: evaluate synchronizing access to _cancel_deployment
+            if not self._cancel_deployment:
+                self._cancel_deployment = True
+                self._dep_actions.check_remove_vm(OPENSTACK_CONTROLLER_VM_NAME)
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+
     @QtCore.pyqtSlot(str)
     def deploy_openstack(self, json_args):
         try:
+            self._start_progress_status('Deployment started')
+
             self._is_install_done = False
+            self._cancel_deployment = False
+
             self._dep_actions.set_openstack_deployment_status(False)
 
             args = json.loads(str(json_args))
@@ -542,5 +569,6 @@ class Worker(QtCore.QObject):
             self.error.emit(ex)
             self.install_done.emit(False)
         finally:
+            self._stop_progress_status()
             self._dep_actions.stop_pxe_service()
             self._is_install_done = True

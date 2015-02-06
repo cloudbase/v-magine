@@ -92,12 +92,6 @@ function installStarted() {
     //setupTerm();
 }
 
-function statusChanged(msg, step, maxSteps) {
-    $('#status').text(msg);
-    $("#mainprogressbar").progressbar({ value: step,
-                                        max: maxSteps });
-}
-
 function getExtVSwitchesCompleted(extVSwitchesJson) {
     var $scope = angular.element("#maindiv").scope();
 
@@ -491,7 +485,6 @@ function ApplicationIsReady() {
         controller.on_show_deployment_details_event.connect(
             showDeploymentDetails);
         controller.on_review_config_event.connect(reviewConfig);
-        controller.on_status_changed_event.connect(statusChanged);
         controller.on_stdout_data_event.connect(gotStdOutData);
         controller.on_stderr_data_event.connect(gotStdErrData);
         controller.on_error_event.connect(handleError);
