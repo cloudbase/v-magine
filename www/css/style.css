@@ -1042,6 +1042,13 @@ select:required:invalid, select:focus:invalid {
     right: 0px
 }
 
+#blocker {
+    width: 290px;
+    height: 200px;
+    position: absolute;
+    display: none;
+}
+
 .dialogbackground {
     display: none;
     background-color: rgba(255, 255, 255, 0.4);
