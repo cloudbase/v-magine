@@ -413,6 +413,8 @@ class Worker(QtCore.QObject):
             self.progress_status_update.emit(True, 0, 0,
                 'Loading host nics...')
 
+            self.get_available_host_nics_completed.emit([])
+
             host_nics = self._dep_actions.get_available_host_nics()
             LOG.debug("Available host nics: %s" % str(host_nics))
             self.get_available_host_nics_completed.emit(host_nics)
@@ -432,6 +434,11 @@ class Worker(QtCore.QObject):
 
             self.progress_status_update.emit(True, 0, 0,
                 'Creating virtual switch...')
+
+            ext_vswitches = self._dep_actions.get_ext_vswitches()
+            if vswitch_name in ext_vswitches:
+                raise Exception('A virtual switch with name "%s" already '
+                                'exists' % vswitch_name)
 
             self._dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
             # Refresh VSwitch list
