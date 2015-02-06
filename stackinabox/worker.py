@@ -409,6 +409,10 @@ class Worker(QtCore.QObject):
     def get_available_host_nics(self):
         try:
             LOG.debug("get_available_host_nics called")
+
+            self.progress_status_update.emit(True, 0, 0,
+                'Loading host nics...')
+
             host_nics = self._dep_actions.get_available_host_nics()
             LOG.debug("Available host nics: %s" % str(host_nics))
             self.get_available_host_nics_completed.emit(host_nics)
@@ -416,6 +420,8 @@ class Worker(QtCore.QObject):
             LOG.exception(ex)
             self.error.emit(ex)
             raise
+        finally:
+            self.progress_status_update.emit(False, 0, 0, '')
 
     @QtCore.pyqtSlot(str, str)
     def add_ext_vswitch(self, vswitch_name, nic_name):
@@ -423,6 +429,10 @@ class Worker(QtCore.QObject):
             LOG.debug("add_ext_vswitch called, vswitch_name: "
                       "%(vswitch_name)s, nic_name: %(nic_name)s" %
                       {"vswitch_name": vswitch_name, "nic_name": nic_name})
+
+            self.progress_status_update.emit(True, 0, 0,
+                'Creating virtual switch...')
+
             self._dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
             # Refresh VSwitch list
             self.get_ext_vswitches()
@@ -432,6 +442,8 @@ class Worker(QtCore.QObject):
             self.error.emit(ex)
             self.add_ext_vswitch_completed.emit(False)
             raise
+        finally:
+            self.progress_status_update.emit(False, 0, 0, '')
 
     def _get_controller_ip(self):
         return self._dep_actions.get_vm_ip_address(
