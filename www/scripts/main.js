@@ -248,6 +248,14 @@ function setDefaultConfigValues() {
     $scope.$apply();
 }
 
+function showPassword(x){
+    x.type = "text";
+}
+
+function hidePassword(x){
+    x.type = "password";
+}
+
 function setPasswordValidation() {
     var p1 = $("#adminpassword")[0];
     var p2 = $("#adminpasswordrepeat")[0];
