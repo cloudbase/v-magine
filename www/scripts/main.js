@@ -45,11 +45,15 @@ function hidePage(pageSelector) {
 
 function showWelcome() {
     showPage("#intro");
+    $(".progress_bar").css('display','none');
+    $(".progress_bar_text").css('display','none');
 }
 
 function showEula() {
     showPage("#page-1");
     $(".nano").nanoScroller();
+    $(".progress_bar").css('display','none');
+    $(".progress_bar_text").css('display','none');
 }
 
 function showDeploymentDetails(controllerIp, horizonUrl) {
@@ -65,6 +69,8 @@ function showDeploymentDetails(controllerIp, horizonUrl) {
 
 function showControllerConfig() {
     showPage("#page-2");
+    $(".progress_bar").css('display','inline-block');
+    $(".progress_bar_text").css('display','inline-block');
 }
 
 function showHostConfig() {
@@ -231,6 +237,20 @@ function showProgressStatus(enable, step, total_steps, msg) {
         $('#progress_bar_msg').text('');
     }
 }
+
+
+function tooltips() {
+    $(".has_tooltip").hover(function(){
+        if(!$('#progress_bar_msg').text()) {
+            $('#progress_bar_msg').text($(this).attr('title'));
+        }
+    }, function(){
+        if(($('#progress_bar_msg').text()) == ($(this).attr('title'))) {
+            $('#progress_bar_msg').text('');
+        }
+    });
+}
+
 
 function setDefaultConfigValues() {
     var configJson = controller.get_config();
@@ -476,6 +496,8 @@ function ApplicationIsReady() {
         setDefaultConfigValues();
 
         initUi();
+
+        tooltips();
 
         controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);

@@ -24,6 +24,14 @@
 <body class="metro" ng-controller="StackInABoxCtrl">
 <div class="windows" id="maindiv">
 
+    <div class="progress_bar stripes">
+        <span id="progress_bar_id"></span>
+    </div>
+
+    <div class="progress_bar_text">
+        <p id="progress_bar_msg"></p>
+    </div>
+
     <div class="content-page active-page" id="splash">
         <div class="v-magine">
             <img src="images/v-magine-logo-white.svg">
@@ -87,12 +95,12 @@
                     <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
 
                     <label>Host Admin username</label>
-                    <input class="field" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required/>
+                    <input class="field has_tooltip" type="text" id="hypervhostusername" ng-model="hypervHostUsername" title="Choose an admin username for the Hyper-V host" required/>
                     <label>Host Admin password</label>
 
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
-                        <input class="field" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required/>
+                        <input class="field has_tooltip" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" title="Choose a password for the account" required/>
                     </div>
                 </div>
                 <div class="widget" id="right-widget">
@@ -112,14 +120,6 @@
                     <button type="submit" formaction="" class="inputButton large next" name="hostconfignext" id="hostconfignext">Next<i class="icon-arrow-right-3 on-right"></i></button>
                 </div>
             </form>
-        </div>
-
-        <div class="progress_bar stripes">
-            <span id="progress_bar_id"></span>
-        </div>
-
-        <div class="progress_bar_text">
-            <p id="progress_bar_msg"></p>
         </div>
 
     </div>
@@ -148,7 +148,7 @@
                     </select>
 
                     <label>Repository location</label>
-                    <div class="input-container">
+                    <div class="input-container has_tooltip" title="Select the location of the repository">
                         <div class="icon-awesome"><i class="fa fa-folder-open on-right" ></i></div>
                         <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
                     </div>
@@ -195,13 +195,6 @@
             </form>
 
 
-        </div>
-
-        <div class="progress_bar stripes">
-        </div>
-
-        <div class="progress_bar_text">
-            <p id="progress_bar_msg">Set the password for the controller VM and OpenStack services</p>
         </div>
 
     </div>
@@ -445,12 +438,6 @@
             </div>
         </div>
 
-        <div class="progress_bar stripes">
-        </div>
-
-        <div class="progress_bar_text">
-            <p id="progress_bar_msg">Completly removes any v-magine component</p>
-        </div>
 
     </div>
 
