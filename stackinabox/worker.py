@@ -468,15 +468,30 @@ class Worker(QtCore.QObject):
 
     def _get_controller_ip(self):
         return self._dep_actions.get_vm_ip_address(
-            OPENSTACK_CONTROLLER_VM_NAME) or ""
+            OPENSTACK_CONTROLLER_VM_NAME)
 
     @QtCore.pyqtSlot()
     def get_deployment_details(self):
-        LOG.debug("get_deployment_details called")
-        controller_ip = self._get_controller_ip()
-        self.get_deployment_details_completed.emit(
-            controller_ip,
-            self._get_horizon_url(controller_ip))
+        try:
+            LOG.debug("get_deployment_details called")
+            self._start_progress_status(
+                'Loading OpenStack deployment details...')
+
+            controller_ip = self._get_controller_ip()
+            if not controller_ip:
+                raise Exception("The OpenStack controller is not available")
+
+            self.get_deployment_details_completed.emit(
+                controller_ip,
+                self._get_horizon_url(controller_ip))
+        except Exception as ex:
+            LOG.exception(ex)
+            LOG.error(ex)
+            missing_ip = "The OpenStack controller is not available"
+            self.get_deployment_details_completed.emit(missing_ip, missing_ip)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
 
     def _get_horizon_url(self, controller_ip):
         # TODO(alexpilotti): This changes between Ubuntu and RDO

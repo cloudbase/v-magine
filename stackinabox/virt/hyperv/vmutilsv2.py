@@ -315,10 +315,12 @@ class VMUtilsV2(vmutils.VMUtils):
     def get_guest_info(self, vm_name):
         guest_info = {}
         vm = self._lookup_vm_check(vm_name)
-        kvp = vm.associators(wmi_result_class="Msvm_KvpExchangeComponent")[0]
-        for item in kvp.GuestIntrinsicExchangeItems:
-            et = ElementTree.fromstring(item)
-            name = et.find(".//PROPERTY[@NAME='Name']/VALUE").text
-            value = et.find(".//PROPERTY[@NAME='Data']/VALUE").text
-            guest_info[name] = value
+        kvpl = vm.associators(wmi_result_class="Msvm_KvpExchangeComponent")
+        if kvpl:
+            kvp = kvpl[0]
+            for item in kvp.GuestIntrinsicExchangeItems:
+                et = ElementTree.fromstring(item)
+                name = et.find(".//PROPERTY[@NAME='Name']/VALUE").text
+                value = et.find(".//PROPERTY[@NAME='Data']/VALUE").text
+                guest_info[name] = value
         return guest_info
