@@ -88,7 +88,7 @@ class Controller(QtCore.QObject):
         # TODO: synchronize this method
         send_update_event = False
 
-        if enable:
+        if enable and not step:
             self._progress_counter += 1
             send_update_event = True
         else:
