@@ -246,10 +246,10 @@ function showProgressStatus(enable, step, total_steps, msg) {
 function tooltips() {
     $(".has_tooltip").hover(function(){
         if(!$('#progress_bar_msg').text()) {
-            $('#progress_bar_msg').text($(this).attr('title'));
+            $('#progress_bar_msg').text($(this).attr('data-tooltip'));
         }
     }, function(){
-        if(($('#progress_bar_msg').text()) == ($(this).attr('title'))) {
+        if(($('#progress_bar_msg').text()) == ($(this).attr('data-tooltip'))) {
             $('#progress_bar_msg').text('');
         }
     });
@@ -378,7 +378,16 @@ function initUi() {
     });
 
     $("#errormessageok").click(function(){
+        console.log("button pressed")
         hidePage("#showError");
+        return false;
+    });
+
+    $(document).keyup(function(event) {
+        if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
+            console.log("enter pressed")
+            hidePage("#showError");
+        }
         return false;
     });
 

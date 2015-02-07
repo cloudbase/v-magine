@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="scripts/jquery/jquery-ui.css">
     <link rel="stylesheet" href="css/style.css">
 
-
-
     <script src="scripts/jquery-1.11.1.min.js"></script>
     <script src="scripts/jquery-ui-1.11.2.min.js"></script>
     <script src="scripts/angular.min.js"></script>
@@ -95,12 +93,12 @@
                     <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
 
                     <label>Host Admin username</label>
-                    <input class="field has_tooltip" type="text" id="hypervhostusername" ng-model="hypervHostUsername" title="Choose an admin username for the Hyper-V host" required/>
+                    <input class="field has_tooltip" type="text" id="hypervhostusername" ng-model="hypervHostUsername" data-tooltip="Choose an admin username for the Hyper-V host" required/>
                     <label>Host Admin password</label>
 
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
-                        <input class="field has_tooltip" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" title="Choose a password for the account" required/>
+                        <input class="field has_tooltip" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" data-tooltip="Choose a password for the account" required/>
                     </div>
                 </div>
                 <div class="widget" id="right-widget">
@@ -148,7 +146,7 @@
                     </select>
 
                     <label>Repository location</label>
-                    <div class="input-container has_tooltip" title="Select the location of the repository">
+                    <div class="input-container has_tooltip" data-tooltip="Select the location of the repository">
                         <div class="icon-awesome"><i class="fa fa-folder-open on-right" ></i></div>
                         <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
                     </div>
@@ -247,17 +245,6 @@
         </div>
     </div>
     -->
-
-    <div class="content-page dialogbackground" id="showError">
-        <div class="content-page" id="errorMessage">
-            <h2><span id="errorcaption">Error</span></h2>
-            <h4><span id="errormessage">Please configure your OpenStack installation.</span></h4>
-
-            <div class="icon-buttons" align="auto">
-                <button type="submit" formaction="" id="errormessageok" class="inputButton-icon large" style="padding:0px 30px 0px 0px;color:#0099CC"><h2><i class="fa fa-check-circle on-left"></i>Ok</h2></button>
-            </div>
-        </div>
-    </div>
 
 <!--
     <div class="content-page" id="page-4">
@@ -456,9 +443,9 @@
             <h2><i class="fa fa-desktop on-left"></i><span id="status">OpenStack Controller Console</span></h2>
             <div id="term"></div>
             <div class="buttons" align="auto">
-                <button type="submit" formaction="" class="inputButton large" name="cancel-install" id="cancel-install">Cancel</button>
+                <button type="submit" formaction="" class="inputButton large next" name="cancel-install" id="cancel-install">Cancel</button>
                 <button type="submit" formaction="" class="inputButton large back" name="reconfig-install" id="reconfig-install">Back<i class="icon-arrow-right-3 on-right"></i></button>
-                <button type="submit" formaction="" class="inputButton large next" name="retry-install" id="retry-install">Retry<i class="icon-arrow-right-3 on-right"></i></button>
+                <button type="submit" formaction="" class="inputButton large" name="retry-install" id="retry-install">Retry<i class="icon-arrow-right-3 on-right"></i></button>
             </div>
         </div>
     </div>

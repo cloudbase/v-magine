@@ -1738,7 +1738,6 @@ a {
 }
 .metro button:focus {
   outline: 0;
-  border: 1px #353535 dotted;
 }
 .metro button:disabled,
 .metro button.disabled {
@@ -1792,9 +1791,9 @@ a {
   text-decoration: none !important;
 }
 .metro button:active {
-  background-color: #1d1d1d !important;
+  /*background-color: #1d1d1d !important;
   color: #ffffff !important;
-  border-color: transparent;
+  border-color: transparent; */
 }
 .metro button.large {
   padding: 11px 19px;
