@@ -218,6 +218,11 @@ class Controller(QtCore.QObject):
         # to avoid blocking the UI
         self._worker.cancel_openstack_deployment()
 
+    @QtCore.pyqtSlot()
+    def reconfig_deployment(self):
+        LOG.debug("reconfig_deployment called")
+        self.on_review_config_event.emit()
+
     @QtCore.pyqtSlot(str)
     def review_config(self, json_args):
         LOG.debug("review_config called")

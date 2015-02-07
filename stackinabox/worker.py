@@ -426,7 +426,7 @@ class Worker(QtCore.QObject):
     def get_available_host_nics(self):
         try:
             LOG.debug("get_available_host_nics called")
-            self._start_progress_status('Loading host nics...')
+            self._start_progress_status('Loading host NICs...')
 
             self.get_available_host_nics_completed.emit([])
 

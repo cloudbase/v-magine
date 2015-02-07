@@ -466,7 +466,7 @@ function initUi() {
     });
 
     $("#reconfig-install").click(function(){
-        controller.review_config();
+        controller.reconfig_deployment();
         return false;
     });
 
