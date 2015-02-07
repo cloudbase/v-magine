@@ -373,6 +373,8 @@ class Worker(QtCore.QObject):
              fip_range_end,
              fip_gateway) = self._get_fip_range_data()
 
+            curr_user = self._dep_actions.get_current_user()
+
             return {
                 "default_openstack_base_dir":
                 self._get_default_openstack_base_dir(),
@@ -380,7 +382,7 @@ class Worker(QtCore.QObject):
                 "min_openstack_vm_mem_mb": min_mem_mb,
                 "suggested_openstack_vm_mem_mb": suggested_mem_mb,
                 "max_openstack_vm_mem_mb": max_mem_mb,
-                "default_hyperv_host_username": "Administrator",
+                "default_hyperv_host_username": curr_user,
                 "default_fip_range": fip_range,
                 "default_fip_range_start": fip_range_start,
                 "default_fip_range_end": fip_range_end,

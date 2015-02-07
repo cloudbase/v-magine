@@ -467,6 +467,15 @@ class DeploymentActions(object):
         if not virt_driver.vswitch_exists(VSWITCH_DATA_NAME):
             virt_driver.create_vswitch(VSWITCH_DATA_NAME)
 
+    def get_current_user(self):
+        domain, username = self._windows_utils.get_current_user()
+
+        if domain != socket.gethostname():
+            username = "%(domain)s\\%(username)s" % {
+                'domain': domain, 'username': username}
+
+        return username
+
     def validate_host_user(self, username, password):
         username_split = username.split("\\")
         if len(username_split) > 1:

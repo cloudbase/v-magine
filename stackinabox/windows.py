@@ -20,6 +20,7 @@ import pywintypes
 import win32api
 import win32con
 import win32process
+import win32security
 import wmi
 
 from ctypes import windll
@@ -424,6 +425,17 @@ class WindowsUtils(object):
 
     def close_user_logon_session(self, token):
         kernel32.CloseHandle(token)
+
+    def get_current_user(self):
+        proc_token = win32security.OpenProcessToken(
+            win32api.GetCurrentProcess(), win32security.TOKEN_QUERY)
+
+        sid, tmp = win32security.GetTokenInformation(
+            proc_token, win32security.TokenUser)
+
+        username, domain, user_type = win32security.LookupAccountSid(None, sid)
+
+        return domain, username
 
 
 def kill_process(pid):
