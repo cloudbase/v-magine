@@ -26,12 +26,14 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
 
 function handleError(msg) {
     showMessage('Error', msg);
+
 }
 
 function showMessage(caption, msg) {
     $("#showError").addClass("active-page");
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
+    $(".nano").nanoScroller();
 }
 
 function showPage(pageSelector) {

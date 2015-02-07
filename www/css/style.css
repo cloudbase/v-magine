@@ -166,10 +166,10 @@ label {
 }
 
 .progress_bar_text {
-    margin: -25px 0 0 240px;
+    margin: -25px 0 0 60px;
     bottom: 0;
     position: fixed;
-    width: 50%;
+    width: 90%;
     text-align: center;
     vertical-align: middle;
     line-height: 14px;
@@ -275,6 +275,12 @@ label {
 #wrapforscroll {
     display: block;
     height: 355px;
+}
+
+#wraperrormessage {
+    display: block;
+    height: 120px;
+    margin-top: 20px;
 }
 
 .content{
@@ -780,7 +786,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 }
 
 #errorMessage h2 {
-    margin-top: 0px;
+    margin-top: -20px;
 }
 
 /* Tool Tip */
@@ -1059,6 +1065,16 @@ select:required:invalid, select:focus:invalid {
     z-index: 2001;
     position: absolute;
     right: 0px
+}
+
+#errormessage {
+    color: white;
+    font-size: 15px;
+    line-height: 20px;
+}
+
+#errormessageok {
+    height: 55px;
 }
 
 #createswitchdialog {
