@@ -93,12 +93,12 @@
                     <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
 
                     <label>Host Admin username</label>
-                    <input class="field has_tooltip" type="text" id="hypervhostusername" ng-model="hypervHostUsername" title="Choose an admin username for the Hyper-V host" required/>
+                    <input class="field has_tooltip" type="text" id="hypervhostusername" ng-model="hypervHostUsername" data-tooltip="Choose an admin username for the Hyper-V host" required/>
                     <label>Host Admin password</label>
 
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
-                        <input class="field has_tooltip" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" title="Choose a password for the account" required/>
+                        <input class="field has_tooltip" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" data-tooltip="Choose a password for the account" required/>
                     </div>
                 </div>
                 <div class="widget" id="right-widget">
@@ -146,7 +146,7 @@
                     </select>
 
                     <label>Repository location</label>
-                    <div class="input-container has_tooltip" title="Select the location of the repository">
+                    <div class="input-container has_tooltip" data-tooltip="Select the location of the repository">
                         <div class="icon-awesome"><i class="fa fa-folder-open on-right" ></i></div>
                         <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
                     </div>

@@ -246,10 +246,10 @@ function showProgressStatus(enable, step, total_steps, msg) {
 function tooltips() {
     $(".has_tooltip").hover(function(){
         if(!$('#progress_bar_msg').text()) {
-            $('#progress_bar_msg').text($(this).attr('title'));
+            $('#progress_bar_msg').text($(this).attr('data-tooltip'));
         }
     }, function(){
-        if(($('#progress_bar_msg').text()) == ($(this).attr('title'))) {
+        if(($('#progress_bar_msg').text()) == ($(this).attr('data-tooltip'))) {
             $('#progress_bar_msg').text('');
         }
     });
