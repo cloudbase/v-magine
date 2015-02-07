@@ -674,7 +674,7 @@ input{
 .field select{
     font-size:18px;
     vertical-align: middle;
-    width: 435px;
+    width: 430px !important;
     height: 35px !important;
     padding: 5px;
     border-radius: 5px;
@@ -1373,7 +1373,7 @@ select:required:invalid, select:focus:invalid {
 }
 
 #hostnics-menu {
-    width: 310px;
+    width: 260px !important;
 }
 
 .hypervisor-col{
