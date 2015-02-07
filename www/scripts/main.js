@@ -434,6 +434,12 @@ function initUi() {
         return false;
     });
 
+    $("#add-edit, #migrate").click(function(){
+        showMessage("Coming soon!", "This feature will be available in a forthcoming update!");
+        return false;
+    });
+
+
     $("#configbutton").click(function(){
         controller.show_host_config()
         return false;
