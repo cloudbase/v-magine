@@ -78,6 +78,8 @@ class Controller(QtCore.QObject):
             self._platform_requirements_checked)
         self._worker.progress_status_update.connect(
             self._progress_status_update)
+        self._worker.host_user_validated.connect(
+            self._host_user_validated)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
@@ -144,6 +146,9 @@ class Controller(QtCore.QObject):
 
     def _enable_retry_deployment(self, enable):
         self.on_enable_retry_deployment_event.emit(enable)
+
+    def _host_user_validated(self):
+        self.on_review_config_event.emit()
 
     def show_splash(self):
         self._splash_window.show()
@@ -213,9 +218,16 @@ class Controller(QtCore.QObject):
         # to avoid blocking the UI
         self._worker.cancel_openstack_deployment()
 
-    @QtCore.pyqtSlot()
-    def review_config(self):
-        self.on_review_config_event.emit()
+    @QtCore.pyqtSlot(str)
+    def review_config(self, json_args):
+        LOG.debug("review_config called")
+
+        args = json.loads(str(json_args))
+        QtCore.QMetaObject.invokeMethod(
+            self._worker, 'validate_host_user',
+            QtCore.Qt.QueuedConnection,
+            QtCore.Q_ARG(str, args.get("hyperv_host_username")),
+            QtCore.Q_ARG(str, args.get("hyperv_host_password")))
 
     @QtCore.pyqtSlot(result=str)
     def get_config(self):

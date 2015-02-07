@@ -136,27 +136,29 @@ function gotStdErrData(data){
     term.write(data.replace('\n', '\r\n'));
 }
 
+function getDeploymentConfigDict() {
+    var $scope = angular.element("#maindiv").scope();
+
+    var dict = {};
+    dict["ext_vswitch_name"] = $scope.extVSwitch;
+    dict["openstack_vm_mem_mb"] = $scope.openStackVMMem;
+    dict["openstack_base_dir"] = $scope.openstackBaseDir;
+    dict["admin_password"] = $scope.adminPassword;
+    dict["hyperv_host_username"] = $scope.hypervHostUsername;
+    dict["hyperv_host_password"] = $scope.hypervHostPassword;
+    dict["fip_range"] = $scope.fipRange;
+    dict["fip_range_start"] = $scope.fipRangeStart;
+    dict["fip_range_end"] = $scope.fipRangeEnd;
+    dict["fip_gateway"] = $scope.fipRangeGateway;
+    dict["fip_name_servers"] = $scope.fipRangeNameServers;
+    return dict
+}
+
 function startInstall() {
     console.log("startInstall!");
     try {
         term.reset();
-
-        var $scope = angular.element("#maindiv").scope();
-
-        var dict = {};
-        dict["ext_vswitch_name"] = $scope.extVSwitch;
-        dict["openstack_vm_mem_mb"] = $scope.openStackVMMem;
-        dict["openstack_base_dir"] = $scope.openstackBaseDir;
-        dict["admin_password"] = $scope.adminPassword;
-        dict["hyperv_host_username"] = $scope.hypervHostUsername;
-        dict["hyperv_host_password"] = $scope.hypervHostPassword;
-        dict["fip_range"] = $scope.fipRange;
-        dict["fip_range_start"] = $scope.fipRangeStart;
-        dict["fip_range_end"] = $scope.fipRangeEnd;
-        dict["fip_gateway"] = $scope.fipRangeGateway;
-        dict["fip_name_servers"] = $scope.fipRangeNameServers;
-
-        controller.install(JSON.stringify(dict));
+        controller.install(JSON.stringify(getDeploymentConfigDict()));
     }
     catch(ex)
     {
@@ -407,7 +409,8 @@ function initUi() {
 
     $("#hostconfignext").click(function(){
         if(validateHostConfigForm()) {
-            controller.review_config();
+            controller.review_config(
+                JSON.stringify(getDeploymentConfigDict()));
         }
         return false;
     });
