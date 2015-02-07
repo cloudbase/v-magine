@@ -122,7 +122,6 @@ label {
 }
 
 #install-page{
-
     display: none;
 }
 
@@ -327,13 +326,14 @@ label {
     bottom: 20px;
 }
 
+/* --------------------------------- CSS Buttons -------------------------- */
 .inputButton.large{
     width: 20%;
     height: 35px;
     background-color:#201134;
     color: #BD1E2D;
     border: 1px solid #BD1E2D;
-    border-radius: 2px;
+    border-radius: 5px;
     line-height: 0px;
 }
 
@@ -350,7 +350,7 @@ label {
     float: left;
     margin-left:28%;
     border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    border-radius: 5px !important;
     margin-top: 10px;
 }
 
@@ -363,25 +363,25 @@ label {
 
 #exit:focus{
     width: 20%;
-    background-color:#201134;
-    color: #BD1E2D;
+    background-color:#201134 !important;
+    color: #BD1E2D !important;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
 #exit:active{
     width: 20%;
-    background-color:#201134 !important;
-    color: #BD1E2D;
-    border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    background-color: #fff !important;
+    color: #201134 !important;
+    border: 1px solid #201134 !important;
+    border-radius: 5px !important;
 }
 
 #agree{
     float: right;
     margin-right: 28%;
     border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    border-radius: 5px !important;
     margin-top: 10px;
 }
 
@@ -394,18 +394,18 @@ label {
 
 #agree:focus{
     width: 20%;
-    background-color:#201134;
-    color: #BD1E2D;
+    background-color:#201134 !important;
+    color: #BD1E2D !important;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
 #agree:active{
     width: 20%;
-    background-color:#201134 !important;
-    color: #BD1E2D;
-    border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    background-color: #fff !important;
+    color: #201134 !important;
+    border: 1px solid #201134 !important;
+    border-radius: 5px !important;
 }
 
 .buttons{
@@ -437,9 +437,37 @@ label {
     margin-top: 20px;
 }
 
+#reconfigbutton {
+    display: none;
+}
 
 /*----------------------------------CSS index-2.html------------------------------------------*/
 
+#retry-install{
+    display: none;
+    margin: 0px 360px;
+}
+
+#retry-install:active{
+    width: 20%;
+    background-color: #fff !important;
+    color: #201134 !important;
+    border: 1px solid #201134 !important;
+    border-radius: 5px !important;
+}
+
+#retry-install:hover{
+    background-color:#fff !important;
+    color: #201134;
+    border: 1px solid #201134;
+    border-radius: 5px;
+}
+
+#retry-install:focus{
+    background-color:#201134;
+    border: 1px solid #BD1E2D !important;
+    border-radius: 5px;
+}
 
 .back{
     float: left;
@@ -458,18 +486,18 @@ label {
 }
 
 .back:focus {
-    background-color:#201134;
-    color: #fff;
+    background-color:#201134 !important;
+    color: #BD1E2D !important;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
 .back:active{
     width: 20%;
-    background-color:#201134 !important;
-    color: #BD1E2D;
-    border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    background-color: #fff !important;
+    color: #201134 !important;
+    border: 1px solid #201134 !important;
+    border-radius: 5px !important;
 }
 
 .next{
@@ -484,23 +512,22 @@ label {
     background-color:#fff;
     color: #201134;
     border: 1px solid #201134;
-    border-radius: 5px !important;
+    border-radius: 5px;
 }
 
 .next:focus{
-    width: 20%;
-    background-color:#201134;
-    color: #fff;
+    background-color:#201134 !important;
+    color: #BD1E2D !important;
     border: 1px solid #BD1E2D;
-    border-radius: 5px !important;
+    border-radius: 5px;
 }
 
 .next:active{
     width: 20%;
-    background-color:#201134 !important;
-    color: #fff;
-    border: 1px solid #BD1E2D;
-    border-radius: 5px;
+    background-color: #fff !important;
+    color: #201134 !important;
+    border: 1px solid #201134 !important;
+    border-radius: 5px !important;
 }
 
 #cancel-install{
@@ -523,22 +550,6 @@ label {
     color: #fff;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
-}
-
-#cancel-install:active{
-    width: 20%;
-    background-color:#201134 !important;
-    color: #fff;
-    border: 1px solid #BD1E2D;
-    border-radius: 5px;
-}
-
-#reconfigbutton {
-    display: none;
-}
-
-#retry-install {
-    display: none;
 }
 
 #back-review{
@@ -599,7 +610,7 @@ label {
     border-radius: 5px;
 }
 
-.next:active{
+.next-2:active{
     width: 20%;
     background-color:#201134 !important;
     color: #fff;
@@ -1100,7 +1111,7 @@ select:required:invalid, select:focus:invalid {
     height:440px;
     /*background-color:red;*/
     display:inline-block;
-    /*margin-top:30px; */
+    margin-top:40px;
     vertical-align: top;
 }
 
@@ -1413,11 +1424,13 @@ select:required:invalid, select:focus:invalid {
 #redeployopenstack{
     float:right;
     width:100px;
+    border-radius: 5px !important;
 }
 
 #removeopenstack{
     float:left;
     width:100px;
+    border-radius: 5px !important;
 }
 
 .buttons-wrap{
@@ -1426,8 +1439,33 @@ select:required:invalid, select:focus:invalid {
     width:100%;
 }
 
+#add-edit{
+    margin-bottom: 20px;
+}
+
+#migrate{
+    margin-bottom: 20px;
+}
+
 #migrate:hover, #add-edit:hover{
         color: #201134;
+}
+
+#add-edit:focus{
+        color: #ffffff !important;
+}
+
+#add-edit:active{
+    color: #201134 !important;
+}
+
+
+#migrate:focus{
+        color: #ffffff !important;
+}
+
+#migrate:active{
+    color: #201134 !important;
 }
 
 .buttons-wrap button:hover {
@@ -1439,18 +1477,18 @@ select:required:invalid, select:focus:invalid {
 
 .buttons-wrap button:focus{
     width: 20%;
-    background-color:#201134;
-    color: #BD1E2D;
+    background-color:#201134 !important;
+    color: #BD1E2D !important;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
 }
 
 .buttons-wrap button:active{
     width: 20%;
-    background-color:#201134 !important;
-    color: #fff;
-    border: 1px solid #fff;
-    border-radius: 5px;
+    background-color: #fff !important;
+    color: #201134 !important;
+    border: 1px solid #201134 !important;
+    border-radius: 5px !important;
 }
 
 #log{
