@@ -301,6 +301,11 @@ label {
     overflow-y: auto;
 }
 
+#wraperrormessage .content-text {
+    margin-top: 0px;
+    height: 110px;
+}
+
 #agreement h1, #agreement h2, #agreement h5{
     color: #fff;
 }
@@ -1339,6 +1344,7 @@ select:required:invalid, select:focus:invalid {
 .has-scrollbar > .content-text::-webkit-scrollbar {
   display: block;
 }
+
 .nano > .nano-pane {
   background : rgba(0,0,0,.25);
   position   : absolute;
