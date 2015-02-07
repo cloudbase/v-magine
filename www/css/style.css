@@ -456,7 +456,6 @@ label {
 
 #retry-install{
     display: none;
-    margin: 0px 360px;
 }
 
 #retry-install:active{
@@ -1398,6 +1397,10 @@ select:required:invalid, select:focus:invalid {
     width:35%;
     margin-top:60px;
     position:relative;
+}
+
+#control-panel-controller .controller {
+    height: 433px;
 }
 
 #control-panel-nodes{
