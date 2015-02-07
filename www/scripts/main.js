@@ -378,7 +378,16 @@ function initUi() {
     });
 
     $("#errormessageok").click(function(){
+        console.log("button pressed")
         hidePage("#showError");
+        return false;
+    });
+
+    $(document).keyup(function(event) {
+        if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
+            console.log("enter pressed")
+            hidePage("#showError");
+        }
         return false;
     });
 

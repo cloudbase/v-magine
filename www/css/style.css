@@ -764,7 +764,14 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 #errorMessage .icon-buttons {
     margin-left: 340px;
+    bottom: 250px;
+    position: fixed;
 }
+
+#errorMessage h2 {
+    margin-top: 0px;
+}
+
 /* Tool Tip */
 #rangevalue {
     color: white;
@@ -1033,7 +1040,7 @@ select:required:invalid, select:focus:invalid {
 
 #errorMessage {
     display: inline;
-    height: 250px;
+    height: 300px;
     text-align: center;
     line-height: 6em;
     width: 1020px;
