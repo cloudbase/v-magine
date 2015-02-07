@@ -387,6 +387,12 @@ function initUi() {
         return false;
     });
 
+    $("#confirmmessageno").click(function(){
+        console.log("button pressed")
+        hidePage("#showConfirm");
+        return false;
+    });
+
     $(document).keyup(function(event) {
         if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
             console.log("enter pressed")
