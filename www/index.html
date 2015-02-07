@@ -100,7 +100,7 @@
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
                         <input class="field has_tooltip" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required
-                         data-tooltip="Please provide the password for the host admin username. Tip: make sure the password does not expire." />
+                         autofocus data-tooltip="Please provide the password for the host admin username. Tip: make sure the password does not expire." />
                     </div>
                 </div>
                 <div class="widget" id="right-widget">
@@ -158,7 +158,7 @@
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpassword)"
                         onmouseout="hidePassword(adminpassword)"></i></div>
-                        <input class="field has_tooltip" type="password" id="adminpassword" ng-model="adminPassword" required
+                        <input class="field has_tooltip" type="password" id="adminpassword" ng-model="adminPassword" required autofocus
                          data-tooltip="Admin password for the controller VM and for the OpenStack deployment" />
                     </div>
 
