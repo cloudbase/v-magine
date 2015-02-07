@@ -53,6 +53,7 @@ class Controller(QtCore.QObject):
     on_show_eula_event = QtCore.pyqtSignal()
     on_show_deployment_details_event = QtCore.pyqtSignal(str, str)
     on_show_progress_status_event = QtCore.pyqtSignal(bool, int, int, str)
+    on_enable_retry_deployment_event = QtCore.pyqtSignal(bool)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -114,6 +115,8 @@ class Controller(QtCore.QObject):
         self.on_install_done_event.emit(success)
         if success:
             self.show_deployment_details()
+        else:
+            self._enable_retry_deployment(True)
 
     def _get_ext_vswitches_completed(self, ext_vswitches):
         self.on_get_ext_vswitches_completed_event.emit(
@@ -138,6 +141,9 @@ class Controller(QtCore.QObject):
         QtCore.QMetaObject.invokeMethod(self._worker,
                                         'check_platform_requirements',
                                         QtCore.Qt.QueuedConnection)
+
+    def _enable_retry_deployment(self, enable):
+        self.on_enable_retry_deployment_event.emit(enable)
 
     def show_splash(self):
         self._splash_window.show()
@@ -224,6 +230,7 @@ class Controller(QtCore.QObject):
         LOG.debug("Install called: %s" % json_args)
 
         self.on_install_started_event.emit()
+        self._enable_retry_deployment(False)
 
         try:
             QtCore.QMetaObject.invokeMethod(

@@ -84,6 +84,18 @@ function reviewConfig() {
 function installDone(success) {
 }
 
+function enableRetryDeployment(enable) {
+    if(enable) {
+        $("#reconfig-install").css('display','inline-block');
+        $("#retry-install").css('display','inline-block');
+        $("#cancel-install").css('display','none');
+    } else {
+        $("#reconfig-install").css('display','none');
+        $("#retry-install").css('display','none');
+        $("#cancel-install").css('display','block');
+    }
+}
+
 function installStarted() {
     //$("#getopenstackbutton").attr("disable", "disable");
     showPage("#install-page");
@@ -423,8 +435,18 @@ function initUi() {
         return false;
     });
 
+    $("#retry-install").click(function(){
+        startInstall();
+        return false;
+    });
+
     $("#cancel-install").click(function(){
-        controller.cancel_deployment()
+        controller.cancel_deployment();
+        return false;
+    });
+
+    $("#reconfig-install").click(function(){
+        controller.review_config();
         return false;
     });
 
@@ -510,6 +532,8 @@ function ApplicationIsReady() {
             addExtVSwitchCompleted);
         controller.on_show_progress_status_event.connect(
             showProgressStatus);
+        controller.on_enable_retry_deployment_event.connect(
+            enableRetryDeployment);
      }
     catch(ex)
     {
