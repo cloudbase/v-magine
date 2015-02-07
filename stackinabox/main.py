@@ -395,6 +395,7 @@ def main(url=None):
 
     if url:
         main_window = webbrowser.MainWindow(url)
+        main_window.show()
     else:
         base_dir = utils.get_base_dir()
         os.chdir(base_dir)
