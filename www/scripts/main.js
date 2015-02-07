@@ -82,14 +82,6 @@ function reviewConfig() {
 }
 
 function installDone(success) {
-    //$('#getopenstackbutton').button("enable");
-    $("#mainprogressbar").progressbar({ value: 0 });
-
-    if(success) {
-        $('#status').text('Your OpenStack is ready!');
-    } else {
-        $('#status').text('OpenStack deployment failed');
-    }
 }
 
 function installStarted() {
@@ -234,7 +226,7 @@ function showProgressStatus(enable, step, total_steps, msg) {
     else {
         $('#progress_bar_id').css('display','none');
         $("#spinner").css('display','none');
-        $('#progress_bar_msg').text('');
+        $('#progress_bar_msg').text(msg);
     }
 }
 
@@ -437,8 +429,6 @@ function initUi() {
     });
 
     $("#agreement").load("eula.html");
-
-    $("#mainprogressbar").progressbar({ value: 0 });
 
     $('#showhorizonbutton').click(function(){
         controller.open_horizon_url();

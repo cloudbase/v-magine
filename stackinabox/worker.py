@@ -150,8 +150,8 @@ class Worker(QtCore.QObject):
     def _start_progress_status(self, msg=''):
         self.progress_status_update.emit(True, 0, 0, msg)
 
-    def _stop_progress_status(self):
-        self.progress_status_update.emit(False, 0, 0, '')
+    def _stop_progress_status(self, msg=''):
+        self.progress_status_update.emit(False, 0, 0, msg)
 
     def _deploy_openstack_vm(self, ext_vswitch_name,
                              openstack_vm_mem_mb, openstack_base_dir,
@@ -563,12 +563,19 @@ class Worker(QtCore.QObject):
 
             self._dep_actions.set_openstack_deployment_status(True)
             self.install_done.emit(True)
+            self._stop_progress_status()
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
+
+            if self._cancel_deployment:
+                msg = 'OpenStack deployment cancelled'
+            else:
+                msg = 'OpenStack deployment failed'
+
+            self._stop_progress_status(msg)
             self.error.emit(ex)
             self.install_done.emit(False)
         finally:
-            self._stop_progress_status()
             self._dep_actions.stop_pxe_service()
             self._is_install_done = True
