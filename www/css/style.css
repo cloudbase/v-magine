@@ -277,7 +277,7 @@ label {
     height: 355px;
 }
 
-#wraperrormessage {
+#wraperrormessage, #wrapconfirmmessage {
     display: block;
     height: 120px;
     margin-top: 20px;
@@ -302,7 +302,7 @@ label {
     overflow-y: auto;
 }
 
-#wraperrormessage .content-text {
+#wraperrormessage .content-text, #wrapconfirmmessage .content-text {
     margin-top: 0px;
     height: 110px;
     padding: 4% 0;
@@ -785,13 +785,13 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     width: 250px;
 }
 
-#errorMessage .icon-buttons {
+#errorMessage .icon-buttons, #confirmMessage .icon-buttons {
     margin-left: 340px;
     bottom: 235px;
     position: fixed;
 }
 
-#errorMessage h2 {
+#errorMessage h2, #confirmMessage h2 {
     margin-top: -20px;
 }
 
@@ -1053,7 +1053,7 @@ select:required:invalid, select:focus:invalid {
     color: #FFFFFF;
 }
 
-#showError {
+#showError, #showConfirm {
     display: none;
     margin-top: -768px;
     background-color: rgba(255, 255, 255, 0.4);
@@ -1061,7 +1061,8 @@ select:required:invalid, select:focus:invalid {
     z-index: 2000;
 }
 
-#errorMessage {
+
+#errorMessage, #confirmMessage {
     display: inline;
     height: 300px;
     text-align: center;
@@ -1073,13 +1074,13 @@ select:required:invalid, select:focus:invalid {
     right: 0px
 }
 
-#errormessage {
+#errormessage, #confirmmessage {
     color: white;
     font-size: 15px;
     line-height: 20px;
 }
 
-#errormessageok {
+#errormessageok, #confirmmessageyes, #confirmmessageno {
     height: 55px;
 }
 
