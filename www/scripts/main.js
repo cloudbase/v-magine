@@ -472,7 +472,7 @@ function initUi() {
         return false;
     });
 
-    $('#opencontrollersshbutton').click(function(){
+    $('#opencontrollersshbutton, #controllerip').click(function(){
         controller.open_controller_ssh();
         return false;
     });

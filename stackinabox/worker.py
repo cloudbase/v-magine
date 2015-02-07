@@ -481,14 +481,30 @@ class Worker(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def open_horizon_url(self):
-        controller_ip = self._get_controller_ip()
-        horizon_url = self._get_horizon_url(controller_ip)
-        self._dep_actions.open_url(horizon_url)
+        try:
+            self._start_progress_status('Opening OpenStack web console...')
+            controller_ip = self._get_controller_ip()
+            horizon_url = self._get_horizon_url(controller_ip)
+            self._dep_actions.open_url(horizon_url)
+        except Exception as ex:
+            LOG.exception(ex)
+            LOG.error(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot()
     def open_controller_ssh(self):
-        controller_ip = self._get_controller_ip()
-        self._dep_actions.open_controller_ssh(controller_ip)
+        try:
+            self._start_progress_status('Opening OpenStack SSH console...')
+            controller_ip = self._get_controller_ip()
+            self._dep_actions.open_controller_ssh(controller_ip)
+        except Exception as ex:
+            LOG.exception(ex)
+            LOG.error(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot()
     def cancel_openstack_deployment(self):
