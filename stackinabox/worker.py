@@ -77,6 +77,7 @@ class Worker(QtCore.QObject):
     get_deployment_details_completed = QtCore.pyqtSignal(str, str)
     platform_requirements_checked = QtCore.pyqtSignal()
     progress_status_update = QtCore.pyqtSignal(bool, int, int, str)
+    host_user_validated = QtCore.pyqtSignal()
 
     def __init__(self, thread):
         super(Worker, self).__init__()
@@ -595,3 +596,16 @@ class Worker(QtCore.QObject):
         finally:
             self._dep_actions.stop_pxe_service()
             self._is_install_done = True
+
+    @QtCore.pyqtSlot(str, str)
+    def validate_host_user(self, username, password):
+        try:
+            LOG.debug("validate_host_user called")
+            self._start_progress_status("Validating Hyper-V host user...")
+            self._dep_actions.validate_host_user(username, password)
+            self.host_user_validated.emit()
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()

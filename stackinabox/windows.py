@@ -31,6 +31,7 @@ from stackinabox.virt.hyperv import vmutils
 
 kernel32 = windll.kernel32
 advapi32 = windll.Advapi32
+userenv = windll.userenv
 
 LOG = logging
 
@@ -183,6 +184,10 @@ SAFER_LEVEL_OPEN = 1
 INFINITE = 0xFFFFFFFF
 
 CREATE_NEW_CONSOLE = 0x10
+
+
+class LogonFailedException(Exception):
+    pass
 
 
 class WindowsUtils(object):
@@ -406,6 +411,19 @@ class WindowsUtils(object):
             powershell_path,
             '-ExecutionPolicy RemoteSigned -NoExit -Command %s' % args,
             new_console=True)
+
+    def create_user_logon_session(self, username, password, domain='.'):
+        token = wintypes.HANDLE()
+        ret_val = advapi32.LogonUserW(unicode(username),
+                                      unicode(domain),
+                                      unicode(password), 2, 0,
+                                      ctypes.byref(token))
+        if not ret_val:
+            raise LogonFailedException()
+        return token
+
+    def close_user_logon_session(self, token):
+        kernel32.CloseHandle(token)
 
 
 def kill_process(pid):

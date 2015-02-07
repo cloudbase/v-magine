@@ -466,3 +466,19 @@ class DeploymentActions(object):
 
         if not virt_driver.vswitch_exists(VSWITCH_DATA_NAME):
             virt_driver.create_vswitch(VSWITCH_DATA_NAME)
+
+    def validate_host_user(self, username, password):
+        username_split = username.split("\\")
+        if len(username_split) > 1:
+            domain = username_split[0]
+            domain_username = username_split[1]
+        else:
+            domain = "."
+            domain_username = username
+
+        try:
+            token = self._windows_utils.create_user_logon_session(
+                domain_username, password, domain)
+            self._windows_utils.close_user_logon_session(token)
+        except windows.LogonFailedException as ex:
+            raise Exception('Login failed for user "%s"' % username)
