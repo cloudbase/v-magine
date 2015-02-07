@@ -333,7 +333,7 @@ label {
     background-color:#201134;
     color: #BD1E2D;
     border: 1px solid #BD1E2D;
-    border-radius: 2px;
+    border-radius: 5px;
     line-height: 0px;
 }
 
@@ -443,8 +443,30 @@ label {
 
 /*----------------------------------CSS index-2.html------------------------------------------*/
 
-#retry-install {
+#retry-install{
     display: none;
+    margin: 0px 360px;
+}
+
+#retry-install:active{
+    width: 20%;
+    background-color: #fff !important;
+    color: #201134 !important;
+    border: 1px solid #201134 !important;
+    border-radius: 5px !important;
+}
+
+#retry-install:hover{
+    background-color:#fff !important;
+    color: #201134;
+    border: 1px solid #201134;
+    border-radius: 5px;
+}
+
+#retry-install:focus{
+    background-color:#201134;
+    border: 1px solid #BD1E2D !important;
+    border-radius: 5px;
 }
 
 .back{
@@ -508,31 +530,23 @@ label {
     border-radius: 5px !important;
 }
 
-#retry-install{
+#cancel-install{
     height:35px;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
     display:block;
 }
 
-#retry-install:hover {
+#cancel-install:hover {
     background-color:#fff;
     color: #201134;
     border: 1px solid #201134;
     border-radius: 5px;
 }
 
-#retry-install:focus{
+#cancel-install:focus{
     width: 20%;
     background-color:#201134;
-    color: #fff;
-    border: 1px solid #BD1E2D;
-    border-radius: 5px;
-}
-
-#retry-install:active{
-    width: 20%;
-    background-color:#201134 !important;
     color: #fff;
     border: 1px solid #BD1E2D;
     border-radius: 5px;
