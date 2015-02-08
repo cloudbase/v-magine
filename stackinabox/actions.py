@@ -467,7 +467,7 @@ class DeploymentActions(object):
     def get_current_user(self):
         domain, username = self._windows_utils.get_current_user()
 
-        if domain != socket.gethostname():
+        if domain.lower() != socket.gethostname().lower():
             username = "%(domain)s\\%(username)s" % {
                 'domain': domain, 'username': username}
 
