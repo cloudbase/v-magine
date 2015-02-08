@@ -1470,7 +1470,7 @@ select:required:invalid, select:focus:invalid {
 
 #add-edit{
     float:left;
-    width:170px;
+    width:200px;
     color: #fff;
     border: 1px solid #fff;
     border-radius: 5px;
@@ -1478,7 +1478,7 @@ select:required:invalid, select:focus:invalid {
 
 #migrate{
     float:right;
-    width:170px;
+    width:200px;
     color: #fff;
     border: 1px solid #fff;
     border-radius: 5px;
