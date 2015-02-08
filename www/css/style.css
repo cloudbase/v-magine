@@ -714,13 +714,15 @@ input{
     border-radius: 5px;
     width: 260px;
     height: 35px;
-    /*line-height: 35px;*/
-    font-size:18px;
+    font-size:18px !important;
     border: none;
 }
 
+.small-field :focus {
+    outline: none;
+}
+
 .small-field select{
-    /*line-height: 35px;*/
     font-size:18px;
     vertical-align: middle;
     width: 260px;
@@ -1428,6 +1430,31 @@ select:required:invalid, select:focus:invalid {
 
 #hostnics-menu {
     width: 260px !important;
+    border-left-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 0px;
+    padding-bottom: 0px;
+
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default :focus {
+    outline: none;
+}
+
+.ui-widget-content .ui-state-hover, .ui-widget-content .ui-state-focus {
+    background-color: #38a8e0 !important;
+    color: #fff;
+}
+
+.ui-widget-content {
+    border-left-width: 0px;
+    border-right-width: 0px;
+    border-bottom-width: 0px;
+    padding-bottom: 0px !important;
+}
+
+.metro ul li, .metro ol li {
+    line-height: 35px !important;
 }
 
 .hypervisor-col{
