@@ -56,6 +56,7 @@ class Controller(QtCore.QObject):
     on_enable_retry_deployment_event = QtCore.pyqtSignal(bool)
     on_get_config_completed_event = QtCore.pyqtSignal(str)
     on_deployment_disabled_event = QtCore.pyqtSignal()
+    on_product_update_available_event = QtCore.pyqtSignal(str, str, bool, str)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -86,6 +87,8 @@ class Controller(QtCore.QObject):
             self._openstack_deployment_removed)
         self._worker.get_config_completed.connect(
             self._get_config_completed)
+        self._worker.product_update_available.connect(
+            self._product_update_available)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
@@ -149,6 +152,17 @@ class Controller(QtCore.QObject):
         if not success:
             self._disable_deployment()
         self.hide_splash()
+        self._check_for_updates()
+
+    def _product_update_available(self, current_version, new_version,
+                                  update_required, update_url):
+        self.on_product_update_available_event.emit(
+            current_version, new_version, update_required, update_url)
+
+    def _check_for_updates(self):
+        QtCore.QMetaObject.invokeMethod(self._worker,
+                                        'check_for_updates',
+                                        QtCore.Qt.QueuedConnection)
 
     def _check_platform_requirements(self):
         QtCore.QMetaObject.invokeMethod(self._worker,

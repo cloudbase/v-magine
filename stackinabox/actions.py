@@ -14,11 +14,13 @@
 #    under the License.
 
 import gzip
+import json
 import logging
 import os
 import psutil
 import socket
 import sys
+import urllib2
 
 from oslo.utils import units
 
@@ -28,16 +30,20 @@ from stackinabox import kickstart
 from stackinabox import pybootdmgr
 from stackinabox import security
 from stackinabox import utils
+from stackinabox import version
 from stackinabox import windows
 from stackinabox.virt import base as base_virt_driver
 from stackinabox.virt import factory as virt_factory
 
 LOG = logging
 
-VSWITCH_INTERNAL_NAME = "v-magine-internal"
-VSWITCH_DATA_NAME = "v-magine-data"
+PRODUCT_NAME = "v-magine"
+UPDATE_CHECK_URL = "https://www.cloudbase.it/checkupdates.php?p={0}&v={1}"
 
-FIREWALL_PXE_RULE_NAME = "v-magine PXE"
+VSWITCH_INTERNAL_NAME = "%s-internal" % PRODUCT_NAME
+VSWITCH_DATA_NAME = "%s-data" % PRODUCT_NAME
+
+FIREWALL_PXE_RULE_NAME = "%s PXE" % PRODUCT_NAME
 
 DHCP_PORT = 67
 TFTP_PORT = 69
@@ -68,7 +74,7 @@ FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
 OPENSTACK_INSTANCES_DIR = "Instances"
 OPENSTACK_LOG_DIR = "Log"
 
-CONTROLLER_SSH_KEY_NAME = "v-magine_controller_rsa"
+CONTROLLER_SSH_KEY_NAME = "%s_controller_rsa" % PRODUCT_NAME
 
 
 class DeploymentActions(object):
@@ -488,3 +494,12 @@ class DeploymentActions(object):
             self._windows_utils.close_user_logon_session(token)
         except windows.LogonFailedException as ex:
             raise Exception('Login failed for user "%s"' % username)
+
+    def check_for_updates(self):
+        try:
+            url = UPDATE_CHECK_URL.format(PRODUCT_NAME, version.VERSION)
+            req = urllib2.Request(url, headers={'User-Agent': PRODUCT_NAME})
+            return json.load(urllib2.urlopen(req))
+        except Exception as ex:
+            LOG.exception(ex)
+            raise Exception("Checking for product updates failed")

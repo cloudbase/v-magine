@@ -239,6 +239,17 @@ function addExtVSwitchCompleted(vswitch_name) {
     $("#extvswitch").selectmenu("refresh", true);
 }
 
+function productUpdateAvailable(currentVersion, newVersion, updateRequired, updateUrl) {
+    updateMessage = 'An updated version of this product is available at "' +
+                    updateUrl + '" ';
+    updateMessage += 'It is recommended to close this application and ' +
+                     'download the updated version before continuing. ';
+    updateMessage += 'Current version: ' + currentVersion + '. ';
+    updateMessage += 'New available version: ' + newVersion;
+
+    showMessage('v-magine update available', updateMessage);
+}
+
 function showProgressStatus(enable, step, total_steps, msg) {
     if(enable) {
         $('#progress_bar_id').css('display', 'inline-block');
@@ -251,7 +262,6 @@ function showProgressStatus(enable, step, total_steps, msg) {
         $('#progress_bar_msg').text(msg);
     }
 }
-
 
 function tooltips() {
     $(".has_tooltip").hover(function(){
@@ -581,6 +591,8 @@ function ApplicationIsReady() {
             configCompleted);
         controller.on_deployment_disabled_event.connect(
             disableDeployment);
+        controller.on_product_update_available_event.connect(
+            productUpdateAvailable);
 
         setDefaultConfigValues();
      }

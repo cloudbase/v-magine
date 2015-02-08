@@ -28,6 +28,7 @@ from stackinabox import actions
 from stackinabox import rdo
 from stackinabox import security
 from stackinabox import utils
+from stackinabox import version
 
 LOG = logging
 
@@ -80,6 +81,7 @@ class Worker(QtCore.QObject):
     host_user_validated = QtCore.pyqtSignal()
     openstack_deployment_removed = QtCore.pyqtSignal()
     get_config_completed = QtCore.pyqtSignal(dict)
+    product_update_available = QtCore.pyqtSignal(str, str, bool, str)
 
     def __init__(self, thread):
         super(Worker, self).__init__()
@@ -660,6 +662,24 @@ class Worker(QtCore.QObject):
             self._start_progress_status("Validating Hyper-V host user...")
             self._dep_actions.validate_host_user(username, password)
             self.host_user_validated.emit()
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    @QtCore.pyqtSlot()
+    def check_for_updates(self):
+        try:
+            self._start_progress_status("Checking for product updates...")
+            update_info = self._dep_actions.check_for_updates()
+            new_version = update_info.get("new_version")
+            if new_version:
+                self.product_update_available.emit(
+                    version.VERSION,
+                    new_version,
+                    update_info.get("update_required"),
+                    update_info.get("update_url"))
         except Exception as ex:
             LOG.exception(ex)
             self.error.emit(ex)
