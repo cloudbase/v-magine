@@ -150,7 +150,7 @@
 
                     <label>Repository location</label>
                     <div class="input-container has_tooltip" data-tooltip="Url location of the Linux repository">
-                        <div class="icon-awesome"><i class="fa fa-folder-open on-right" ></i></div>
+                        <div class="icon-awesome"><i class="fa fa-globe on-right" ></i></div>
                         <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
                     </div>
 
@@ -172,7 +172,7 @@
 
                     <div class="allocated-memory has_tooltip"
                      data-tooltip="Move the slider to choose the amount of memory assigned to the OpenStack controller virtual machine">
-                        Allocated memory: <span id="openstackvmmem" ng-bind="openStackVMMem + 'MB'"></span>
+                        <label>Allocated memory: <span id="openstackvmmem" ng-bind="openStackVMMem + 'MB'"></span></label>
                         <div id="openstackvmmemslider"></div>
                         <div class="memory-suggestion">
                             Recommended memory: <span ng-bind="suggestedOpenStackVMMem + 'MB'"></span>
