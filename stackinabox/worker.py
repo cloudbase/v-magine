@@ -479,7 +479,9 @@ class Worker(QtCore.QObject):
 
             controller_ip = self._get_controller_ip()
             if not controller_ip:
-                raise Exception("The OpenStack controller is not available")
+                raise Exception('The OpenStack controller is not available. '
+                                'Please ensure that the "%s" virtual machine '
+                                'is running' % OPENSTACK_CONTROLLER_VM_NAME)
 
             self.get_deployment_details_completed.emit(
                 controller_ip,
