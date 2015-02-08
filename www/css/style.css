@@ -65,9 +65,9 @@ label {
     display: inline-block;
     width: auto;
     height: auto;
-    line-height: 20px;
+    line-height: 22px;
     position:absolute;
-    top:5px;
+    top:6px;
     z-index:3;
     margin-left: 92%;
     color: #000000;
