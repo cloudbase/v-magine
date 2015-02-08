@@ -34,10 +34,10 @@ from stackinabox.virt import factory as virt_factory
 
 LOG = logging
 
-VSWITCH_INTERNAL_NAME = "stackinabox-internal"
-VSWITCH_DATA_NAME = "stackinabox-data"
+VSWITCH_INTERNAL_NAME = "v-magine-internal"
+VSWITCH_DATA_NAME = "v-magine-data"
 
-FIREWALL_PXE_RULE_NAME = "stackinabox PXE"
+FIREWALL_PXE_RULE_NAME = "v-magine PXE"
 
 DHCP_PORT = 67
 TFTP_PORT = 69
