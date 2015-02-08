@@ -348,6 +348,7 @@ label {
     border: 1px solid #BD1E2D;
     border-radius: 5px;
     line-height: 0px;
+    font-family: "Segoe UI_";
 }
 
 .inputButton-icon.large{
@@ -493,14 +494,14 @@ label {
 .back:hover {
     background-color:#fff;
     color: #201134;
-    border: 1px solid #201134;
+    border: 1px solid #fff;
     border-radius: 5px;
 }
 
 .back:focus {
     background-color:#201134 !important;
     color: #BD1E2D !important;
-    border: 1px solid #BD1E2D;
+    border: 1px solid #201134;
     border-radius: 5px;
 }
 
@@ -508,7 +509,7 @@ label {
     width: 20%;
     background-color: #fff !important;
     color: #201134 !important;
-    border: 1px solid #201134 !important;
+    border: 1px solid #fff !important;
     border-radius: 5px !important;
 }
 
@@ -523,14 +524,14 @@ label {
 .next:hover {
     background-color:#fff;
     color: #201134;
-    border: 1px solid #201134;
+    border: 1px solid #fff;
     border-radius: 5px;
 }
 
 .next:focus{
     background-color:#201134 !important;
     color: #BD1E2D !important;
-    border: 1px solid #BD1E2D;
+    border: 1px solid #201134;
     border-radius: 5px;
 }
 
@@ -538,7 +539,7 @@ label {
     width: 20%;
     background-color: #fff !important;
     color: #201134 !important;
-    border: 1px solid #201134 !important;
+    border: 1px solid #fff !important;
     border-radius: 5px !important;
 }
 
@@ -552,7 +553,7 @@ label {
 #cancel-install:hover {
     background-color:#fff;
     color: #201134;
-    border: 1px solid #201134;
+    border: 1px solid #fff;
     border-radius: 5px;
 }
 
@@ -560,7 +561,7 @@ label {
     width: 20%;
     background-color:#201134;
     color: #fff;
-    border: 1px solid #BD1E2D;
+    border: 1px solid #201134;
     border-radius: 5px;
 }
 
@@ -580,14 +581,14 @@ label {
 .back-2:hover {
     background-color:#fff;
     color: #201134;
-    border: 1px solid #201134;
+    border: 1px solid #fff;
     border-radius: 5px;
 }
 
 .back-2:focus {
     background-color:#201134;
     color: #fff;
-    border: 1px solid #BD1E2D;
+    border: 1px solid #201134;
     border-radius: 5px;
 }
 
@@ -595,7 +596,7 @@ label {
     width: 20%;
     background-color:#201134 !important;
     color: #BD1E2D;
-    border: 1px solid #BD1E2D;
+    border: 1px solid #201134;
     border-radius: 5px;
 }
 
@@ -610,7 +611,7 @@ label {
 .next-2:hover {
     background-color:#fff;
     color: #201134;
-    border: 1px solid #201134;
+    border: 1px solid #fff;
     border-radius: 5px;
 }
 
@@ -618,7 +619,7 @@ label {
     width: 20%;
     background-color:#201134;
     color: #fff;
-    border: 1px solid #BD1E2D;
+    border: 1px solid #201134;
     border-radius: 5px;
 }
 
@@ -626,7 +627,7 @@ label {
     width: 20%;
     background-color:#201134 !important;
     color: #fff;
-    border: 1px solid #BD1E2D;
+    border: 1px solid #201134;
     border-radius: 5px;
 }
 
@@ -666,7 +667,6 @@ label {
 
 #left-widget{
     float:left;
-    /* padding-top:67px; */
 }
 
 #right-widget{
@@ -683,9 +683,15 @@ label {
     font-size:18px;
     width: 100%;
     height: 35px;
-    /*line-height: 35px;*/
+    color: #82798D;
     font-size: 18px;
     border: medium none;
+    font-family: "Segoe UI_" !important;
+}
+
+.field :focus{
+    outline: none;
+    color: #1F1033;
 }
 
 input{
@@ -1049,7 +1055,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 input:required:invalid, input:focus:invalid
 select:required:invalid, select:focus:invalid {
-    background-color: #BC1D2C;
+    background-color: rgb(230, 147, 155);
     color: #FFFFFF;
 }
 
