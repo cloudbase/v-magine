@@ -78,6 +78,7 @@ class Worker(QtCore.QObject):
     platform_requirements_checked = QtCore.pyqtSignal()
     progress_status_update = QtCore.pyqtSignal(bool, int, int, str)
     host_user_validated = QtCore.pyqtSignal()
+    openstack_deployment_removed = QtCore.pyqtSignal()
 
     def __init__(self, thread):
         super(Worker, self).__init__()
@@ -525,6 +526,17 @@ class Worker(QtCore.QObject):
             self.error.emit(ex)
         finally:
             self._stop_progress_status()
+
+    @QtCore.pyqtSlot()
+    def remove_openstack_deployment(self):
+        try:
+            LOG.debug("remove_openstack_deployment called")
+            self._dep_actions.check_remove_vm(OPENSTACK_CONTROLLER_VM_NAME)
+            self._dep_actions.set_openstack_deployment_status(False)
+            self.openstack_deployment_removed.emit()
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
 
     @QtCore.pyqtSlot()
     def cancel_openstack_deployment(self):

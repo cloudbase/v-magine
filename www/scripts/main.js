@@ -493,6 +493,11 @@ function initUi() {
         return false;
     });
 
+    $('#removeopenstack').click(function(){
+        controller.remove_openstack();
+        return false;
+    });
+
     setPasswordValidation();
     initControllerMemSlider();
 

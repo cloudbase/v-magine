@@ -80,6 +80,8 @@ class Controller(QtCore.QObject):
             self._progress_status_update)
         self._worker.host_user_validated.connect(
             self._host_user_validated)
+        self._worker.openstack_deployment_removed.connect(
+            self._openstack_deployment_removed)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
@@ -149,6 +151,9 @@ class Controller(QtCore.QObject):
 
     def _host_user_validated(self):
         self.on_review_config_event.emit()
+
+    def _openstack_deployment_removed(self):
+        self.show_controller_config()
 
     def show_splash(self):
         self._splash_window.show()
@@ -263,6 +268,20 @@ class Controller(QtCore.QObject):
         self.show_controller_config()
 
     @QtCore.pyqtSlot()
+    def remove_openstack(self):
+        LOG.debug("remove_openstack called")
+        # TODO: replace with HTML UI
+        reply = QtWidgets.QMessageBox.question(
+            self._main_window, 'v-magine',
+            "Remove the current OpenStack deployment? All OpenStack "
+            "controller data will be deleted.",
+            QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
+            QtCore.QMetaObject.invokeMethod(self._worker,
+                                            'remove_openstack_deployment',
+                                            QtCore.Qt.QueuedConnection)
+
+    @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
         LOG.debug("get_ext_vswitches called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'get_ext_vswitches',
@@ -348,10 +367,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._controller.can_close():
             event.accept()
         else:
+            # TODO: replace with HTML UI
             reply = QtWidgets.QMessageBox.question(
-                self, 'Message',
-                "Are you sure to quit and interrupt the OpenStack "
-                "installation?",
+                self, 'v-magine',
+                "Interrupt the OpenStack deployment?",
                 QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             if reply == QtWidgets.QMessageBox.Yes:
                 event.accept()
