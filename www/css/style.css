@@ -748,6 +748,7 @@ input{
 
 #openstackvmmemslider{
     margin-top: 8px;
+    border-width: 1px;
 }
 
 input[type=range] {
@@ -1402,6 +1403,11 @@ select:required:invalid, select:focus:invalid {
     padding-right:2px;
 }
 
+#wrap-control-panel h3{
+    color: #37A8DF;
+    font-size: 18px;
+}
+
 #wrap-control-panel h4{
     color:#fff;
 }
@@ -1469,7 +1475,7 @@ select:required:invalid, select:focus:invalid {
 
 #add-edit{
     float:left;
-    width:170px;
+    width:200px;
     color: #fff;
     border: 1px solid #fff;
     border-radius: 5px;
@@ -1477,7 +1483,7 @@ select:required:invalid, select:focus:invalid {
 
 #migrate{
     float:right;
-    width:170px;
+    width:200px;
     color: #fff;
     border: 1px solid #fff;
     border-radius: 5px;
