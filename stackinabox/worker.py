@@ -73,7 +73,7 @@ class Worker(QtCore.QObject):
     install_done = QtCore.pyqtSignal(bool)
     get_ext_vswitches_completed = QtCore.pyqtSignal(list)
     get_available_host_nics_completed = QtCore.pyqtSignal(list)
-    add_ext_vswitch_completed = QtCore.pyqtSignal(bool)
+    add_ext_vswitch_completed = QtCore.pyqtSignal(str)
     get_deployment_details_completed = QtCore.pyqtSignal(str, str)
     platform_requirements_checked = QtCore.pyqtSignal()
     progress_status_update = QtCore.pyqtSignal(bool, int, int, str)
@@ -458,11 +458,10 @@ class Worker(QtCore.QObject):
             self._dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
             # Refresh VSwitch list
             self.get_ext_vswitches()
-            self.add_ext_vswitch_completed.emit(True)
+            self.add_ext_vswitch_completed.emit(vswitch_name)
         except Exception as ex:
             LOG.exception(ex)
             self.error.emit(ex)
-            self.add_ext_vswitch_completed.emit(False)
             raise
         finally:
             self._stop_progress_status()

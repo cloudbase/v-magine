@@ -228,9 +228,15 @@ function addExtVSwitch() {
     }
 }
 
-function addExtVSwitchCompleted(success) {
+function addExtVSwitchCompleted(vswitch_name) {
     enableAddExtVSwitchDialogControls(true);
     hidePage("#createswitch");
+
+    var $scope = angular.element("#maindiv").scope();
+    $scope.extVSwitch = vswitch_name
+    $scope.$apply();
+
+    $("#extvswitch").selectmenu("refresh", true);
 }
 
 function showProgressStatus(enable, step, total_steps, msg) {

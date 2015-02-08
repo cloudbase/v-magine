@@ -44,7 +44,7 @@ class Controller(QtCore.QObject):
     on_install_done_event = QtCore.pyqtSignal(bool)
     on_get_ext_vswitches_completed_event = QtCore.pyqtSignal(str)
     on_get_available_host_nics_completed_event = QtCore.pyqtSignal(str)
-    on_add_ext_vswitch_completed_event = QtCore.pyqtSignal(bool)
+    on_add_ext_vswitch_completed_event = QtCore.pyqtSignal(str)
     on_install_started_event = QtCore.pyqtSignal()
     on_review_config_event = QtCore.pyqtSignal()
     on_show_controller_config_event = QtCore.pyqtSignal()
@@ -130,8 +130,8 @@ class Controller(QtCore.QObject):
         self.on_get_available_host_nics_completed_event.emit(
             json.dumps(host_nics))
 
-    def _add_ext_vswitch_completed(self, success):
-        self.on_add_ext_vswitch_completed_event.emit(success)
+    def _add_ext_vswitch_completed(self, vswitch_name):
+        self.on_add_ext_vswitch_completed_event.emit(vswitch_name)
 
     def _get_deployment_details_completed(self, controller_ip, horizon_url):
         self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
