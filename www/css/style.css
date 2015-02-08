@@ -1403,6 +1403,11 @@ select:required:invalid, select:focus:invalid {
     padding-right:2px;
 }
 
+#wrap-control-panel h3{
+    color: #37A8DF;
+    font-size: 18px;
+}
+
 #wrap-control-panel h4{
     color:#fff;
 }
