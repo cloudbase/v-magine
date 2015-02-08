@@ -344,8 +344,8 @@ label {
     width: 20%;
     height: 35px;
     background-color:#201134;
-    color: #BD1E2D;
-    border: 1px solid #BD1E2D;
+    color: #fff;
+    border: 1px solid #fff;
     border-radius: 5px;
     line-height: 0px;
     font-family: "Segoe UI_";
@@ -680,11 +680,10 @@ label {
 
 .field{
     border-radius: 5px;
-    font-size:18px;
     width: 100%;
     height: 35px;
-    color: #82798D;
-    font-size: 18px;
+    color: #1F1033;
+    font-size: 18px !important;
     border: medium none;
     font-family: "Segoe UI_" !important;
 }
@@ -1055,7 +1054,10 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 input:required:invalid, input:focus:invalid
 select:required:invalid, select:focus:invalid {
-    background-color: rgb(230, 147, 155);
+    background-color: #BC1D2C;
+    border: solid;
+    border-color: #BC1D2C;
+    border-width: 1px;
     color: #FFFFFF;
 }
 
