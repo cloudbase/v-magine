@@ -300,9 +300,6 @@ class DeploymentActions(object):
         # Get the best option considering host limits
         suggested_mem_mb = min(max_mem_mb, OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
 
-        if suggested_mem_mb < OPENSTACK_VM_MIN_MEM_MB:
-            raise Exception("Not enough RAM available for OpenStack")
-
         return (OPENSTACK_VM_MIN_MEM_MB, suggested_mem_mb, max_mem_mb)
 
     def check_platform_requirements(self):

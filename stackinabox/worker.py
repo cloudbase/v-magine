@@ -75,10 +75,11 @@ class Worker(QtCore.QObject):
     get_available_host_nics_completed = QtCore.pyqtSignal(list)
     add_ext_vswitch_completed = QtCore.pyqtSignal(str)
     get_deployment_details_completed = QtCore.pyqtSignal(str, str)
-    platform_requirements_checked = QtCore.pyqtSignal()
+    platform_requirements_checked = QtCore.pyqtSignal(bool)
     progress_status_update = QtCore.pyqtSignal(bool, int, int, str)
     host_user_validated = QtCore.pyqtSignal()
     openstack_deployment_removed = QtCore.pyqtSignal()
+    get_config_completed = QtCore.pyqtSignal(dict)
 
     def __init__(self, thread):
         super(Worker, self).__init__()
@@ -363,8 +364,13 @@ class Worker(QtCore.QObject):
         fip_gateway = fip_subnet[:-1] + "1"
         return (fip_range, fip_range_start, fip_range_end, fip_gateway)
 
+    @QtCore.pyqtSlot()
     def get_config(self):
         try:
+            LOG.debug("get_config called")
+
+            self._start_progress_status('Loading default values...')
+
             (min_mem_mb, suggested_mem_mb,
              max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb(
                 OPENSTACK_CONTROLLER_VM_NAME)
@@ -376,7 +382,7 @@ class Worker(QtCore.QObject):
 
             curr_user = self._dep_actions.get_current_user()
 
-            return {
+            config_dict = {
                 "default_openstack_base_dir":
                 self._get_default_openstack_base_dir(),
                 "default_centos_mirror": DEFAULT_CENTOS_MIRROR,
@@ -391,20 +397,40 @@ class Worker(QtCore.QObject):
                 "default_fip_range_name_servers": OPENDNS_NAME_SERVERS,
                 "localhost": socket.gethostname()
             }
+
+            self.get_config_completed.emit(config_dict)
         except Exception as ex:
             LOG.exception(ex)
             self.error.emit(ex)
-            raise
+        finally:
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot()
     def check_platform_requirements(self):
         try:
             LOG.debug("check_platform_requirements called")
+            self._start_progress_status('Checking requirements...')
+
             self._dep_actions.check_platform_requirements()
-            self.platform_requirements_checked.emit()
+            self._check_openstack_vm_memory_requirements(
+                OPENSTACK_CONTROLLER_VM_NAME)
+            self.platform_requirements_checked.emit(True)
         except Exception as ex:
             LOG.exception(ex)
+            self.platform_requirements_checked.emit(False)
             self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    def _check_openstack_vm_memory_requirements(self, vm_name):
+        (min_mem_mb, suggested_mem_mb,
+         max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb(vm_name)
+
+        if max_mem_mb < min_mem_mb:
+            raise Exception(
+                "Not enough RAM available for OpenStack. "
+                "Available: {:,} MB, "
+                "required {:,} MB".format(max_mem_mb, min_mem_mb))
 
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):

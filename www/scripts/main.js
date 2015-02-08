@@ -265,9 +265,11 @@ function tooltips() {
     });
 }
 
+function disableDeployment() {
+    $("#controllerconfignext").attr('disabled','disabled');
+}
 
-function setDefaultConfigValues() {
-    var configJson = controller.get_config();
+function configCompleted(configJson) {
     if(!configJson)
         return;
 
@@ -289,6 +291,12 @@ function setDefaultConfigValues() {
     $scope.hypervHostName = defaultConfig.localhost;
 
     $scope.$apply();
+
+    initControllerMemSlider();
+}
+
+function setDefaultConfigValues() {
+    controller.get_config();
 }
 
 function showPassword(x){
@@ -542,8 +550,6 @@ function ApplicationIsReady() {
     try {
         console.log("ApplicationIsReady!");
 
-        setDefaultConfigValues();
-
         initUi();
 
         tooltips();
@@ -571,6 +577,12 @@ function ApplicationIsReady() {
             showProgressStatus);
         controller.on_enable_retry_deployment_event.connect(
             enableRetryDeployment);
+        controller.on_get_config_completed_event.connect(
+            configCompleted);
+        controller.on_deployment_disabled_event.connect(
+            disableDeployment);
+
+        setDefaultConfigValues();
      }
     catch(ex)
     {

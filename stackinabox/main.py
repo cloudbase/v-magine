@@ -54,6 +54,8 @@ class Controller(QtCore.QObject):
     on_show_deployment_details_event = QtCore.pyqtSignal(str, str)
     on_show_progress_status_event = QtCore.pyqtSignal(bool, int, int, str)
     on_enable_retry_deployment_event = QtCore.pyqtSignal(bool)
+    on_get_config_completed_event = QtCore.pyqtSignal(str)
+    on_deployment_disabled_event = QtCore.pyqtSignal()
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -82,6 +84,8 @@ class Controller(QtCore.QObject):
             self._host_user_validated)
         self._worker.openstack_deployment_removed.connect(
             self._openstack_deployment_removed)
+        self._worker.get_config_completed.connect(
+            self._get_config_completed)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
@@ -137,8 +141,13 @@ class Controller(QtCore.QObject):
         self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
         self.hide_splash()
 
-    def _platform_requirements_checked(self):
+    def _disable_deployment(self):
+        self.on_deployment_disabled_event.emit()
+
+    def _platform_requirements_checked(self, success):
         self.show_controller_config()
+        if not success:
+            self._disable_deployment()
         self.hide_splash()
 
     def _check_platform_requirements(self):
@@ -154,6 +163,9 @@ class Controller(QtCore.QObject):
 
     def _openstack_deployment_removed(self):
         self.show_controller_config()
+
+    def _get_config_completed(self, config_dict):
+        self.on_get_config_completed_event.emit(json.dumps(config_dict))
 
     def show_splash(self):
         self._splash_window.show()
@@ -239,9 +251,12 @@ class Controller(QtCore.QObject):
             QtCore.Q_ARG(str, args.get("hyperv_host_username")),
             QtCore.Q_ARG(str, args.get("hyperv_host_password")))
 
-    @QtCore.pyqtSlot(result=str)
+    @QtCore.pyqtSlot()
     def get_config(self):
-        return json.dumps(self._worker.get_config())
+        LOG.debug("get_config called")
+        QtCore.QMetaObject.invokeMethod(
+            self._worker, 'get_config',
+            QtCore.Qt.QueuedConnection)
 
     @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):
@@ -265,7 +280,7 @@ class Controller(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def redeploy_openstack(self):
-        self.show_controller_config()
+        self._check_platform_requirements()
 
     @QtCore.pyqtSlot()
     def remove_openstack(self):
