@@ -53,7 +53,9 @@ FREERDP_WEBCONNECT_HTTPS_PORT = 4430
 
 OPENSTACK_MAX_VM_MEM_MB = 16 * 1024
 OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 8 * 1024
-OPENSTACK_VM_MIN_MEM_MB = 1 * 1024
+OPENSTACK_VM_MIN_MEM_MB = 2 * 1024
+
+OPENSTACK_MIN_INSTANCES_MEM_MB = 256
 
 OPENSTACK_VM_VHD_MAX_SIZE = 60 * units.Gi
 
@@ -301,7 +303,9 @@ class DeploymentActions(object):
 
         max_mem_mb = min(mem_available / units.Mi, OPENSTACK_MAX_VM_MEM_MB)
         # Get the best option considering host limits
-        suggested_mem_mb = min(max_mem_mb, OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
+        suggested_mem_mb = min(
+            max(max_mem_mb - OPENSTACK_MIN_INSTANCES_MEM_MB, 0),
+            OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
 
         return (OPENSTACK_VM_MIN_MEM_MB, suggested_mem_mb, max_mem_mb)
 
