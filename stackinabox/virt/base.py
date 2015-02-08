@@ -18,6 +18,9 @@ TCP = "TCP"
 
 
 class BaseDriver(object):
+    def get_host_available_memory(self):
+        raise NotImplementedError()
+
     def vm_exists(self, vm_name):
         raise NotImplementedError()
 

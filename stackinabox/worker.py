@@ -373,9 +373,18 @@ class Worker(QtCore.QObject):
 
             self._start_progress_status('Loading default values...')
 
-            (min_mem_mb, suggested_mem_mb,
-             max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb(
-                OPENSTACK_CONTROLLER_VM_NAME)
+            min_mem_mb = 0
+            suggested_mem_mb = 0
+            max_mem_mb = 0
+
+            try:
+                # TODO: This data should not be retrieved if there is no
+                # hypervisor
+                (min_mem_mb, suggested_mem_mb,
+                 max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb(
+                    OPENSTACK_CONTROLLER_VM_NAME)
+            except Exception as ex:
+                LOG.exception(ex)
 
             (fip_range,
              fip_range_start,

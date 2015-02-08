@@ -51,7 +51,6 @@ TFTP_PORT = 69
 FREERDP_WEBCONNECT_HTTP_PORT = 8000
 FREERDP_WEBCONNECT_HTTPS_PORT = 4430
 
-MIN_OS_FREE_MEMORY_MB = 500
 OPENSTACK_MAX_VM_MEM_MB = 16 * 1024
 OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 8 * 1024
 OPENSTACK_VM_MIN_MEM_MB = 1 * 1024
@@ -293,16 +292,14 @@ class DeploymentActions(object):
         LOG.info("Nova compute installed")
 
     def get_openstack_vm_memory_mb(self, vm_name):
-        mem_info = psutil.virtual_memory()
-        LOG.info("Host memory: %s" % str(mem_info))
+        mem_available = self._virt_driver.get_host_available_memory()
+        LOG.info("Host available memory: %s" % mem_available)
 
-        mem_available = mem_info.available
         if self._virt_driver.vm_exists(vm_name):
             # If the controller VM exists, add its memory as it will be deleted
             mem_available += self._virt_driver.get_vm_memory_usage(vm_name)
 
-        max_mem_mb = min(mem_available / units.Mi - MIN_OS_FREE_MEMORY_MB,
-                         OPENSTACK_MAX_VM_MEM_MB)
+        max_mem_mb = min(mem_available / units.Mi, OPENSTACK_MAX_VM_MEM_MB)
         # Get the best option considering host limits
         suggested_mem_mb = min(max_mem_mb, OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
 

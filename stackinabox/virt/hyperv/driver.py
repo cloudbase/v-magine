@@ -18,6 +18,7 @@ import os
 
 from stackinabox.virt import base
 from stackinabox.virt.hyperv import constants
+from stackinabox.virt.hyperv import hostutilsv2
 from stackinabox.virt.hyperv import netutilsv2
 from stackinabox.virt.hyperv import vhdutilsv2
 from stackinabox.virt.hyperv import vmutils
@@ -28,16 +29,24 @@ LOG = logging.getLogger(__name__)
 
 
 class HyperVDriver(base.BaseDriver):
+    HOST_MEMORY_BUFFER_MB = 100
+
     def __init__(self):
         LOG.debug("Initializing HyperVDriver")
 
         self._vmutils = vmutilsv2.VMUtilsV2()
         self._vhdutils = vhdutilsv2.VHDUtilsV2()
         self._netutils = netutilsv2.NetworkUtilsV2()
+        self._hostutils = hostutilsv2.HostUtilsV2()
         self._windows_utils = windows.WindowsUtils()
 
     def vm_exists(self, vm_name):
         return self._vmutils.vm_exists(vm_name)
+
+    def get_host_available_memory(self):
+        host_avail_mem_mb = self._hostutils.get_host_available_memory_mb()
+        return max(host_avail_mem_mb - self.HOST_MEMORY_BUFFER_MB,
+                   0) * 1024 * 1024
 
     def get_vm_memory_usage(self, vm_name):
         return (self._vmutils.get_vm_summary_info(
@@ -151,7 +160,8 @@ class HyperVDriver(base.BaseDriver):
         try:
             # TODO: check if the feature is installed
             self._vmutils.list_instances()
-        except vmutils.HyperVException as ex:
+        except Exception as ex:
+            LOG.exception(ex)
             raise Exception("Please enable Hyper-V on this host before "
                             "installing OpenStack")
 
