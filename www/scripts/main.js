@@ -31,6 +31,7 @@ function handleError(msg) {
 
 function showMessage(caption, msg) {
     $("#showError").addClass("active-page");
+    $('#errormessage').focus();
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
     $(".nano").nanoScroller();
@@ -406,18 +407,16 @@ function initUi() {
     });
 
     $("#errormessageok").click(function(){
-        console.log("button pressed")
         hidePage("#showError");
         return false;
     });
 
     $("#confirmmessageno").click(function(){
-        console.log("button pressed")
         hidePage("#showConfirm");
         return false;
     });
 
-    $(document).keyup(function(event) {
+    $("#showError").keyup(function(event) {
         if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
             console.log("enter pressed")
             hidePage("#showError");

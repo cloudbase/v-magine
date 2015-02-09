@@ -1089,6 +1089,7 @@ select:required:invalid, select:focus:invalid {
     color: white;
     font-size: 15px;
     line-height: 20px;
+    outline: none;
 }
 
 #errormessageok, #confirmmessageyes, #confirmmessageno {
@@ -1349,7 +1350,7 @@ select:required:invalid, select:focus:invalid {
   left          : 0;
 }
 .nano > .content-text:focus {
-  outline: thin dotted;
+  outline: none;
 }
 .nano > .content-text::-webkit-scrollbar {
   display: none;
@@ -1644,3 +1645,4 @@ select:required:invalid, select:focus:invalid {
     -webkit-transform:scale(.3);
     background-color:#00AEFF;
 }
+
