@@ -77,6 +77,8 @@ OPENSTACK_LOG_DIR = "Log"
 
 CONTROLLER_SSH_KEY_NAME = "%s_controller_rsa" % PRODUCT_NAME
 
+HYPERVISOR_TYPE_HYPERV = "Hyper-V"
+
 
 class DeploymentActions(object):
 
@@ -504,3 +506,12 @@ class DeploymentActions(object):
         except Exception as ex:
             LOG.exception(ex)
             raise Exception("Checking for product updates failed")
+
+    def get_compute_nodes(self):
+        # TODO: return a list of hosts once multiple hosts will be supported
+        localhost_version_info = self._windows_utils.get_windows_version_info()
+        # TODO: return the actual host name once the UI allows longer names
+        localhost_version_info['hostname'] = "localhost"
+        # localhost_version_info['hostname'] = socket.gethostname()
+        localhost_version_info['hypervisor_type'] = HYPERVISOR_TYPE_HYPERV
+        return [localhost_version_info]

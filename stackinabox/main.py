@@ -57,6 +57,7 @@ class Controller(QtCore.QObject):
     on_get_config_completed_event = QtCore.pyqtSignal(str)
     on_deployment_disabled_event = QtCore.pyqtSignal()
     on_product_update_available_event = QtCore.pyqtSignal(str, str, bool, str)
+    on_get_compute_nodes_completed_event = QtCore.pyqtSignal(str)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -89,6 +90,8 @@ class Controller(QtCore.QObject):
             self._get_config_completed)
         self._worker.product_update_available.connect(
             self._product_update_available)
+        self._worker.get_compute_nodes_completed.connect(
+            self._get_compute_nodes_completed)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
@@ -128,6 +131,10 @@ class Controller(QtCore.QObject):
             self.show_deployment_details()
         else:
             self._enable_retry_deployment(True)
+
+    def _get_compute_nodes_completed(self, compute_nodes):
+        self.on_get_compute_nodes_completed_event.emit(
+            json.dumps(compute_nodes))
 
     def _get_ext_vswitches_completed(self, ext_vswitches):
         self.on_get_ext_vswitches_completed_event.emit(
@@ -211,6 +218,7 @@ class Controller(QtCore.QObject):
         LOG.debug("show_deployment_details called")
         QtCore.QMetaObject.invokeMethod(self._worker, 'get_deployment_details',
                                         QtCore.Qt.QueuedConnection)
+        self.get_compute_nodes()
 
     @QtCore.pyqtSlot()
     def show_controller_config(self):
@@ -276,6 +284,13 @@ class Controller(QtCore.QObject):
         LOG.debug("get_config called")
         QtCore.QMetaObject.invokeMethod(
             self._worker, 'get_config',
+            QtCore.Qt.QueuedConnection)
+
+    @QtCore.pyqtSlot()
+    def get_compute_nodes(self):
+        LOG.debug("get_compute_nodes called")
+        QtCore.QMetaObject.invokeMethod(
+            self._worker, 'get_compute_nodes',
             QtCore.Qt.QueuedConnection)
 
     @QtCore.pyqtSlot(str, int, int)

@@ -22,6 +22,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.hypervHostName = null;
     $scope.controllerIp = null;
     $scope.horizonUrl = null;
+    $scope.computeNodes = null;
 }]);
 
 function handleError(msg) {
@@ -68,6 +69,12 @@ function showDeploymentDetails(controllerIp, horizonUrl) {
     $scope.$apply();
 
     showPage("#control-panel");
+}
+
+function updateComputeNodesView(computeNodes) {
+    var $scope = angular.element("#maindiv").scope();
+    $scope.computeNodes = JSON.parse(computeNodes);
+    $scope.$apply();
 }
 
 function showControllerConfig() {
@@ -570,6 +577,8 @@ function ApplicationIsReady() {
         controller.on_show_host_config_event.connect(showHostConfig);
         controller.on_show_deployment_details_event.connect(
             showDeploymentDetails);
+        controller.on_get_compute_nodes_completed_event.connect(
+            updateComputeNodesView);
         controller.on_review_config_event.connect(reviewConfig);
         controller.on_stdout_data_event.connect(gotStdOutData);
         controller.on_stderr_data_event.connect(gotStdErrData);

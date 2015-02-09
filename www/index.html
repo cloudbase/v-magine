@@ -503,10 +503,10 @@
                         </ul>
                     </div>
                     <div class="compute-nodes-list">
-                        <ul>
-                            <li class="hostname-col">localhost</li>
-                            <li class="hypervisor-col">Hyper-V</li>
-                            <li class="os-col">Windows Server 2012 R2</li>
+                        <ul ng-repeat="computeNode in computeNodes">
+                            <li class="hostname-col">{{computeNode.hostname}}</li>
+                            <li class="hypervisor-col">{{computeNode.hypervisor_type}}</li>
+                            <li class="os-col">{{computeNode.description}}</li>
                         </ul>
                     </div>
                 </div>

@@ -205,8 +205,8 @@ class WindowsUtils(object):
 
     @property
     def _conn_cimv2(self):
-        if self._wmi_conn_cimv2 is None:
-            self._wmi_conn_cimv2 = wmi.WMI(moniker='//./root/cimv2')
+        # if self._wmi_conn_cimv2 is None:
+        self._wmi_conn_cimv2 = wmi.WMI(moniker='//./root/cimv2')
         return self._wmi_conn_cimv2
 
     def check_hotfix(self, hotfix_id):
@@ -436,6 +436,11 @@ class WindowsUtils(object):
         username, domain, user_type = win32security.LookupAccountSid(None, sid)
 
         return domain, username
+
+    def get_windows_version_info(self):
+        version_info = self._conn_cimv2.Win32_OperatingSystem()[0]
+        return {"description": version_info.Caption,
+                "version": version_info.Version}
 
 
 def kill_process(pid):

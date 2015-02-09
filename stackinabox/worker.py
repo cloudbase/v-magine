@@ -85,7 +85,7 @@ class _VMConsoleThread(threading.Thread):
                         self._stdout_callback(data)
 
                     console_log_file.write(data)
-                    # TODO(alexpilotti): Fix why the heck CentOS gets stuck here
+                    # TODO(alexpilotti): Fix why the heck CentOS gets stuck
                     # instead of rebooting and remove this awful workaround :)
                     if data.find("Reached target Shutdown.") != -1:
                         LOG.debug("Console: reached target Shutdown")
@@ -108,6 +108,7 @@ class Worker(QtCore.QObject):
     openstack_deployment_removed = QtCore.pyqtSignal()
     get_config_completed = QtCore.pyqtSignal(dict)
     product_update_available = QtCore.pyqtSignal(str, str, bool, str)
+    get_compute_nodes_completed = QtCore.pyqtSignal(list)
 
     def __init__(self, thread):
         super(Worker, self).__init__()
@@ -391,6 +392,18 @@ class Worker(QtCore.QObject):
         fip_range_end = fip_subnet[:-1] + "254"
         fip_gateway = fip_subnet[:-1] + "1"
         return (fip_range, fip_range_start, fip_range_end, fip_gateway)
+
+    @QtCore.pyqtSlot()
+    def get_compute_nodes(self):
+        try:
+            self._start_progress_status('Retrieving compute nodes info...')
+            compute_nodes = self._dep_actions.get_compute_nodes()
+            self.get_compute_nodes_completed.emit(compute_nodes)
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot()
     def get_config(self):
