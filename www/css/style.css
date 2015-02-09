@@ -1430,6 +1430,10 @@ select:required:invalid, select:focus:invalid {
     position:relative;
 }
 
+#controllerip {
+    cursor: pointer;
+}
+
 .hostname-col{
     width:100px !important;
     color:#fff;
