@@ -245,9 +245,15 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def cancel_deployment(self):
         LOG.debug("cancel_deployment called")
-        # Cannot use the worker's queue, consider a separate worker
-        # to avoid blocking the UI
-        self._worker.cancel_openstack_deployment()
+        # TODO: replace with HTML UI
+        reply = QtWidgets.QMessageBox.question(
+            self._main_window, 'v-magine',
+            "Cancel the OpenStack deployment?",
+            QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
+            # Cannot use the worker's queue, consider a separate worker
+            # to avoid blocking the UI
+            self._worker.cancel_openstack_deployment()
 
     @QtCore.pyqtSlot()
     def reconfig_deployment(self):
