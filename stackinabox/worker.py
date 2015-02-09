@@ -53,17 +53,43 @@ class _VMConsoleThread(threading.Thread):
         self._stdout_callback = stdout_callback
 
     def run(self):
-        with open(self._console_named_pipe, 'rb') as vm_console_pipe:
-            while True:
-                data = vm_console_pipe.readline()
-                # Exit loop when the VM reboots
-                if not data:
-                    break
-                self._stdout_callback(data)
-                # TODO(alexpilotti): Fix why the heck CentOS gets stuck here
-                # instead of rebooting and remove this awful workaround :)
-                if data.find("Reached target Shutdown.") != -1:
-                    break
+        base_dir = utils.get_base_dir()
+        console_log_file = os.path.join(base_dir, "v-magine-console.log")
+
+        buf = ""
+        menu_done = False
+
+        with open(console_log_file, 'ab') as console_log_file:
+            with open(self._console_named_pipe, 'rb') as vm_console_pipe:
+                while True:
+                    data = vm_console_pipe.readline()
+
+                    # Exit loop when the VM reboots
+                    if not data:
+                        LOG.debug("Console: no more data")
+                        break
+
+                    # NOTE: Workaround due to formatting issues with menu.c32
+                    # TODO: Needs to be fixed in term.js
+                    if not menu_done:
+                        buf += data
+                        if '\x1b' not in buf:
+                            self._stdout_callback(data)
+                        idx = buf.find("\x1b[0m")
+                        if idx >= 0:
+                            self._stdout_callback(buf[idx + len("\x1b[0m"):])
+                            menu_done = True
+                            buf = ""
+                            LOG.debug("Console: pxelinux menu done")
+                    else:
+                        self._stdout_callback(data)
+
+                    console_log_file.write(data)
+                    # TODO(alexpilotti): Fix why the heck CentOS gets stuck here
+                    # instead of rebooting and remove this awful workaround :)
+                    if data.find("Reached target Shutdown.") != -1:
+                        LOG.debug("Console: reached target Shutdown")
+                        break
 
 
 class Worker(QtCore.QObject):

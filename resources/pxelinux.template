@@ -1,8 +1,9 @@
 default menu.c32
 prompt 0
-timeout 2
+timeout 1
 ontimeout ks-net
 menu title PXE Network Boot
+menu hidden
 serial 0 115200
 
 label ks-net
