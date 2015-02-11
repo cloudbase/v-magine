@@ -39,7 +39,7 @@ config_network_adapter () {
     /usr/bin/cat << EOF > /etc/sysconfig/network-scripts/ifcfg-$IFACE
 DEVICE="$IFACE"
 HWADDR="${MAC_ADDR^^}"
-NM_CONTROLLED="no"
+NM_CONTROLLED="yes"
 BOOTPROTO="dhcp"
 ONBOOT="$ONBOOT"
 EOF
