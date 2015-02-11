@@ -178,7 +178,13 @@ class HyperVDriver(base.BaseDriver):
         guest_info = self._vmutils.get_guest_info(vm_name)
         ipv4_addresses = None
         ipv6_addresses = None
+
+        def _split_guest_info_value(key):
+            value = guest_info.get(key)
+            if value is not None:
+                return value.split(";")
+
         if guest_info:
-            ipv4_addresses = guest_info.get("NetworkAddressIPv4").split(";")
-            ipv6_addresses = guest_info.get("NetworkAddressIPv6").split(";")
+            ipv4_addresses = _split_guest_info_value("NetworkAddressIPv4")
+            ipv6_addresses = _split_guest_info_value("NetworkAddressIPv6")
         return (ipv4_addresses, ipv6_addresses)
