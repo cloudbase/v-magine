@@ -20,7 +20,9 @@ See http://docs.openstack.org/developer/oslo.i18n/usage.html .
 
 from oslo import i18n
 
-DOMAIN = 'v-magine'
+from stackinabox import constants
+
+DOMAIN = constants.PRODUCT_NAME
 
 _translators = i18n.TranslatorFactory(domain=DOMAIN)
 

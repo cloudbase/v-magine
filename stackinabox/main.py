@@ -30,6 +30,7 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtWebKitWidgets
 
 import stackinabox
+from stackinabox import constants
 from stackinabox import utils
 from stackinabox import webbrowser
 from stackinabox import worker as deployment_worker
@@ -265,7 +266,7 @@ class Controller(QtCore.QObject):
         LOG.debug("cancel_deployment called")
         # TODO: replace with HTML UI
         reply = QtWidgets.QMessageBox.question(
-            self._main_window, 'v-magine',
+            self._main_window, constants.PRODUCT_NAME,
             "Cancel the OpenStack deployment?",
             QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
@@ -332,7 +333,7 @@ class Controller(QtCore.QObject):
         LOG.debug("remove_openstack called")
         # TODO: replace with HTML UI
         reply = QtWidgets.QMessageBox.question(
-            self._main_window, 'v-magine',
+            self._main_window, constants.PRODUCT_NAME,
             "Remove the current OpenStack deployment? All OpenStack "
             "controller data will be deleted.",
             QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
@@ -429,7 +430,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             # TODO: replace with HTML UI
             reply = QtWidgets.QMessageBox.question(
-                self, 'v-magine',
+                self, constants.PRODUCT_NAME,
                 "Interrupt the OpenStack deployment?",
                 QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             if reply == QtWidgets.QMessageBox.Yes:
@@ -462,7 +463,7 @@ class QWebPageWithoutJsWarning(QtWebKitWidgets.QWebPage):
 def _config_logging(log_dir):
     log_format = ("%(asctime)-15s %(levelname)s %(module)s %(funcName)s "
                   "%(lineno)d %(thread)d %(threadName)s %(message)s")
-    log_file = os.path.join(log_dir, 'v-magine.log')
+    log_file = os.path.join(log_dir, '%s.log' % constants.PRODUCT_NAME)
     logging.basicConfig(filename=log_file, level=logging.DEBUG,
                         format=log_format)
     logging.getLogger("paramiko").setLevel(logging.WARNING)

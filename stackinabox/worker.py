@@ -26,6 +26,7 @@ from PyQt5 import QtCore
 
 from stackinabox import actions
 from stackinabox import centos
+from stackinabox import constants
 from stackinabox import rdo
 from stackinabox import security
 from stackinabox import utils
@@ -54,7 +55,8 @@ class _VMConsoleThread(threading.Thread):
 
     def run(self):
         base_dir = utils.get_base_dir()
-        console_log_file = os.path.join(base_dir, "v-magine-console.log")
+        console_log_file = os.path.join(
+            base_dir, "%s-console.log" % constants.PRODUCT_NAME)
 
         buf = ""
         menu_done = False

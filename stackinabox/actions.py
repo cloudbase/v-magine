@@ -25,6 +25,7 @@ import urllib2
 from oslo.utils import units
 
 from stackinabox import config
+from stackinabox import constants
 from stackinabox import glance
 from stackinabox import kickstart
 from stackinabox import pybootdmgr
@@ -37,13 +38,12 @@ from stackinabox.virt import factory as virt_factory
 
 LOG = logging
 
-PRODUCT_NAME = "v-magine"
 UPDATE_CHECK_URL = "https://www.cloudbase.it/checkupdates.php?p={0}&v={1}"
 
-VSWITCH_INTERNAL_NAME = "%s-internal" % PRODUCT_NAME
-VSWITCH_DATA_NAME = "%s-data" % PRODUCT_NAME
+VSWITCH_INTERNAL_NAME = "%s-internal" % constants.PRODUCT_NAME
+VSWITCH_DATA_NAME = "%s-data" % constants.PRODUCT_NAME
 
-FIREWALL_PXE_RULE_NAME = "%s PXE" % PRODUCT_NAME
+FIREWALL_PXE_RULE_NAME = "%s PXE" % constants.PRODUCT_NAME
 
 DHCP_PORT = 67
 TFTP_PORT = 69
@@ -75,7 +75,7 @@ FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
 OPENSTACK_INSTANCES_DIR = "Instances"
 OPENSTACK_LOG_DIR = "Log"
 
-CONTROLLER_SSH_KEY_NAME = "%s_controller_rsa" % PRODUCT_NAME
+CONTROLLER_SSH_KEY_NAME = "%s_controller_rsa" % constants.PRODUCT_NAME
 
 HYPERVISOR_TYPE_HYPERV = "Hyper-V"
 
@@ -500,8 +500,10 @@ class DeploymentActions(object):
 
     def check_for_updates(self):
         try:
-            url = UPDATE_CHECK_URL.format(PRODUCT_NAME, version.VERSION)
-            req = urllib2.Request(url, headers={'User-Agent': PRODUCT_NAME})
+            url = UPDATE_CHECK_URL.format(
+                constants.PRODUCT_NAME, version.VERSION)
+            req = urllib2.Request(
+                url, headers={'User-Agent': constants.PRODUCT_NAME})
             return json.load(urllib2.urlopen(req))
         except Exception as ex:
             LOG.exception(ex)

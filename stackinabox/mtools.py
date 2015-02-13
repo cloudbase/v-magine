@@ -15,6 +15,7 @@
 
 import os
 
+from stackinabox import constants
 from stackinabox import utils
 
 
@@ -22,7 +23,7 @@ def _get_mtools_dir():
     return utils.get_bin_dir()
 
 
-def create_vfd(vfd_path, size_kb=1440, label="v-magine"):
+def create_vfd(vfd_path, size_kb=1440, label=constants.PRODUCT_NAME):
     mformat = os.path.join(_get_mtools_dir(), "mformat.exe")
     utils.execute_process([mformat, "-C", "-f", str(size_kb), "-v", label,
                            "-i", vfd_path, "::"])
