@@ -1,2 +1,2 @@
 PRODUCT_NAME = "v-magine"
-VERSION = "2015.1.0.1"
+VERSION = "2015.1.0.2"
