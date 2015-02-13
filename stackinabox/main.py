@@ -470,6 +470,7 @@ def _config_logging(log_dir):
     logging.getLogger("paramiko").setLevel(logging.WARNING)
     logging.info("{0} - {1}".format(constants.PRODUCT_NAME, constants.VERSION))
 
+
 def _init_worker():
     thread = QtCore.QThread()
     worker = deployment_worker.Worker(thread)
