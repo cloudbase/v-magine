@@ -30,7 +30,6 @@ from stackinabox import constants
 from stackinabox import rdo
 from stackinabox import security
 from stackinabox import utils
-from stackinabox import version
 
 LOG = logging
 
@@ -738,7 +737,7 @@ class Worker(QtCore.QObject):
             new_version = update_info.get("new_version")
             if new_version:
                 self.product_update_available.emit(
-                    version.VERSION,
+                    constants.VERSION,
                     new_version,
                     update_info.get("update_required"),
                     update_info.get("update_url"))

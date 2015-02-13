@@ -31,7 +31,6 @@ from stackinabox import kickstart
 from stackinabox import pybootdmgr
 from stackinabox import security
 from stackinabox import utils
-from stackinabox import version
 from stackinabox import windows
 from stackinabox.virt import base as base_virt_driver
 from stackinabox.virt import factory as virt_factory
@@ -501,7 +500,7 @@ class DeploymentActions(object):
     def check_for_updates(self):
         try:
             url = UPDATE_CHECK_URL.format(
-                constants.PRODUCT_NAME, version.VERSION)
+                constants.PRODUCT_NAME, constants.VERSION)
             req = urllib2.Request(
                 url, headers={'User-Agent': constants.PRODUCT_NAME})
             return json.load(urllib2.urlopen(req))
