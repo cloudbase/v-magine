@@ -158,6 +158,7 @@ class Controller(QtCore.QObject):
     def _get_deployment_details_completed(self, controller_ip, horizon_url):
         self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
         self.hide_splash()
+        self._check_for_updates()
 
     def _disable_deployment(self):
         self.on_deployment_disabled_event.emit()
@@ -467,7 +468,6 @@ def _config_logging(log_dir):
     logging.basicConfig(filename=log_file, level=logging.DEBUG,
                         format=log_format)
     logging.getLogger("paramiko").setLevel(logging.WARNING)
-
 
 def _init_worker():
     thread = QtCore.QThread()
