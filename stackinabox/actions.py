@@ -14,11 +14,13 @@
 #    under the License.
 
 import gzip
+import json
 import logging
 import os
 import psutil
 import socket
 import sys
+import urllib2
 
 from oslo.utils import units
 
@@ -28,16 +30,20 @@ from stackinabox import kickstart
 from stackinabox import pybootdmgr
 from stackinabox import security
 from stackinabox import utils
+from stackinabox import version
 from stackinabox import windows
 from stackinabox.virt import base as base_virt_driver
 from stackinabox.virt import factory as virt_factory
 
 LOG = logging
 
-VSWITCH_INTERNAL_NAME = "stackinabox-internal"
-VSWITCH_DATA_NAME = "stackinabox-data"
+PRODUCT_NAME = "v-magine"
+UPDATE_CHECK_URL = "https://www.cloudbase.it/checkupdates.php?p={0}&v={1}"
 
-FIREWALL_PXE_RULE_NAME = "stackinabox PXE"
+VSWITCH_INTERNAL_NAME = "%s-internal" % PRODUCT_NAME
+VSWITCH_DATA_NAME = "%s-data" % PRODUCT_NAME
+
+FIREWALL_PXE_RULE_NAME = "%s PXE" % PRODUCT_NAME
 
 DHCP_PORT = 67
 TFTP_PORT = 69
@@ -45,9 +51,11 @@ TFTP_PORT = 69
 FREERDP_WEBCONNECT_HTTP_PORT = 8000
 FREERDP_WEBCONNECT_HTTPS_PORT = 4430
 
-MIN_OS_FREE_MEMORY_MB = 500
-OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 8 * 1024
-OPENSTACK_VM_MIN_MEM_MB = 1 * 1024
+OPENSTACK_MAX_VM_MEM_MB = 16 * 1024
+OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 6 * 1024
+OPENSTACK_VM_MIN_MEM_MB = int(2.5 * 1024)
+
+OPENSTACK_MIN_INSTANCES_MEM_MB = 256
 
 OPENSTACK_VM_VHD_MAX_SIZE = 60 * units.Gi
 
@@ -67,7 +75,10 @@ FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
 OPENSTACK_INSTANCES_DIR = "Instances"
 OPENSTACK_LOG_DIR = "Log"
 
-CONTROLLER_SSH_KEY_NAME = "v-magine_controller_rsa"
+CONTROLLER_SSH_KEY_NAME = "%s_controller_rsa" % PRODUCT_NAME
+
+HYPERVISOR_TYPE_HYPERV = "Hyper-V"
+
 
 class DeploymentActions(object):
 
@@ -89,17 +100,53 @@ class DeploymentActions(object):
         return installed_products
 
     def is_openstack_deployed(self):
-        bool(self._config.get_config_value("deployment_status"))
+        return bool(self._config.get_config_value("deployment_status"))
 
     def set_openstack_deployment_status(self, deployed):
         self._config.set_config_value("deployment_status", deployed)
 
     def is_eula_accepted(self):
-        bool(self._config.get_config_value("eula"))
+        return bool(self._config.get_config_value("eula"))
+
+    def set_eula_accepted(self):
+        self._config.set_config_value("eula", True)
+
+    def show_welcome(self):
+        return bool(self._config.get_config_value("show_welcome",
+                                                  default=True))
+
+    def set_show_welcome(self, show):
+        self._config.set_config_value("show_welcome", show)
 
     def _get_controller_ssh_key_path(self):
         ssh_dir = security.get_user_ssh_dir()
         return os.path.join(ssh_dir, CONTROLLER_SSH_KEY_NAME)
+
+    def get_vm_ip_address(self, vm_name):
+        if self._virt_driver.vm_exists(vm_name):
+            (ipv4_addresses,
+             ipv6_addresses) = self._virt_driver.get_guest_ip_addresses(
+                vm_name)
+
+            if ipv4_addresses:
+                return ipv4_addresses[0]
+            elif ipv6_addresses:
+                return ipv6_addresses[0]
+
+    def open_controller_ssh(self, host_address):
+        key_path = self._get_controller_ssh_key_path()
+
+        ssh_user = "root"
+
+        bin_dir = utils.get_bin_dir()
+        ssh_path = os.path.join(bin_dir, "ssh.exe")
+
+        self._windows_utils.run_safe_process(
+            ssh_path,
+            ('-o StrictHostKeyChecking=no -i "%(key_path)s" %(user)s@%(host)s '
+             '-t bash --rcfile keystonerc_admin -i') %
+            {"key_path": key_path, "user": ssh_user, "host": host_address},
+            new_console=True)
 
     def generate_controller_ssh_key(self):
         key_path = self._get_controller_ssh_key_path()
@@ -145,14 +192,14 @@ class DeploymentActions(object):
         features = ['FreeRDPWebConnect', 'VC120Redist']
         properties = {}
 
-        #properties["REDIRECT_HTTPS"] = "1"
+        # properties["REDIRECT_HTTPS"] = "1"
 
         properties["HTTP_PORT"] = FREERDP_WEBCONNECT_HTTP_PORT
         properties["HTTPS_PORT"] = FREERDP_WEBCONNECT_HTTPS_PORT
         properties["ENABLE_FIREWALL_RULES"] = "1"
 
-        properties["OPENSTACK_AUTH_URL"] = nova_config["DEFAULT"][
-            "neutron_admin_auth_url"]
+        properties["OPENSTACK_AUTH_URL"] = nova_config["neutron"][
+            "admin_auth_url"]
         properties["OPENSTACK_TENANT_NAME"] = nova_config[
             "keystone_authtoken"]["admin_tenant_name"]
         properties["OPENSTACK_USERNAME"] = nova_config["keystone_authtoken"][
@@ -170,7 +217,7 @@ class DeploymentActions(object):
 
     def _check_username(self, username):
         username = username.strip()
-        if not "\\" in username:
+        if "\\" not in username:
             username = "%(host)s\\%(username)s" % {
                 "host": socket.gethostname(),
                 "username": username}
@@ -200,7 +247,7 @@ class DeploymentActions(object):
         properties["RPCBACKENDHOST"] = rabbit_host
         properties["RPCBACKENDPORT"] = rabbit_port
 
-        glance_hosts = nova_config["DEFAULT"]["glance_api_servers"]
+        glance_hosts = nova_config["glance"]["api_servers"]
         (glance_host, glance_port) = glance_hosts.split(",")[0].split(':')
 
         properties["GLANCEHOST"] = glance_host
@@ -225,15 +272,15 @@ class DeploymentActions(object):
         properties["ENABLELOGGING"] = "1"
         properties["VERBOSELOGGING"] = "1"
 
-        properties["NEUTRONURL"] = nova_config["DEFAULT"]["neutron_url"]
-        properties["NEUTRONADMINTENANTNAME"] = nova_config["DEFAULT"][
-            "neutron_admin_tenant_name"]
-        properties["NEUTRONADMINUSERNAME"] = nova_config["DEFAULT"][
-            "neutron_admin_username"]
-        properties["NEUTRONADMINPASSWORD"] = nova_config["DEFAULT"][
-            "neutron_admin_password"]
-        properties["NEUTRONADMINAUTHURL"] = nova_config["DEFAULT"][
-            "neutron_admin_auth_url"]
+        properties["NEUTRONURL"] = nova_config["neutron"]["url"]
+        properties["NEUTRONADMINTENANTNAME"] = nova_config["neutron"][
+            "admin_tenant_name"]
+        properties["NEUTRONADMINUSERNAME"] = nova_config["neutron"][
+            "admin_username"]
+        properties["NEUTRONADMINPASSWORD"] = nova_config["neutron"][
+            "admin_password"]
+        properties["NEUTRONADMINAUTHURL"] = nova_config["neutron"][
+            "admin_auth_url"]
 
         if hyperv_host_username:
             properties["NOVACOMPUTESERVICEUSER"] = self._check_username(
@@ -248,17 +295,19 @@ class DeploymentActions(object):
                                         "nova_install.log")
         LOG.info("Nova compute installed")
 
-    def get_openstack_vm_memory_mb(self):
-        mem_info = psutil.virtual_memory()
-        LOG.info("Host memory: %s" % str(mem_info))
+    def get_openstack_vm_memory_mb(self, vm_name):
+        mem_available = self._virt_driver.get_host_available_memory()
+        LOG.info("Host available memory: %s" % mem_available)
 
-        max_mem_mb = mem_info.available / units.Mi - MIN_OS_FREE_MEMORY_MB
+        if self._virt_driver.vm_exists(vm_name):
+            # If the controller VM exists, add its memory as it will be deleted
+            mem_available += self._virt_driver.get_vm_memory_usage(vm_name)
 
+        max_mem_mb = min(mem_available / units.Mi, OPENSTACK_MAX_VM_MEM_MB)
         # Get the best option considering host limits
-        suggested_mem_mb = min(max_mem_mb, OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
-
-        if suggested_mem_mb < OPENSTACK_VM_MIN_MEM_MB:
-            raise Exception("Not enough RAM available for OpenStack")
+        suggested_mem_mb = min(
+            max(max_mem_mb - OPENSTACK_MIN_INSTANCES_MEM_MB, 0),
+            OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB)
 
         return (OPENSTACK_VM_MIN_MEM_MB, suggested_mem_mb, max_mem_mb)
 
@@ -314,7 +363,7 @@ class DeploymentActions(object):
     def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
                             vm_network_config, console_named_pipe):
         (min_mem_mb, max_mem_mb_auto,
-         max_mem_mb_limit) = self.get_openstack_vm_memory_mb()
+         max_mem_mb_limit) = self.get_openstack_vm_memory_mb(vm_name)
 
         if not max_mem_mb:
             max_mem_mb = max_mem_mb_auto
@@ -327,7 +376,7 @@ class DeploymentActions(object):
 
         self._virt_driver.create_vm(vm_name, vm_dir, vhd_max_size,
                                     max_mem_mb, min_mem_mb, vcpu_count,
-                                    vm_network_config, vfd_path,
+                                    vm_network_config, vfd_path, None,
                                     console_named_pipe)
         self._vm_name = vm_name
 
@@ -423,3 +472,46 @@ class DeploymentActions(object):
 
         if not virt_driver.vswitch_exists(VSWITCH_DATA_NAME):
             virt_driver.create_vswitch(VSWITCH_DATA_NAME)
+
+    def get_current_user(self):
+        domain, username = self._windows_utils.get_current_user()
+
+        if domain.lower() != socket.gethostname().lower():
+            username = "%(domain)s\\%(username)s" % {
+                'domain': domain, 'username': username}
+
+        return username
+
+    def validate_host_user(self, username, password):
+        username_split = username.split("\\")
+        if len(username_split) > 1:
+            domain = username_split[0]
+            domain_username = username_split[1]
+        else:
+            domain = "."
+            domain_username = username
+
+        try:
+            token = self._windows_utils.create_user_logon_session(
+                domain_username, password, domain)
+            self._windows_utils.close_user_logon_session(token)
+        except windows.LogonFailedException as ex:
+            raise Exception('Login failed for user "%s"' % username)
+
+    def check_for_updates(self):
+        try:
+            url = UPDATE_CHECK_URL.format(PRODUCT_NAME, version.VERSION)
+            req = urllib2.Request(url, headers={'User-Agent': PRODUCT_NAME})
+            return json.load(urllib2.urlopen(req))
+        except Exception as ex:
+            LOG.exception(ex)
+            raise Exception("Checking for product updates failed")
+
+    def get_compute_nodes(self):
+        # TODO: return a list of hosts once multiple hosts will be supported
+        localhost_version_info = self._windows_utils.get_windows_version_info()
+        # TODO: return the actual host name once the UI allows longer names
+        localhost_version_info['hostname'] = "localhost"
+        # localhost_version_info['hostname'] = socket.gethostname()
+        localhost_version_info['hypervisor_type'] = HYPERVISOR_TYPE_HYPERV
+        return [localhost_version_info]

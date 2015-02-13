@@ -70,9 +70,9 @@ class VMUtils(object):
     _MEMORY_SETTING_DATA_CLASS = 'Msvm_MemorySettingData'
     _STORAGE_ALLOC_SETTING_DATA_CLASS = _RESOURCE_ALLOC_SETTING_DATA_CLASS
     _SYNTHETIC_ETHERNET_PORT_SETTING_DATA_CLASS = \
-    'Msvm_SyntheticEthernetPortSettingData'
+        'Msvm_SyntheticEthernetPortSettingData'
     _EMULATED_ETHERNET_PORT_SETTING_DATA_CLASS = \
-    'Msvm_EmulatedEthernetPortSettingData'
+        'Msvm_EmulatedEthernetPortSettingData'
     _AFFECTED_JOB_ELEMENT_CLASS = "Msvm_AffectedJobElement"
 
     _SHUTDOWN_COMPONENT = "Msvm_ShutdownComponent"
@@ -100,14 +100,14 @@ class VMUtils(object):
 
     @property
     def _conn(self):
-        if self._wmi_conn is None:
-            self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
+        # if self._wmi_conn is None:
+        self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
         return self._wmi_conn
 
     @property
     def _conn_cimv2(self):
-        if self._wmi_conn_cimv2 is None:
-            self._wmi_conn_cimv2 = wmi.WMI(moniker=self._wmi_cimv2_namespace)
+        # if self._wmi_conn_cimv2 is None:
+        self._wmi_conn_cimv2 = wmi.WMI(moniker=self._wmi_cimv2_namespace)
         return self._wmi_conn_cimv2
 
     def get_host_config(self):
@@ -163,8 +163,8 @@ class VMUtils(object):
         # no direct mapping for those, ENABLED is the only reasonable option
         # considering that in all the non mappable states the instance
         # is running.
-        enabled_state = self._enabled_states_map.get(si.EnabledState,
-            constants.HYPERV_VM_STATE_ENABLED)
+        enabled_state = self._enabled_states_map.get(
+            si.EnabledState, constants.HYPERV_VM_STATE_ENABLED)
 
         summary_info_dict = {'NumberOfProcessors': si.NumberOfProcessors,
                              'EnabledState': enabled_state,
@@ -175,7 +175,7 @@ class VMUtils(object):
     def _lookup_vm_check(self, vm_name):
         vm = self._lookup_vm(vm_name)
         if not vm:
-            raise exception.NotFound(_('VM not found: %s') % vm_name)
+            raise HyperVException(_('VM not found: %s') % vm_name)
         return vm
 
     def _lookup_vm(self, vm_name):
@@ -418,7 +418,7 @@ class VMUtils(object):
                 if (disk_resource.HostResource and
                         disk_resource.HostResource[0] != mounted_disk_path):
                     LOG.debug('Updating disk host resource "%(old)s" to '
-                                '"%(new)s"' %
+                              '"%(new)s"' %
                               {'old': disk_resource.HostResource[0],
                                'new': mounted_disk_path})
                     disk_resource.HostResource = [mounted_disk_path]
@@ -652,12 +652,13 @@ class VMUtils(object):
             self._remove_virt_resource(physical_disk, vm.path_())
 
     def _get_mounted_disk_resource_from_path(self, disk_path):
-        physical_disks = self._conn.query("SELECT * FROM %(class_name)s "
-                             "WHERE ResourceSubType = '%(res_sub_type)s'" %
-                             {"class_name":
-                              self._RESOURCE_ALLOC_SETTING_DATA_CLASS,
-                              'res_sub_type':
-                              self._PHYS_DISK_RES_SUB_TYPE})
+        physical_disks = self._conn.query(
+            "SELECT * FROM %(class_name)s "
+            "WHERE ResourceSubType = '%(res_sub_type)s'" %
+            {"class_name":
+             self._RESOURCE_ALLOC_SETTING_DATA_CLASS,
+             'res_sub_type':
+             self._PHYS_DISK_RES_SUB_TYPE})
         for physical_disk in physical_disks:
             if physical_disk.HostResource:
                 if physical_disk.HostResource[0].lower() == disk_path.lower():
@@ -724,3 +725,6 @@ class VMUtils(object):
 
     def get_vm_state(self, vm_name):
         return self._enabled_states_map[self._lookup_vm(vm_name).EnabledState]
+
+    def get_guest_info(self, vm_name):
+        raise NotImplementedError()

@@ -1,11 +1,12 @@
 default menu.c32
 prompt 0
-timeout 2
+timeout 1
 ontimeout ks-net
 menu title PXE Network Boot
+menu hidden
 serial 0 115200
 
 label ks-net
   menu label ^Network install
   kernel vmlinuz text console=tty0 console=ttyS0,115200n8 utf8 ks.device=<%mgmt_ext_mac_address%> consoleblank=0
-  append initrd=initrd.img ro selinux=0 ks=hd:fd0:/ks.cfg inst.repo=<%inst_repo%> ksdevice=<%mgmt_ext_mac_address%> ramdisk_size=100000
+  append initrd=initrd.img ro ks=hd:fd0:/ks.cfg inst.repo=<%inst_repo%> ksdevice=<%mgmt_ext_mac_address%> ramdisk_size=100000

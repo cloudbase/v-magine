@@ -1,16 +1,21 @@
 @echo off
 
-pyinstaller --noconfirm --log-level=WARN --onedir --noconsole --hidden-import=pybootd --hidden-import=socket --icon=resources\app.ico stackinabox.spec 
+pyinstaller --noconfirm --log-level=WARN --onedir stackinabox.spec
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-xcopy /S /E /Y www dist\stackinabox\www\
+xcopy /S /E /Y www dist\v-magine\www\
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-xcopy /S /E /Y pxe dist\stackinabox\pxe\
+xcopy /S /E /Y pxe dist\v-magine\pxe\
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-xcopy /S /E /Y resources dist\stackinabox\resources\
+xcopy /S /E /Y resources dist\v-magine\resources\
 if %errorlevel% neq 0 exit /b %errorlevel%
 
-xcopy /S /E /Y bin dist\stackinabox\bin\
+xcopy /S /E /Y bin dist\v-magine\bin\
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+del dist\v-magine\*d.dll
+if %errorlevel% neq 0 exit /b %errorlevel%
+rmdir /s /q dist\v-magine\qml
 if %errorlevel% neq 0 exit /b %errorlevel%

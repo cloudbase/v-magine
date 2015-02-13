@@ -23,6 +23,8 @@ import sys
 import uuid
 import wmi
 
+from xml.etree import ElementTree
+
 from stackinabox.virt.hyperv import constants
 from stackinabox.virt.hyperv import vmutils
 
@@ -52,10 +54,15 @@ class VMUtilsV2(vmutils.VMUtils):
 
     _STORAGE_ALLOC_SETTING_DATA_CLASS = 'Msvm_StorageAllocationSettingData'
     _ETHERNET_PORT_ALLOCATION_SETTING_DATA_CLASS = \
-    'Msvm_EthernetPortAllocationSettingData'
+        'Msvm_EthernetPortAllocationSettingData'
 
     _AUTO_STARTUP_NONE = 2
     _AUTO_STARTUP_RESTART_ACTIVE = 3
+
+    _BOOT_ORDER_FLOPPY = 0
+    _BOOT_ORDER_CDROM = 1
+    _BOOT_ORDER_HDD = 2
+    _BOOT_ORDER_PXE = 3
 
     _vm_power_states_map = {constants.HYPERV_VM_STATE_ENABLED: 2,
                             constants.HYPERV_VM_STATE_DISABLED: 3,
@@ -103,7 +110,10 @@ class VMUtilsV2(vmutils.VMUtils):
         vs_data.AutomaticStartupAction = self._AUTO_STARTUP_RESTART_ACTIVE
 
         vs_data.VirtualNumaEnabled = False
-
+        vs_data.BootOrder = [self._BOOT_ORDER_HDD,
+                             self._BOOT_ORDER_PXE,
+                             self._BOOT_ORDER_FLOPPY,
+                             self._BOOT_ORDER_CDROM]
         (job_path,
          vm_path,
          ret_val) = vs_man_svc.DefineSystem(ResourceSettings=[],
@@ -301,3 +311,16 @@ class VMUtilsV2(vmutils.VMUtils):
             Subject=element.path_(),
             Definition=definition_path,
             MetricCollectionEnabled=self._METRIC_ENABLED)
+
+    def get_guest_info(self, vm_name):
+        guest_info = {}
+        vm = self._lookup_vm_check(vm_name)
+        kvpl = vm.associators(wmi_result_class="Msvm_KvpExchangeComponent")
+        if kvpl:
+            kvp = kvpl[0]
+            for item in kvp.GuestIntrinsicExchangeItems:
+                et = ElementTree.fromstring(item)
+                name = et.find(".//PROPERTY[@NAME='Name']/VALUE").text
+                value = et.find(".//PROPERTY[@NAME='Data']/VALUE").text
+                guest_info[name] = value
+        return guest_info

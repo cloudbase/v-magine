@@ -18,6 +18,9 @@ TCP = "TCP"
 
 
 class BaseDriver(object):
+    def get_host_available_memory(self):
+        raise NotImplementedError()
+
     def vm_exists(self, vm_name):
         raise NotImplementedError()
 
@@ -25,7 +28,8 @@ class BaseDriver(object):
         raise NotImplementedError()
 
     def create_vm(self, vm_name, vm_path, max_disk_size, max_memory_mb,
-              min_memory_mb, vcpus_num, vmnic_info, vfd_path):
+                  min_memory_mb, vcpus_num, vmnic_info, vfd_path,
+                  iso_path, console_named_pipe):
         raise NotImplementedError()
 
     def vswitch_exists(self, vswitch_name):
@@ -41,4 +45,7 @@ class BaseDriver(object):
         raise NotImplementedError()
 
     def set_vswitch_host_ip(self, vswitch_name, host_ip, subnet_mask):
+        raise NotImplementedError()
+
+    def get_guest_ip_addresses(self, vm_name):
         raise NotImplementedError()

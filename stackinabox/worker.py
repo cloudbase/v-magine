@@ -17,23 +17,33 @@ import logging
 import os
 import platform
 import pythoncom
+import socket
 import threading
 import time
 import sys
 
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 from stackinabox import actions
 from stackinabox import rdo
 from stackinabox import security
 from stackinabox import utils
+from stackinabox import version
 
 LOG = logging
 
 DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/7/os/x86_64"
 OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
+OPENSTACK_CONTROLLER_VM_NAME = "openstack-controller"
 
 OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
+
+
+class CancelDeploymentException(Exception):
+    def __init__(self):
+        msg = "Deployment cancelled by the user"
+        super(CancelDeploymentException, self).__init__(msg)
+
 
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
@@ -43,32 +53,70 @@ class _VMConsoleThread(threading.Thread):
         self._stdout_callback = stdout_callback
 
     def run(self):
-        with open(self._console_named_pipe, 'rb') as vm_console_pipe:
-            while True:
-                data = vm_console_pipe.readline()
-                # Exit loop when the VM reboots
-                if not data:
-                    break
-                self._stdout_callback(data)
-                # TODO(alexpilotti): Fix why the heck CentOS gets stuck here
-                # instead of rebooting and remove this awful workaround :)
-                if data.find("Reached target Shutdown.") != -1:
-                    break
+        base_dir = utils.get_base_dir()
+        console_log_file = os.path.join(base_dir, "v-magine-console.log")
+
+        buf = ""
+        menu_done = False
+
+        with open(console_log_file, 'ab') as console_log_file:
+            with open(self._console_named_pipe, 'rb') as vm_console_pipe:
+                while True:
+                    data = vm_console_pipe.readline()
+
+                    # Exit loop when the VM reboots
+                    if not data:
+                        LOG.debug("Console: no more data")
+                        break
+
+                    # NOTE: Workaround due to formatting issues with menu.c32
+                    # TODO: Needs to be fixed in term.js
+                    if not menu_done:
+                        buf += data
+                        if '\x1b' not in buf:
+                            self._stdout_callback(data)
+                        idx = buf.find("\x1b[0m")
+                        if idx >= 0:
+                            self._stdout_callback(buf[idx + len("\x1b[0m"):])
+                            menu_done = True
+                            buf = ""
+                            LOG.debug("Console: pxelinux menu done")
+                    else:
+                        self._stdout_callback(data)
+
+                    console_log_file.write(data)
+                    # TODO(alexpilotti): Fix why the heck CentOS gets stuck
+                    # instead of rebooting and remove this awful workaround :)
+                    if data.find("Reached target Shutdown.") != -1:
+                        LOG.debug("Console: reached target Shutdown")
+                        break
 
 
 class Worker(QtCore.QObject):
     finished = QtCore.pyqtSignal()
     stdout_data_ready = QtCore.pyqtSignal(str)
     stderr_data_ready = QtCore.pyqtSignal(str)
-    status_changed = QtCore.pyqtSignal(str, int, int)
     error = QtCore.pyqtSignal(Exception)
     install_done = QtCore.pyqtSignal(bool)
     get_ext_vswitches_completed = QtCore.pyqtSignal(list)
     get_available_host_nics_completed = QtCore.pyqtSignal(list)
-    add_ext_vswitch_completed = QtCore.pyqtSignal(bool)
+    add_ext_vswitch_completed = QtCore.pyqtSignal(str)
+    get_deployment_details_completed = QtCore.pyqtSignal(str, str)
+    platform_requirements_checked = QtCore.pyqtSignal(bool)
+    progress_status_update = QtCore.pyqtSignal(bool, int, int, str)
+    host_user_validated = QtCore.pyqtSignal()
+    openstack_deployment_removed = QtCore.pyqtSignal()
+    get_config_completed = QtCore.pyqtSignal(dict)
+    product_update_available = QtCore.pyqtSignal(str, str, bool, str)
+    get_compute_nodes_completed = QtCore.pyqtSignal(list)
 
-    def __init__(self):
+    def __init__(self, thread):
         super(Worker, self).__init__()
+
+        self._tread = thread
+        self.moveToThread(self._tread)
+        self.finished.connect(self._tread.quit)
+        self._tread.started.connect(self.started)
 
         self._term_type = None
         self._term_cols = None
@@ -91,6 +139,15 @@ class Worker(QtCore.QObject):
 
     def is_eula_accepted(self):
         return self._dep_actions.is_eula_accepted()
+
+    def set_eula_accepted(self):
+        self._dep_actions.set_eula_accepted()
+
+    def show_welcome(self):
+        return self._dep_actions.show_welcome()
+
+    def set_show_welcome(self, show):
+        return self._dep_actions.set_show_welcome(show)
 
     def is_openstack_deployed(self):
         return self._dep_actions.is_openstack_deployed()
@@ -115,13 +172,23 @@ class Worker(QtCore.QObject):
                 if vnic_cfg[1] == vnic_name][0]
 
     def _update_status(self, msg):
+        if self._cancel_deployment:
+            raise CancelDeploymentException()
+
         self._curr_step += 1
-        self.status_changed.emit(msg, self._curr_step, self._max_steps)
+        self.progress_status_update.emit(
+            True, self._curr_step, self._max_steps, msg)
+
+    def _start_progress_status(self, msg=''):
+        self.progress_status_update.emit(True, 0, 0, msg)
+
+    def _stop_progress_status(self, msg=''):
+        self.progress_status_update.emit(False, 0, 0, msg)
 
     def _deploy_openstack_vm(self, ext_vswitch_name,
                              openstack_vm_mem_mb, openstack_base_dir,
                              admin_password):
-        vm_name = "openstack-controller"
+        vm_name = OPENSTACK_CONTROLLER_VM_NAME
         vm_admin_user = "root"
         vm_dir = os.path.join(openstack_base_dir, vm_name)
 
@@ -212,8 +279,8 @@ class Worker(QtCore.QObject):
         return (vm_int_mgmt_ip, vm_admin_user, ssh_key_path)
 
     def _install_rdo(self, rdo_installer, host, ssh_key_path, username,
-                     password, fip_range, fip_range_start, fip_range_end,
-                     fip_gateway, fip_name_servers):
+                     password, rdo_admin_password, fip_range, fip_range_start,
+                     fip_range_end, fip_gateway, fip_name_servers):
         max_connect_attempts = 10
         reboot_sleep_s = 30
 
@@ -232,12 +299,12 @@ class Worker(QtCore.QObject):
             rdo_installer.update_os()
 
             self._update_status('Installing RDO...')
-            rdo_installer.install_rdo(password, fip_range, fip_range_start,
-                                      fip_range_end, fip_gateway,
-                                      fip_name_servers)
+            rdo_installer.install_rdo(rdo_admin_password, fip_range,
+                                      fip_range_start, fip_range_end,
+                                      fip_gateway, fip_name_servers)
 
-            self._update_status('Checking if rebooting the RDO VM is '
-                                     'required...')
+            self._update_status(
+                'Checking if rebooting the RDO VM is required...')
             if rdo_installer.check_new_kernel():
                 self._update_status('Rebooting RDO VM...')
                 rdo_installer.reboot()
@@ -263,7 +330,7 @@ class Worker(QtCore.QObject):
                                       openstack_base_dir, hyperv_host_username,
                                       hyperv_host_password):
         self._update_status('Checking if the OpenStack components for '
-                                 'Hyper-V are already installed...')
+                            'Hyper-V are already installed...')
         for msi_info in self._dep_actions.check_installed_components():
             self._update_status('Uninstalling %s' % msi_info[1])
             self._dep_actions.uninstall_product(msi_info[0])
@@ -326,39 +393,101 @@ class Worker(QtCore.QObject):
         fip_gateway = fip_subnet[:-1] + "1"
         return (fip_range, fip_range_start, fip_range_end, fip_gateway)
 
+    @QtCore.pyqtSlot()
+    def get_compute_nodes(self):
+        try:
+            self._start_progress_status('Retrieving compute nodes info...')
+            compute_nodes = self._dep_actions.get_compute_nodes()
+            self.get_compute_nodes_completed.emit(compute_nodes)
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    @QtCore.pyqtSlot()
     def get_config(self):
         try:
-            (min_mem_mb, suggested_mem_mb,
-             max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb()
+            LOG.debug("get_config called")
+
+            self._start_progress_status('Loading default values...')
+
+            min_mem_mb = 0
+            suggested_mem_mb = 0
+            max_mem_mb = 0
+
+            try:
+                # TODO: This data should not be retrieved if there is no
+                # hypervisor
+                (min_mem_mb, suggested_mem_mb,
+                 max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb(
+                    OPENSTACK_CONTROLLER_VM_NAME)
+            except Exception as ex:
+                LOG.exception(ex)
 
             (fip_range,
              fip_range_start,
              fip_range_end,
              fip_gateway) = self._get_fip_range_data()
 
-            return {
+            curr_user = self._dep_actions.get_current_user()
+
+            config_dict = {
                 "default_openstack_base_dir":
                 self._get_default_openstack_base_dir(),
                 "default_centos_mirror": DEFAULT_CENTOS_MIRROR,
                 "min_openstack_vm_mem_mb": min_mem_mb,
                 "suggested_openstack_vm_mem_mb": suggested_mem_mb,
                 "max_openstack_vm_mem_mb": max_mem_mb,
-                "default_hyperv_host_username": "Administrator",
+                "default_hyperv_host_username": curr_user,
                 "default_fip_range": fip_range,
                 "default_fip_range_start": fip_range_start,
                 "default_fip_range_end": fip_range_end,
                 "default_fip_range_gateway": fip_gateway,
-                "default_fip_range_name_servers": OPENDNS_NAME_SERVERS
+                "default_fip_range_name_servers": OPENDNS_NAME_SERVERS,
+                "localhost": socket.gethostname()
             }
+
+            self.get_config_completed.emit(config_dict)
         except Exception as ex:
             LOG.exception(ex)
             self.error.emit(ex)
-            raise
+        finally:
+            self._stop_progress_status()
+
+    @QtCore.pyqtSlot()
+    def check_platform_requirements(self):
+        try:
+            LOG.debug("check_platform_requirements called")
+            self._start_progress_status('Checking requirements...')
+
+            self._dep_actions.check_platform_requirements()
+            self._check_openstack_vm_memory_requirements(
+                OPENSTACK_CONTROLLER_VM_NAME)
+            self.platform_requirements_checked.emit(True)
+        except Exception as ex:
+            LOG.exception(ex)
+            self.platform_requirements_checked.emit(False)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    def _check_openstack_vm_memory_requirements(self, vm_name):
+        (min_mem_mb, suggested_mem_mb,
+         max_mem_mb) = self._dep_actions.get_openstack_vm_memory_mb(vm_name)
+
+        if max_mem_mb < min_mem_mb:
+            raise Exception(
+                "Not enough RAM available for OpenStack. "
+                "Available: {:,} MB, "
+                "required {:,} MB".format(max_mem_mb, min_mem_mb))
 
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
         try:
             LOG.debug("get_ext_vswitches called")
+
+            self._start_progress_status('Loading virtual switches...')
 
             ext_vswitches = self._dep_actions.get_ext_vswitches()
             LOG.debug("External vswitches: %s" % str(ext_vswitches))
@@ -367,11 +496,17 @@ class Worker(QtCore.QObject):
             LOG.exception(ex)
             self.error.emit(ex)
             raise
+        finally:
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot()
     def get_available_host_nics(self):
         try:
             LOG.debug("get_available_host_nics called")
+            self._start_progress_status('Loading host NICs...')
+
+            self.get_available_host_nics_completed.emit([])
+
             host_nics = self._dep_actions.get_available_host_nics()
             LOG.debug("Available host nics: %s" % str(host_nics))
             self.get_available_host_nics_completed.emit(host_nics)
@@ -379,6 +514,8 @@ class Worker(QtCore.QObject):
             LOG.exception(ex)
             self.error.emit(ex)
             raise
+        finally:
+            self._stop_progress_status()
 
     @QtCore.pyqtSlot(str, str)
     def add_ext_vswitch(self, vswitch_name, nic_name):
@@ -386,26 +523,122 @@ class Worker(QtCore.QObject):
             LOG.debug("add_ext_vswitch called, vswitch_name: "
                       "%(vswitch_name)s, nic_name: %(nic_name)s" %
                       {"vswitch_name": vswitch_name, "nic_name": nic_name})
+
+            self._start_progress_status('Creating virtual switch...')
+
+            ext_vswitches = self._dep_actions.get_ext_vswitches()
+            if vswitch_name in ext_vswitches:
+                raise Exception('A virtual switch with name "%s" already '
+                                'exists' % vswitch_name)
+
             self._dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
             # Refresh VSwitch list
             self.get_ext_vswitches()
-            self.add_ext_vswitch_completed.emit(True);
+            self.add_ext_vswitch_completed.emit(vswitch_name)
         except Exception as ex:
             LOG.exception(ex)
             self.error.emit(ex)
-            self.add_ext_vswitch_completed.emit(False);
             raise
+        finally:
+            self._stop_progress_status()
+
+    def _get_controller_ip(self):
+        return self._dep_actions.get_vm_ip_address(
+            OPENSTACK_CONTROLLER_VM_NAME)
+
+    @QtCore.pyqtSlot()
+    def get_deployment_details(self):
+        try:
+            LOG.debug("get_deployment_details called")
+            self._start_progress_status(
+                'Loading OpenStack deployment details...')
+
+            controller_ip = self._get_controller_ip()
+            if not controller_ip:
+                raise Exception('The OpenStack controller is not available. '
+                                'Please ensure that the "%s" virtual machine '
+                                'is running' % OPENSTACK_CONTROLLER_VM_NAME)
+
+            self.get_deployment_details_completed.emit(
+                controller_ip,
+                self._get_horizon_url(controller_ip))
+        except Exception as ex:
+            LOG.exception(ex)
+            LOG.error(ex)
+            missing_ip = "The OpenStack controller is not available"
+            self.get_deployment_details_completed.emit(missing_ip, missing_ip)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    def _get_horizon_url(self, controller_ip):
+        # TODO(alexpilotti): This changes between Ubuntu and RDO
+        return "http://%s" % controller_ip
+
+    @QtCore.pyqtSlot()
+    def open_horizon_url(self):
+        try:
+            self._start_progress_status('Opening OpenStack web console...')
+            controller_ip = self._get_controller_ip()
+            horizon_url = self._get_horizon_url(controller_ip)
+            self._dep_actions.open_url(horizon_url)
+        except Exception as ex:
+            LOG.exception(ex)
+            LOG.error(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    @QtCore.pyqtSlot()
+    def open_controller_ssh(self):
+        try:
+            self._start_progress_status('Opening OpenStack SSH console...')
+            controller_ip = self._get_controller_ip()
+            self._dep_actions.open_controller_ssh(controller_ip)
+        except Exception as ex:
+            LOG.exception(ex)
+            LOG.error(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    @QtCore.pyqtSlot()
+    def remove_openstack_deployment(self):
+        try:
+            LOG.debug("remove_openstack_deployment called")
+            self._dep_actions.check_remove_vm(OPENSTACK_CONTROLLER_VM_NAME)
+            self._dep_actions.set_openstack_deployment_status(False)
+            self.openstack_deployment_removed.emit()
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+
+    @QtCore.pyqtSlot()
+    def cancel_openstack_deployment(self):
+        try:
+            LOG.debug("cancel_openstack_deployment called")
+            # TODO: evaluate synchronizing access to _cancel_deployment
+            if not self._cancel_deployment:
+                self._cancel_deployment = True
+                self._dep_actions.check_remove_vm(OPENSTACK_CONTROLLER_VM_NAME)
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
 
     @QtCore.pyqtSlot(str)
     def deploy_openstack(self, json_args):
         try:
+            self._start_progress_status('Deployment started')
+
             self._is_install_done = False
+            self._cancel_deployment = False
+
             self._dep_actions.set_openstack_deployment_status(False)
 
             args = json.loads(str(json_args))
 
             ext_vswitch_name = args.get("ext_vswitch_name")
-            openstack_vm_mem_mb = args.get("openstack_vm_mem_mb")
+            openstack_vm_mem_mb = int(args.get("openstack_vm_mem_mb"))
             openstack_base_dir = args.get("openstack_base_dir")
             admin_password = args.get("admin_password")
             hyperv_host_username = args.get("hyperv_host_username")
@@ -429,13 +662,16 @@ class Worker(QtCore.QObject):
 
             # Authenticate with the SSH key
             ssh_password = None
-            #ssh_password = admin_password
+            # ssh_password = admin_password
 
             nova_config = self._install_rdo(rdo_installer, mgmt_ip,
                                             ssh_key_path, ssh_user,
-                                            ssh_password, fip_range,
-                                            fip_range_start, fip_range_end,
-                                            fip_gateway, fip_name_servers)
+                                            ssh_password, admin_password,
+                                            fip_range, fip_range_start,
+                                            fip_range_end, fip_gateway,
+                                            fip_name_servers)
+            LOG.debug("OpenStack config: %s" % nova_config)
+
             self._install_local_hyperv_compute(nova_config,
                                                openstack_base_dir,
                                                hyperv_host_username,
@@ -450,11 +686,50 @@ class Worker(QtCore.QObject):
 
             self._dep_actions.set_openstack_deployment_status(True)
             self.install_done.emit(True)
+            self._stop_progress_status()
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
+
+            if self._cancel_deployment:
+                msg = 'OpenStack deployment cancelled'
+            else:
+                msg = 'OpenStack deployment failed'
+
+            self._stop_progress_status(msg)
             self.error.emit(ex)
             self.install_done.emit(False)
         finally:
             self._dep_actions.stop_pxe_service()
             self._is_install_done = True
+
+    @QtCore.pyqtSlot(str, str)
+    def validate_host_user(self, username, password):
+        try:
+            LOG.debug("validate_host_user called")
+            self._start_progress_status("Validating Hyper-V host user...")
+            self._dep_actions.validate_host_user(username, password)
+            self.host_user_validated.emit()
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()
+
+    @QtCore.pyqtSlot()
+    def check_for_updates(self):
+        try:
+            self._start_progress_status("Checking for product updates...")
+            update_info = self._dep_actions.check_for_updates()
+            new_version = update_info.get("new_version")
+            if new_version:
+                self.product_update_available.emit(
+                    version.VERSION,
+                    new_version,
+                    update_info.get("update_required"),
+                    update_info.get("update_url"))
+        except Exception as ex:
+            LOG.exception(ex)
+            self.error.emit(ex)
+        finally:
+            self._stop_progress_status()

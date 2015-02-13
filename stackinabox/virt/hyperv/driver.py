@@ -18,6 +18,7 @@ import os
 
 from stackinabox.virt import base
 from stackinabox.virt.hyperv import constants
+from stackinabox.virt.hyperv import hostutilsv2
 from stackinabox.virt.hyperv import netutilsv2
 from stackinabox.virt.hyperv import vhdutilsv2
 from stackinabox.virt.hyperv import vmutils
@@ -28,14 +29,28 @@ LOG = logging.getLogger(__name__)
 
 
 class HyperVDriver(base.BaseDriver):
+    HOST_MEMORY_BUFFER_MB = 100
+
     def __init__(self):
+        LOG.debug("Initializing HyperVDriver")
+
         self._vmutils = vmutilsv2.VMUtilsV2()
         self._vhdutils = vhdutilsv2.VHDUtilsV2()
         self._netutils = netutilsv2.NetworkUtilsV2()
+        self._hostutils = hostutilsv2.HostUtilsV2()
         self._windows_utils = windows.WindowsUtils()
 
     def vm_exists(self, vm_name):
         return self._vmutils.vm_exists(vm_name)
+
+    def get_host_available_memory(self):
+        host_avail_mem_mb = self._hostutils.get_host_available_memory_mb()
+        return max(host_avail_mem_mb - self.HOST_MEMORY_BUFFER_MB,
+                   0) * 1024 * 1024
+
+    def get_vm_memory_usage(self, vm_name):
+        return (self._vmutils.get_vm_summary_info(
+            vm_name).get('MemoryUsage') or 0) * 1024 * 1024
 
     def vm_is_stopped(self, vm_name):
         return (self._vmutils.get_vm_state(vm_name) ==
@@ -52,7 +67,7 @@ class HyperVDriver(base.BaseDriver):
         self._vmutils.destroy_vm(vm_name)
 
     def create_vm(self, vm_name, vm_path, max_disk_size, max_memory_mb,
-                  min_memory_mb, vcpus_num, vmnic_info, vfd_path,
+                  min_memory_mb, vcpus_num, vmnic_info, vfd_path, iso_path,
                   console_named_pipe):
         vhd_path = os.path.join(vm_path, "%s.vhdx" % vm_name)
 
@@ -73,6 +88,10 @@ class HyperVDriver(base.BaseDriver):
 
         if vfd_path:
             self._vmutils.attach_floppy_drive(vm_name, vfd_path, 0, 0)
+
+        if iso_path:
+            self._vmutils.attach_ide_drive(vm_name, iso_path, 0, 1,
+                                           constants.IDE_DVD)
 
         for (vmswitch_name, vmnic_name, mac_address, pxe, allow_mac_spoofing,
              access_vlan_id, trunk_vlan_ids, private_vlan_id) in vmnic_info:
@@ -131,6 +150,7 @@ class HyperVDriver(base.BaseDriver):
 
     def check_platform(self):
         VLAN_HOTFIX_ID = '2982439'
+        OCT14_RLP_HOTFIX_ID = '2995388'
 
         if not self._windows_utils.check_os_version(
                 6, 2, comparison=windows.VER_GREATER_EQUAL):
@@ -140,14 +160,31 @@ class HyperVDriver(base.BaseDriver):
         try:
             # TODO: check if the feature is installed
             self._vmutils.list_instances()
-        except vmutils.HyperVException as ex:
+        except Exception as ex:
+            LOG.exception(ex)
             raise Exception("Please enable Hyper-V on this host before "
                             "installing OpenStack")
 
         if (self._windows_utils.check_os_version(6, 3) and
-                not self._windows_utils.check_hotfix(VLAN_HOTFIX_ID)):
+                not (self._windows_utils.check_hotfix(VLAN_HOTFIX_ID) or
+                     self._windows_utils.check_hotfix(OCT14_RLP_HOTFIX_ID))):
             raise Exception(
                 "Windows update KB%(hotfix_id)s needs to be installed for "
                 "OpenStack to work properly on this host. Please see: "
                 "http://support.microsoft.com/?kbid=%(hotfix_id)s" %
                 {"hotfix_id": VLAN_HOTFIX_ID})
+
+    def get_guest_ip_addresses(self, vm_name):
+        guest_info = self._vmutils.get_guest_info(vm_name)
+        ipv4_addresses = None
+        ipv6_addresses = None
+
+        def _split_guest_info_value(key):
+            value = guest_info.get(key)
+            if value is not None:
+                return value.split(";")
+
+        if guest_info:
+            ipv4_addresses = _split_guest_info_value("NetworkAddressIPv4")
+            ipv6_addresses = _split_guest_info_value("NetworkAddressIPv6")
+        return (ipv4_addresses, ipv6_addresses)

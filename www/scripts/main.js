@@ -2,12 +2,14 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     ['$scope', function($scope) {
     $scope.extVSwitches = [];
     $scope.extVSwitch = null;
+    $scope.newExtVSwitch = null;
     $scope.hostNics = [];
     $scope.hostNic = null;
     $scope.adminPassword = null;
     $scope.centosMirror = null;
     $scope.maxOpenStackVMMem = 0;
     $scope.minOpenStackVMMem = 0;
+    $scope.suggestedOpenStackVMMem = 0;
     $scope.openStackVMMem = 0;
     $scope.fipRange = null;
     $scope.fipRangeStart = null;
@@ -17,58 +19,101 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.openstackBaseDir = null;
     $scope.hypervHostUsername = null;
     $scope.hypervHostPassword = null;
+    $scope.hypervHostName = null;
+    $scope.controllerIp = null;
+    $scope.horizonUrl = null;
+    $scope.computeNodes = null;
 }]);
 
 function handleError(msg) {
-    $('<div />').html(msg).dialog({
-        modal: true,
-        title: "Error",
-        buttons: {
-            Ok: function() {
-                $(this).dialog("close");
-            }
-        }
-    });
+    showMessage('Error', msg);
+
+}
+
+function showMessage(caption, msg) {
+    $("#showError").addClass("active-page");
+    $('#errormessage').focus();
+    $("#errorcaption").text(caption);
+    $("#errormessage").text(msg);
+    $(".nano").nanoScroller();
+}
+
+function showPage(pageSelector) {
+    $(".active-page").removeClass("active-page");
+    $(pageSelector).addClass("active-page");
+}
+
+function hidePage(pageSelector) {
+    $(pageSelector).removeClass("active-page");
+}
+
+function showWelcome() {
+    showPage("#intro");
+    $(".progress_bar").css('display','none');
+    $(".progress_bar_text").css('display','none');
 }
 
 function showEula() {
+    showPage("#page-1");
+    $(".nano").nanoScroller();
+    $(".progress_bar").css('display','none');
+    $(".progress_bar_text").css('display','none');
 }
 
-function showDeploymentDetails() {
+function showDeploymentDetails(controllerIp, horizonUrl) {
+
+    // TODO: move data retrieveal to a separate event
+    var $scope = angular.element("#maindiv").scope();
+    $scope.controllerIp = controllerIp;
+    $scope.horizonUrl = horizonUrl;
+    $scope.$apply();
+
+    showPage("#control-panel");
 }
 
-function showConfig() {
-    $("#maintabs").tabs({active: 0});
+function updateComputeNodesView(computeNodes) {
+    var $scope = angular.element("#maindiv").scope();
+    $scope.computeNodes = JSON.parse(computeNodes);
+    $scope.$apply();
+}
+
+function showControllerConfig() {
+    showPage("#page-2");
+    $(".progress_bar").css('display','inline-block');
+    $(".progress_bar_text").css('display','inline-block');
+}
+
+function showHostConfig() {
+    showPage("#host-setup");
 }
 
 function reviewConfig() {
-    $("#maintabs").tabs({active: 1});
+    showPage("#review");
 }
 
 function installDone(success) {
-    $('#getopenstackbutton').button("enable");
-    $("#mainprogressbar").progressbar({ value: 0 });
+}
 
-    if(success) {
-        $('#status').text('Your OpenStack is ready!');
+function enableRetryDeployment(enable) {
+    if(enable) {
+        $("#reconfig-install").css('display','inline-block');
+        $("#retry-install").css('display','inline-block');
+        $("#cancel-install").css('display','none');
     } else {
-        $('#status').text('Ops, something went wrong. :-(');
+        $("#reconfig-install").css('display','none');
+        $("#retry-install").css('display','none');
+        $("#cancel-install").css('display','block');
     }
 }
 
 function installStarted() {
-    $("#getopenstackbutton").button("disable");
-    $("#maintabs").tabs({active: 2});
-}
-
-function statusChanged(msg, step, maxSteps) {
-    $('#status').text(msg);
-    $("#mainprogressbar").progressbar({ value: step,
-                                        max: maxSteps });
+    //$("#getopenstackbutton").attr("disable", "disable");
+    showPage("#install-page");
+    //setupTerm();
 }
 
 function getExtVSwitchesCompleted(extVSwitchesJson) {
-    var $scope = angular.element("#maintabs").scope();
+    var $scope = angular.element("#maindiv").scope();
 
     $scope.extVSwitches = JSON.parse(extVSwitchesJson);
     if(!$scope.extVSwitch && $scope.extVSwitches.length > 0) {
@@ -80,7 +125,7 @@ function getExtVSwitchesCompleted(extVSwitchesJson) {
 }
 
 function getAvailableHostNicsCompleted(hostNicsJson) {
-    var $scope = angular.element("#addextvswitchdialog").scope();
+    var $scope = angular.element("#createswitch").scope();
 
     $scope.hostNics = JSON.parse(hostNicsJson);
     $scope.hostNic = null;
@@ -90,36 +135,38 @@ function getAvailableHostNicsCompleted(hostNicsJson) {
 }
 
 function gotStdOutData(data){
-    //console.log(data);
+    console.log(data);
     term.write(data.replace('\n', '\r\n'));
 }
 
 function gotStdErrData(data){
-    //console.log("err: " + data);
+    console.log("err: " + data);
     term.write(data.replace('\n', '\r\n'));
+}
+
+function getDeploymentConfigDict() {
+    var $scope = angular.element("#maindiv").scope();
+
+    var dict = {};
+    dict["ext_vswitch_name"] = $scope.extVSwitch;
+    dict["openstack_vm_mem_mb"] = $scope.openStackVMMem;
+    dict["openstack_base_dir"] = $scope.openstackBaseDir;
+    dict["admin_password"] = $scope.adminPassword;
+    dict["hyperv_host_username"] = $scope.hypervHostUsername;
+    dict["hyperv_host_password"] = $scope.hypervHostPassword;
+    dict["fip_range"] = $scope.fipRange;
+    dict["fip_range_start"] = $scope.fipRangeStart;
+    dict["fip_range_end"] = $scope.fipRangeEnd;
+    dict["fip_gateway"] = $scope.fipRangeGateway;
+    dict["fip_name_servers"] = $scope.fipRangeNameServers;
+    return dict
 }
 
 function startInstall() {
     console.log("startInstall!");
     try {
         term.reset();
-
-        var $scope = angular.element("#maintabs").scope();
-
-        var dict = {};
-        dict["ext_vswitch_name"] = $scope.extVSwitch;
-        dict["openstack_vm_mem_mb"] = $scope.openStackVMMem;
-        dict["openstack_base_dir"] = $scope.openstackBaseDir;
-        dict["admin_password"] = $scope.adminPassword;
-        dict["hyperv_host_username"] = $scope.hypervHostUsername;
-        dict["hyperv_host_password"] = $scope.hypervHostPassword;
-        dict["fip_range"] = $scope.fipRange;
-        dict["fip_range_start"] = $scope.fipRangeStart;
-        dict["fip_range_end"] = $scope.fipRangeEnd;
-        dict["fip_gateway"] = $scope.fipRangeGateway;
-        dict["fip_name_servers"] = $scope.fipRangeNameServers;
-
-        controller.install(JSON.stringify(dict));
+        controller.install(JSON.stringify(getDeploymentConfigDict()));
     }
     catch(ex)
     {
@@ -131,7 +178,7 @@ var term;
 
 function setupTerm() {
     term_cols = 136
-    term_rows = 36
+    term_rows = 25
 
     term = new Terminal({
         cols: term_cols,
@@ -150,19 +197,37 @@ function setupTerm() {
 }
 
 function enableAddExtVSwitchDialogControls(enable) {
-    var action = enable ? "enable" : "disable";
-    $("#addextvswitchdialogok").button(action);
-    $("#addextvswitchdialogcancel").button(action);
-    $(".ui-dialog-titlebar-close").button(action);
+    if(!enable) {
+        $("#createswitchdialogok").attr('disabled','disabled');
+        $("#createswitchdialogcancel").attr('disabled','disabled');
+        $("#createswitchdialogokwrap").css('color','#A0A0A0');
+        $("#createswitchdialogokicon").css('color','#A0A0A0');
+        $("#createswitchdialogcancelwrap").css('color','#A0A0A0');
+        $("#createswitchdialogcancelicon").css('color','#A0A0A0');
+        $("#spinner").css('display','inline-block');
+        $("#blocker").css('display','inherit');
+    } else {
+        $("#createswitchdialogok").removeAttr('disabled');
+        $("#createswitchdialogcancel").removeAttr('disabled');
+        $("#createswitchdialogokwrap").css('color','#FFFFFF');
+        $("#createswitchdialogokicon").css('color','#0099CC');
+        $("#createswitchdialogcancelwrap").css('color','#FFFFFF');
+        $("#createswitchdialogcancelicon").css('color','#0099CC');
+        $("#spinner").css('display','none');
+        $("#blocker").css('display','none');
+    }
 }
 
 function addExtVSwitch() {
     try {
-        var $scope = angular.element("#addextvswitchdialog").scope();
+        var $scope = angular.element("#createswitchdialog").scope();
         if($("#addextvswitchdialogform")[0].checkValidity()) {
             enableAddExtVSwitchDialogControls(false);
-            controller.add_ext_vswitch($scope.extVSwitch,
+            controller.add_ext_vswitch($scope.newExtVSwitch,
                                        $scope.hostNic.name);
+        } else {
+            showMessage("OpenStack configuration",
+                        "Please provide all the required configuration values");
         }
     }
     catch(ex)
@@ -171,64 +236,69 @@ function addExtVSwitch() {
     }
 }
 
-function addExtVSwitchCompleted(success) {
-    $("#addextvswitchdialog").dialog("close");
+function addExtVSwitchCompleted(vswitch_name) {
     enableAddExtVSwitchDialogControls(true);
+    hidePage("#createswitch");
+
+    var $scope = angular.element("#maindiv").scope();
+    $scope.extVSwitch = vswitch_name
+    $scope.$apply();
+
+    $("#extvswitch").selectmenu("refresh", true);
 }
 
-function initAddExtVSwitchDialog() {
-    dialog = $("#addextvswitchdialog").dialog({
-        autoOpen: false,
-        height: 300,
-        width: 800,
-        modal: true,
+function productUpdateAvailable(currentVersion, newVersion, updateRequired, updateUrl) {
+    updateMessage = 'An updated version of this product is available at "' +
+                    updateUrl + '" ';
+    updateMessage += 'It is recommended to close this application and ' +
+                     'download the updated version before continuing. ';
+    updateMessage += 'Current version: ' + currentVersion + '. ';
+    updateMessage += 'New available version: ' + newVersion;
 
-        buttons: [
-        {
-            id: "addextvswitchdialogok",
-            text: "Ok",
-            click: function() {
-                addExtVSwitch();
-                return false;
-                }
-        },
-        {
-            id: "addextvswitchdialogcancel",
-            text: "Cancel",
-            click: function() {
-                dialog.dialog("close");
-                }
-        }],
-        close: function() {
-            dialog.find("form")[0].reset();
+    showMessage('v-magine update available', updateMessage);
+}
+
+function showProgressStatus(enable, step, total_steps, msg) {
+    if(enable) {
+        $('#progress_bar_id').css('display', 'inline-block');
+        $("#spinner").css('display','inline-block');
+        $('#progress_bar_msg').text(msg);
+    }
+    else {
+        $('#progress_bar_id').css('display','none');
+        $("#spinner").css('display','none');
+        $('#progress_bar_msg').text(msg);
+    }
+}
+
+function tooltips() {
+    $(".has_tooltip").hover(function(){
+        if(!$('#progress_bar_msg').text()) {
+            $('#progress_bar_msg').text($(this).attr('data-tooltip'));
         }
-    });
-
-    $("#hostnics").selectmenu({
-        change: function(event, ui) {
-            // AngularJs two way databinding does not work
-            // with selectmenu
-            var value = $(this).val();
-            var $scope = angular.element(this).scope();
-            $scope.$apply(function() {
-                $scope.hostNic = $scope.hostNics[value];
-            });
+    }, function(){
+        if(($('#progress_bar_msg').text()) == ($(this).attr('data-tooltip'))) {
+            $('#progress_bar_msg').text('');
         }
     });
 }
 
-function setDefaultConfigValues() {
-    var configJson = controller.get_config();
+function disableDeployment() {
+    $("#controllerconfignext").attr('disabled','disabled');
+}
+
+function configCompleted(configJson) {
     if(!configJson)
         return;
 
     var defaultConfig = JSON.parse(configJson);
 
-    var $scope = angular.element("#maintabs").scope();
+    var $scope = angular.element("#maindiv").scope();
     $scope.centosMirror = defaultConfig.default_centos_mirror;
     $scope.maxOpenStackVMMem = defaultConfig.max_openstack_vm_mem_mb;
     $scope.minOpenStackVMMem = defaultConfig.min_openstack_vm_mem_mb;
     $scope.openStackVMMem = defaultConfig.suggested_openstack_vm_mem_mb;
+    $scope.suggestedOpenStackVMMem = $scope.openStackVMMem
     $scope.openstackBaseDir = defaultConfig.default_openstack_base_dir;
     $scope.hypervHostUsername = defaultConfig.default_hyperv_host_username;
     $scope.fipRange = defaultConfig.default_fip_range;
@@ -236,8 +306,23 @@ function setDefaultConfigValues() {
     $scope.fipRangeEnd = defaultConfig.default_fip_range_end;
     $scope.fipRangeGateway = defaultConfig.default_fip_range_gateway;
     $scope.fipRangeNameServers = defaultConfig.default_fip_range_name_servers;
+    $scope.hypervHostName = defaultConfig.localhost;
 
     $scope.$apply();
+
+    initControllerMemSlider();
+}
+
+function setDefaultConfigValues() {
+    controller.get_config();
+}
+
+function showPassword(x){
+    x.type = "text";
+}
+
+function hidePassword(x){
+    x.type = "password";
 }
 
 function setPasswordValidation() {
@@ -252,21 +337,9 @@ function setPasswordValidation() {
     });
 }
 
-function initUi() {
-    setDefaultConfigValues();
-    setupTerm();
-    controller.get_ext_vswitches();
+function initControllerMemSlider() {
 
-    setPasswordValidation();
-
-    $("#extvswitch").selectmenu();
-    $("#addextvswitch").button().click(function(){
-        $("#addextvswitchdialog").dialog("open");
-        controller.get_available_host_nics();
-        return false;
-    });
-
-    var $scope = angular.element("#maintabs").scope();
+    var $scope = angular.element("#maindiv").scope();
     $("#openstackvmmemslider").slider({
         range: "min",
         value: $scope.openStackVMMem,
@@ -274,64 +347,219 @@ function initUi() {
         max: $scope.maxOpenStackVMMem,
         slide: function(event, ui) {
             var value = ui.value.toString();
-            $("#openstackvmmem").val(value + "MB");
+            $("#openstackvmmem").text(value + "MB");
             // AngularJs is not performing two way databinding
-            $scope.openStackVMMem = value
+            $scope.openStackVMMem = value;
+
+            var color = '#37A8DF';
+            if (value < $scope.suggestedOpenStackVMMem) {
+                color = '#BC1D2C';
+            }
+            $('.ui-slider-range-min').css('background-color', color);
         }
     });
 
     $("#openstackvmmem").val(
         $("#openstackvmmemslider").slider("value").toString() + "MB");
+}
 
-    $("#maintabs").tabs({ beforeActivate: function(event, ui){
-        var oldTabIndex = ui.oldTab.index();
-        if(oldTabIndex == 0) {
-            return validateConfigForm();
+function initHostNicsSelect() {
+    $("#hostnics").selectmenu({
+        change: function(event, ui) {
+            // AngularJs two way databinding does not work
+            // with selectmenu
+            var value = $(this).val();
+            var $scope = angular.element(this).scope();
+            $scope.$apply(function() {
+                $scope.hostNic = $scope.hostNics[value];
+            });
         }
-    }});
-
-    $("#reviewbutton").button().click(function(){
-        if(validateConfigForm()) {
-            controller.review_config();
-        }
-        return false;
-    });
-
-    $("#configbutton").button().click(function(){
-        controller.show_config()
-        return false;
-    });
-
-    initAddExtVSwitchDialog();
-
-    $("#mainprogressbar").progressbar({ value: 0 });
-    $("#getopenstackbutton").button().click(function(){
-        startInstall();
     });
 }
 
-function validateConfigForm() {
-    if(!$("#tabconfigform")[0].checkValidity()) {
+function initExtVSwitchSelect() {
+    $("#extvswitch").selectmenu({
+        change: function(event, ui) {
+            // AngularJs two way databinding does not work
+            // with selectmenu
+            var value = $(this).val();
+            var $scope = angular.element(this).scope();
+            $scope.$apply(function() {
+                $scope.extVSwitch = $scope.extVSwitches[value];
+            });
+        }
+    });
+}
+
+function initUi() {
+
+    $("#deploy").click(function(){
+        controller.show_eula();
+        return false;
+    });
+
+    $("#exit").click(function(){
+        controller.refuse_eula();
+        return false;
+    });
+
+    $("#agree").click(function(){
+        controller.accept_eula();
+        return false;
+    });
+
+    $("#controllerconfigeula").click(function(){
+        controller.show_eula();
+        return false;
+    });
+
+    $("#errormessageok").click(function(){
+        hidePage("#showError");
+        return false;
+    });
+
+    $("#confirmmessageno").click(function(){
+        hidePage("#showConfirm");
+        return false;
+    });
+
+    $("#showError").keyup(function(event) {
+        if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
+            console.log("enter pressed")
+            hidePage("#showError");
+        }
+        return false;
+    });
+
+    $("#controllerconfignext").click(function(){
+        if(validateControllerConfigForm()) {
+            controller.show_host_config();
+        }
+        return false;
+    });
+
+    $("#hostconfigback").click(function(){
+        controller.show_controller_config();
+        return false;
+    });
+
+    $("#hostconfignext").click(function(){
+        if(validateHostConfigForm()) {
+            controller.review_config(
+                JSON.stringify(getDeploymentConfigDict()));
+        }
+        return false;
+    });
+
+    $("#createswitchdialogok").click(function(){
+        addExtVSwitch();
+        return false;
+    });
+
+    $("#createswitchdialogcancel").click(function(){
+        // TODO add a controller action
+        hidePage("#createswitch");
+        return false;
+    });
+
+    $("#createSwitch").click(function(){
+        // TODO add a controller action
+        controller.get_available_host_nics();
+
+        var $scope = angular.element("#createswitchdialog").scope();
+        $scope.newExtVSwitch = null;
+        $scope.hostNic = null;
+        $scope.$apply();
+
+        $("#createswitch").addClass("active-page");
+        return false;
+    });
+
+    $("#add-edit, #migrate").click(function(){
+        showMessage("Coming soon!", "This feature will be available in a forthcoming update!");
+        return false;
+    });
+
+
+    $("#configbutton").click(function(){
+        controller.show_host_config()
+        return false;
+    });
+
+    $("#getopenstackbutton").click(function(){
+        startInstall();
+        return false;
+    });
+
+    $("#retry-install").click(function(){
+        startInstall();
+        return false;
+    });
+
+    $("#cancel-install").click(function(){
+        controller.cancel_deployment();
+        return false;
+    });
+
+    $("#reconfig-install").click(function(){
+        controller.reconfig_deployment();
+        return false;
+    });
+
+    $("#agreement").load("eula.html");
+
+    $('#showhorizonbutton').click(function(){
+        controller.open_horizon_url();
+        return false;
+    });
+
+    $('#opencontrollersshbutton, #controllerip').click(function(){
+        controller.open_controller_ssh();
+        return false;
+    });
+
+    $('#redeployopenstack').click(function(){
+        controller.redeploy_openstack();
+        return false;
+    });
+
+    $('#removeopenstack').click(function(){
+        controller.remove_openstack();
+        return false;
+    });
+
+    setPasswordValidation();
+    initControllerMemSlider();
+
+    $("#selectdistro").selectmenu();
+    initExtVSwitchSelect();
+    initHostNicsSelect();
+
+    setupTerm();
+}
+
+function validateControllerConfigForm() {
+    if(!$("#controllerconfigform")[0].checkValidity()) {
         showMessage("OpenStack configuration",
                     "Please provide all the required configuration values");
         return false;
     } else {
-        var $scope = angular.element("#maintabs").scope();
+        var $scope = angular.element("#controllerconfigform").scope();
         $scope.$apply();
     }
     return true;
 }
 
-function showMessage(title, msg) {
-    $('<div />').html(msg).dialog({
-        modal: true,
-        title: title,
-        buttons: {
-            Ok: function() {
-                $(this).dialog("close");
-            }
-        }
-    });
+function validateHostConfigForm() {
+    if(!$("#hostconfigform")[0].checkValidity()) {
+        showMessage("OpenStack configuration",
+                    "Please provide all the required configuration values");
+        return false;
+    } else {
+        var $scope = angular.element("#hostconfigform").scope();
+        $scope.$apply();
+    }
+    return true;
 }
 
 function ApplicationIsReady() {
@@ -340,12 +568,18 @@ function ApplicationIsReady() {
 
         initUi();
 
+        tooltips();
+
+        controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);
-        controller.on_show_config_event.connect(showConfig);
+        controller.on_show_controller_config_event.connect(
+            showControllerConfig);
+        controller.on_show_host_config_event.connect(showHostConfig);
         controller.on_show_deployment_details_event.connect(
             showDeploymentDetails);
+        controller.on_get_compute_nodes_completed_event.connect(
+            updateComputeNodesView);
         controller.on_review_config_event.connect(reviewConfig);
-        controller.on_status_changed_event.connect(statusChanged);
         controller.on_stdout_data_event.connect(gotStdOutData);
         controller.on_stderr_data_event.connect(gotStdErrData);
         controller.on_error_event.connect(handleError);
@@ -357,6 +591,18 @@ function ApplicationIsReady() {
             getAvailableHostNicsCompleted);
         controller.on_add_ext_vswitch_completed_event.connect(
             addExtVSwitchCompleted);
+        controller.on_show_progress_status_event.connect(
+            showProgressStatus);
+        controller.on_enable_retry_deployment_event.connect(
+            enableRetryDeployment);
+        controller.on_get_config_completed_event.connect(
+            configCompleted);
+        controller.on_deployment_disabled_event.connect(
+            disableDeployment);
+        controller.on_product_update_available_event.connect(
+            productUpdateAvailable);
+
+        setDefaultConfigValues();
      }
     catch(ex)
     {

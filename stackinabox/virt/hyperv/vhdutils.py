@@ -54,8 +54,8 @@ class VHDUtils(object):
 
     @property
     def _conn(self):
-        if self._wmi_conn is None:
-            self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
+        # if self._wmi_conn is None:
+        self._wmi_conn = wmi.WMI(moniker=self._wmi_namespace)
         return self._wmi_conn
 
     def validate_vhd(self, vhd_path):
@@ -110,7 +110,7 @@ class VHDUtils(object):
     def resize_vhd(self, vhd_path, new_max_size, is_file_max_size=True):
         if is_file_max_size:
             new_internal_max_size = self.get_internal_vhd_size_by_file_size(
-                                            vhd_path, new_max_size)
+                vhd_path, new_max_size)
         else:
             new_internal_max_size = new_max_size
 
@@ -156,8 +156,8 @@ class VHDUtils(object):
             return max_internal_size
         else:
             vhd_parent = self.get_vhd_parent_path(vhd_path)
-            return self.get_internal_vhd_size_by_file_size(vhd_parent,
-                new_vhd_file_size)
+            return self.get_internal_vhd_size_by_file_size(
+                vhd_parent, new_vhd_file_size)
 
     def _get_vhd_dynamic_blk_size(self, vhd_path):
         blk_size_offset = VHD_BLK_SIZE_OFFSET
@@ -168,7 +168,7 @@ class VHDUtils(object):
         except IOError:
             raise vmutils.HyperVException(_("Unable to obtain block size from"
                                             " VHD %(vhd_path)s") %
-                                            {"vhd_path": vhd_path})
+                                          {"vhd_path": vhd_path})
         return struct.unpack('>i', version)[0]
 
     def get_vhd_parent_path(self, vhd_path):

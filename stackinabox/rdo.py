@@ -5,7 +5,9 @@ import paramiko
 from stackinabox import utils
 
 LOG = logging
-RDO_RELEASE_RPM_URL = "https://repos.fedorapeople.org/repos/openstack/openstack-juno/rdo-release-juno-1.noarch.rpm"
+RDO_RELEASE_RPM_URL = ("https://repos.fedorapeople.org/repos/openstack/"
+                       "openstack-juno/rdo-release-juno-1.noarch.rpm")
+
 
 class RDOInstaller(object):
 
@@ -107,23 +109,30 @@ class RDOInstaller(object):
     def get_nova_config(self):
         config_file = "/etc/nova/nova.conf"
 
-        config_names = {"DEFAULT": [
+        config_names = {"DEFAULT":
+                        [
                             "rabbit_hosts",
                             "rabbit_userid",
-                            "rabbit_password",
-                            "glance_api_servers",
-                            "neutron_url",
-                            "neutron_admin_auth_url",
-                            "neutron_admin_tenant_name",
-                            "neutron_admin_username",
-                            "neutron_admin_password"
-                            ],
-                        "keystone_authtoken": [
+                            "rabbit_password"
+                        ],
+                        "neutron":
+                        [
+                            "url",
+                            "admin_auth_url",
+                            "admin_tenant_name",
+                            "admin_username",
+                            "admin_password"
+                        ],
+                        "glance":
+                        [
+                            "api_servers"
+                        ],
+                        "keystone_authtoken":
+                        [
                             "admin_tenant_name",
                             "admin_user",
                             "admin_password"
-                            ]
-                        }
+                        ]}
 
         config = {}
         for (section, names) in config_names.items():

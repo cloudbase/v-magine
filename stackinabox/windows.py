@@ -15,9 +15,12 @@
 
 import ctypes
 import logging
+import os
 import pywintypes
 import win32api
 import win32con
+import win32process
+import win32security
 import wmi
 
 from ctypes import windll
@@ -29,6 +32,7 @@ from stackinabox.virt.hyperv import vmutils
 
 kernel32 = windll.kernel32
 advapi32 = windll.Advapi32
+userenv = windll.userenv
 
 LOG = logging
 
@@ -180,6 +184,12 @@ SAFER_LEVEL_OPEN = 1
 
 INFINITE = 0xFFFFFFFF
 
+CREATE_NEW_CONSOLE = 0x10
+
+
+class LogonFailedException(Exception):
+    pass
+
 
 class WindowsUtils(object):
     _FW_IP_PROTOCOL_TCP = 6
@@ -195,8 +205,8 @@ class WindowsUtils(object):
 
     @property
     def _conn_cimv2(self):
-        if self._wmi_conn_cimv2 is None:
-            self._wmi_conn_cimv2 = wmi.WMI(moniker='//./root/cimv2')
+        # if self._wmi_conn_cimv2 is None:
+        self._wmi_conn_cimv2 = wmi.WMI(moniker='//./root/cimv2')
         return self._wmi_conn_cimv2
 
     def check_hotfix(self, hotfix_id):
@@ -310,7 +320,8 @@ class WindowsUtils(object):
         fw_policy2 = client.Dispatch("HNetCfg.FwPolicy2")
         fw_policy2.Rules.Remove(rule_name)
 
-    def run_safe_process(self, filename, arguments=None, wait=False):
+    def run_safe_process(self, filename, arguments=None, wait=False,
+                         new_console=False):
         safer_level_handle = wintypes.HANDLE()
         ret_val = advapi32.SaferCreateLevel(SAFER_SCOPEID_USER,
                                             SAFER_LEVELID_NORMALUSER,
@@ -333,11 +344,15 @@ class WindowsUtils(object):
             startup_info.cb = ctypes.sizeof(Win32_STARTUPINFO_W)
             startup_info.lpDesktop = ""
 
+            flags = 0
+            if new_console:
+                flags = CREATE_NEW_CONSOLE
+
             cmdline = ctypes.create_unicode_buffer(
                 '"%s" ' % filename + arguments)
 
             ret_val = advapi32.CreateProcessAsUserW(
-                token, None, cmdline, None, None, False, 0, None, None,
+                token, None, cmdline, None, None, False, flags, None, None,
                 ctypes.byref(startup_info), ctypes.byref(proc_info))
             if not ret_val:
                 raise Exception("CreateProcessAsUserW failed")
@@ -363,6 +378,70 @@ class WindowsUtils(object):
                 return False
             else:
                 raise
+
+    def check_sysnative_dir_exists(self):
+        sysnative_dir_exists = os.path.isdir(self.get_sysnative_dir())
+        if not sysnative_dir_exists and self.is_wow64():
+            LOG.warning('Unable to validate sysnative folder presence. '
+                        'If Target OS is Server 2003 x64, please ensure '
+                        'you have KB942589 installed')
+        return sysnative_dir_exists
+
+    def is_wow64(self):
+        return win32process.IsWow64Process()
+
+    def get_system32_dir(self):
+        return os.path.expandvars('%windir%\\system32')
+
+    def get_sysnative_dir(self):
+        return os.path.expandvars('%windir%\\sysnative')
+
+    def _get_system_dir(self, sysnative=True):
+        if sysnative and self.check_sysnative_dir_exists():
+            return self.get_sysnative_dir()
+        else:
+            return self.get_system32_dir()
+
+    def execute_powershell(self, args="", sysnative=True):
+        base_dir = self._get_system_dir(sysnative)
+        powershell_path = os.path.join(base_dir,
+                                       'WindowsPowerShell\\v1.0\\'
+                                       'powershell.exe')
+
+        return self.run_safe_process(
+            powershell_path,
+            '-ExecutionPolicy RemoteSigned -NoExit -Command %s' % args,
+            new_console=True)
+
+    def create_user_logon_session(self, username, password, domain='.'):
+        token = wintypes.HANDLE()
+        ret_val = advapi32.LogonUserW(unicode(username),
+                                      unicode(domain),
+                                      unicode(password), 2, 0,
+                                      ctypes.byref(token))
+        if not ret_val:
+            raise LogonFailedException()
+        return token
+
+    def close_user_logon_session(self, token):
+        kernel32.CloseHandle(token)
+
+    def get_current_user(self):
+        proc_token = win32security.OpenProcessToken(
+            win32api.GetCurrentProcess(), win32security.TOKEN_QUERY)
+
+        sid, tmp = win32security.GetTokenInformation(
+            proc_token, win32security.TokenUser)
+
+        username, domain, user_type = win32security.LookupAccountSid(None, sid)
+
+        return domain, username
+
+    def get_windows_version_info(self):
+        version_info = self._conn_cimv2.Win32_OperatingSystem()[0]
+        return {"description": version_info.Caption,
+                "version": version_info.Version}
+
 
 def kill_process(pid):
     hProc = None
