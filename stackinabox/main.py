@@ -58,6 +58,7 @@ class Controller(QtCore.QObject):
     on_deployment_disabled_event = QtCore.pyqtSignal()
     on_product_update_available_event = QtCore.pyqtSignal(str, str, bool, str)
     on_get_compute_nodes_completed_event = QtCore.pyqtSignal(str)
+    on_get_repo_urls_completed_event = QtCore.pyqtSignal(str)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -92,6 +93,8 @@ class Controller(QtCore.QObject):
             self._product_update_available)
         self._worker.get_compute_nodes_completed.connect(
             self._get_compute_nodes_completed)
+        self._worker.get_repo_urls_completed.connect(
+            self._get_repo_urls_completed)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
@@ -131,6 +134,10 @@ class Controller(QtCore.QObject):
             self.show_deployment_details()
         else:
             self._enable_retry_deployment(True)
+
+    def _get_repo_urls_completed(self, repo_url, repo_urls):
+        self.on_get_repo_urls_completed_event.emit(
+            json.dumps({"repo_url": repo_url, "repo_urls": repo_urls}))
 
     def _get_compute_nodes_completed(self, compute_nodes):
         self.on_get_compute_nodes_completed_event.emit(
@@ -187,6 +194,9 @@ class Controller(QtCore.QObject):
 
     def _get_config_completed(self, config_dict):
         self.on_get_config_completed_event.emit(json.dumps(config_dict))
+        QtCore.QMetaObject.invokeMethod(
+            self._worker, 'get_repo_urls',
+            QtCore.Qt.QueuedConnection)
 
     def show_splash(self):
         self._splash_window.show()

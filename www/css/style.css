@@ -751,6 +751,10 @@ input{
     border-width: 1px;
 }
 
+#centosmirror-menu {
+    max-height: 340px;
+}
+
 input[type=range] {
     background-color: #4D415D;
     width: 400px;
