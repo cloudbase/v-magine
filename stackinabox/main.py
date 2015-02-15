@@ -16,6 +16,7 @@ import ctypes
 import json
 import logging
 import os
+import pythoncom
 import sys
 import threading
 import trollius
@@ -539,8 +540,6 @@ def _run_async_loop(loop):
     LOG.debug("run_async_loop")
 
     threading.current_thread().name = "AsyncLoopThread"
-
-    import pythoncom
     pythoncom.CoInitialize()
 
     trollius.set_event_loop(loop)
