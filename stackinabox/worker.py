@@ -21,8 +21,7 @@ import socket
 import threading
 import time
 import sys
-
-from PyQt5 import QtCore
+import trollius
 
 from stackinabox import actions
 from stackinabox import centos
@@ -93,32 +92,9 @@ class _VMConsoleThread(threading.Thread):
                         break
 
 
-class Worker(QtCore.QObject):
-    finished = QtCore.pyqtSignal()
-    stdout_data_ready = QtCore.pyqtSignal(str)
-    stderr_data_ready = QtCore.pyqtSignal(str)
-    error = QtCore.pyqtSignal(Exception)
-    install_done = QtCore.pyqtSignal(bool)
-    get_ext_vswitches_completed = QtCore.pyqtSignal(list)
-    get_available_host_nics_completed = QtCore.pyqtSignal(list)
-    add_ext_vswitch_completed = QtCore.pyqtSignal(str)
-    get_deployment_details_completed = QtCore.pyqtSignal(str, str)
-    platform_requirements_checked = QtCore.pyqtSignal(bool)
-    progress_status_update = QtCore.pyqtSignal(bool, int, int, str)
-    host_user_validated = QtCore.pyqtSignal()
-    openstack_deployment_removed = QtCore.pyqtSignal()
-    get_config_completed = QtCore.pyqtSignal(dict)
-    product_update_available = QtCore.pyqtSignal(str, str, bool, str)
-    get_compute_nodes_completed = QtCore.pyqtSignal(list)
-    get_repo_urls_completed = QtCore.pyqtSignal(str, list)
-
-    def __init__(self, thread):
+class Worker(object):
+    def __init__(self):
         super(Worker, self).__init__()
-
-        self._tread = thread
-        self.moveToThread(self._tread)
-        self.finished.connect(self._tread.quit)
-        self._tread.started.connect(self.started)
 
         self._term_type = None
         self._term_cols = None
@@ -131,13 +107,22 @@ class Worker(QtCore.QObject):
 
         self._dep_actions = actions.DeploymentActions()
 
-        def stdout_callback(data):
-            self.stdout_data_ready.emit(data)
-        self._stdout_callback = stdout_callback
+        self._stdout_callback = None
+        self._stderr_callback = None
+        self._error_callback = None
+        self._progress_status_update_callback = None
 
-        def stderr_callback(data):
-            self.stderr_data_ready.emit(data)
-        self._stderr_callback = stderr_callback
+    def set_error_callback(self, callback):
+        self._error_callback = callback
+
+    def set_progress_status_update_callback(self, callback):
+        self._progress_status_update_callback = callback
+
+    def set_stdout_callback(self, callback):
+        self._stdout_callback = callback
+
+    def set_stderr_callback(self, callback):
+        self._stderr_callback = callback
 
     def is_eula_accepted(self):
         return self._dep_actions.is_eula_accepted()
@@ -161,11 +146,6 @@ class Worker(QtCore.QObject):
         LOG.debug("Term info set: %s" %
                   str((self._term_type, self._term_cols, self._term_rows)))
 
-    @QtCore.pyqtSlot()
-    def started(self):
-        LOG.info("Started")
-        pythoncom.CoInitializeEx(pythoncom.COINIT_APARTMENTTHREADED)
-
     def can_close(self):
         return self._is_install_done
 
@@ -178,14 +158,14 @@ class Worker(QtCore.QObject):
             raise CancelDeploymentException()
 
         self._curr_step += 1
-        self.progress_status_update.emit(
+        self._progress_status_update_callback(
             True, self._curr_step, self._max_steps, msg)
 
     def _start_progress_status(self, msg=''):
-        self.progress_status_update.emit(True, 0, 0, msg)
+        self._progress_status_update_callback(True, 0, 0, msg)
 
     def _stop_progress_status(self, msg=''):
-        self.progress_status_update.emit(False, 0, 0, msg)
+        self._progress_status_update_callback(False, 0, 0, msg)
 
     def _deploy_openstack_vm(self, ext_vswitch_name,
                              openstack_vm_mem_mb, openstack_base_dir,
@@ -392,19 +372,19 @@ class Worker(QtCore.QObject):
         fip_gateway = fip_subnet[:-1] + "1"
         return (fip_range, fip_range_start, fip_range_end, fip_gateway)
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def get_compute_nodes(self):
         try:
             self._start_progress_status('Retrieving compute nodes info...')
             compute_nodes = self._dep_actions.get_compute_nodes()
-            self.get_compute_nodes_completed.emit(compute_nodes)
+            return compute_nodes
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def get_config(self):
         try:
             LOG.debug("get_config called")
@@ -446,28 +426,28 @@ class Worker(QtCore.QObject):
                 "localhost": socket.gethostname()
             }
 
-            self.get_config_completed.emit(config_dict)
+            return config_dict
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def get_repo_urls(self):
         try:
             LOG.debug("get_repo_urls called")
             self._start_progress_status('Loading repository mirrors list...')
 
             repo_urls = centos.get_repo_mirrors()
-            self.get_repo_urls_completed.emit(repo_urls[0], repo_urls)
+            return (repo_urls[0], repo_urls)
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def check_platform_requirements(self):
         try:
             LOG.debug("check_platform_requirements called")
@@ -476,11 +456,11 @@ class Worker(QtCore.QObject):
             self._dep_actions.check_platform_requirements()
             self._check_openstack_vm_memory_requirements(
                 OPENSTACK_CONTROLLER_VM_NAME)
-            self.platform_requirements_checked.emit(True)
+            return True
         except Exception as ex:
             LOG.exception(ex)
-            self.platform_requirements_checked.emit(False)
-            self.error.emit(ex)
+            self._error_callback(ex)
+            return False
         finally:
             self._stop_progress_status()
 
@@ -494,7 +474,7 @@ class Worker(QtCore.QObject):
                 "Available: {:,} MB, "
                 "required {:,} MB".format(max_mem_mb, min_mem_mb))
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def get_ext_vswitches(self):
         try:
             LOG.debug("get_ext_vswitches called")
@@ -503,33 +483,31 @@ class Worker(QtCore.QObject):
 
             ext_vswitches = self._dep_actions.get_ext_vswitches()
             LOG.debug("External vswitches: %s" % str(ext_vswitches))
-            self.get_ext_vswitches_completed.emit(ext_vswitches)
+            return ext_vswitches
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
             raise
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def get_available_host_nics(self):
         try:
             LOG.debug("get_available_host_nics called")
             self._start_progress_status('Loading host NICs...')
 
-            self.get_available_host_nics_completed.emit([])
-
             host_nics = self._dep_actions.get_available_host_nics()
             LOG.debug("Available host nics: %s" % str(host_nics))
-            self.get_available_host_nics_completed.emit(host_nics)
+            return host_nics
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
             raise
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot(str, str)
+    @trollius.coroutine
     def add_ext_vswitch(self, vswitch_name, nic_name):
         try:
             LOG.debug("add_ext_vswitch called, vswitch_name: "
@@ -543,13 +521,11 @@ class Worker(QtCore.QObject):
                 raise Exception('A virtual switch with name "%s" already '
                                 'exists' % vswitch_name)
 
-            self._dep_actions.add_ext_vswitch(str(vswitch_name), str(nic_name))
-            # Refresh VSwitch list
-            self.get_ext_vswitches()
-            self.add_ext_vswitch_completed.emit(vswitch_name)
+            self._dep_actions.add_ext_vswitch(vswitch_name, nic_name)
+            return vswitch_name
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
             raise
         finally:
             self._stop_progress_status()
@@ -558,7 +534,7 @@ class Worker(QtCore.QObject):
         return self._dep_actions.get_vm_ip_address(
             OPENSTACK_CONTROLLER_VM_NAME)
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def get_deployment_details(self):
         try:
             LOG.debug("get_deployment_details called")
@@ -571,15 +547,13 @@ class Worker(QtCore.QObject):
                                 'Please ensure that the "%s" virtual machine '
                                 'is running' % OPENSTACK_CONTROLLER_VM_NAME)
 
-            self.get_deployment_details_completed.emit(
-                controller_ip,
-                self._get_horizon_url(controller_ip))
+            return (controller_ip, self._get_horizon_url(controller_ip))
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
+            self._error_callback(ex)
             missing_ip = "The OpenStack controller is not available"
-            self.get_deployment_details_completed.emit(missing_ip, missing_ip)
-            self.error.emit(ex)
+            return (missing_ip, missing_ip)
         finally:
             self._stop_progress_status()
 
@@ -587,7 +561,7 @@ class Worker(QtCore.QObject):
         # TODO(alexpilotti): This changes between Ubuntu and RDO
         return "http://%s" % controller_ip
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def open_horizon_url(self):
         try:
             self._start_progress_status('Opening OpenStack web console...')
@@ -597,11 +571,11 @@ class Worker(QtCore.QObject):
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def open_controller_ssh(self):
         try:
             self._start_progress_status('Opening OpenStack SSH console...')
@@ -610,22 +584,23 @@ class Worker(QtCore.QObject):
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def remove_openstack_deployment(self):
         try:
             LOG.debug("remove_openstack_deployment called")
             self._dep_actions.check_remove_vm(OPENSTACK_CONTROLLER_VM_NAME)
             self._dep_actions.set_openstack_deployment_status(False)
-            self.openstack_deployment_removed.emit()
+            return True
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
 
-    @QtCore.pyqtSlot()
+    # TODO: this is currently called by another thread. We shoudl find a way to
+    # use it as a coroutine
     def cancel_openstack_deployment(self):
         try:
             LOG.debug("cancel_openstack_deployment called")
@@ -635,10 +610,10 @@ class Worker(QtCore.QObject):
                 self._dep_actions.check_remove_vm(OPENSTACK_CONTROLLER_VM_NAME)
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
 
-    @QtCore.pyqtSlot(str)
-    def deploy_openstack(self, json_args):
+    @trollius.coroutine
+    def deploy_openstack(self, args):
         try:
             self._start_progress_status('Deployment started')
 
@@ -646,8 +621,6 @@ class Worker(QtCore.QObject):
             self._cancel_deployment = False
 
             self._dep_actions.set_openstack_deployment_status(False)
-
-            args = json.loads(str(json_args))
 
             ext_vswitch_name = args.get("ext_vswitch_name")
             repo_url = args.get("centos_mirror")
@@ -698,7 +671,7 @@ class Worker(QtCore.QObject):
             self._update_status('Your OpenStack deployment is ready!')
 
             self._dep_actions.set_openstack_deployment_status(True)
-            self.install_done.emit(True)
+            return True
             self._stop_progress_status()
         except Exception as ex:
             LOG.exception(ex)
@@ -710,39 +683,39 @@ class Worker(QtCore.QObject):
                 msg = 'OpenStack deployment failed'
 
             self._stop_progress_status(msg)
-            self.error.emit(ex)
-            self.install_done.emit(False)
+            self._error_callback(ex)
+            return False
         finally:
             self._dep_actions.stop_pxe_service()
             self._is_install_done = True
 
-    @QtCore.pyqtSlot(str, str)
+    @trollius.coroutine
     def validate_host_user(self, username, password):
         try:
             LOG.debug("validate_host_user called")
             self._start_progress_status("Validating Hyper-V host user...")
             self._dep_actions.validate_host_user(username, password)
-            self.host_user_validated.emit()
+            return True
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
         finally:
             self._stop_progress_status()
 
-    @QtCore.pyqtSlot()
+    @trollius.coroutine
     def check_for_updates(self):
         try:
             self._start_progress_status("Checking for product updates...")
             update_info = self._dep_actions.check_for_updates()
             new_version = update_info.get("new_version")
             if new_version:
-                self.product_update_available.emit(
+                return (
                     constants.VERSION,
                     new_version,
                     update_info.get("update_required"),
                     update_info.get("update_url"))
         except Exception as ex:
             LOG.exception(ex)
-            self.error.emit(ex)
+            self._error_callback(ex)
         finally:
             self._stop_progress_status()
