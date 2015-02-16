@@ -16,7 +16,10 @@ import ctypes
 import json
 import logging
 import os
+import pythoncom
 import sys
+import threading
+import trollius
 
 # For PyInstaller
 import pkg_resources
@@ -30,6 +33,7 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtWebKitWidgets
 
 import stackinabox
+from stackinabox import constants
 from stackinabox import utils
 from stackinabox import webbrowser
 from stackinabox import worker as deployment_worker
@@ -58,6 +62,7 @@ class Controller(QtCore.QObject):
     on_deployment_disabled_event = QtCore.pyqtSignal()
     on_product_update_available_event = QtCore.pyqtSignal(str, str, bool, str)
     on_get_compute_nodes_completed_event = QtCore.pyqtSignal(str)
+    on_get_repo_urls_completed_event = QtCore.pyqtSignal(str)
 
     def __init__(self, worker):
         super(Controller, self).__init__()
@@ -66,32 +71,11 @@ class Controller(QtCore.QObject):
         self._splash_window = None
         self._progress_counter = 0
 
-        self._worker.stdout_data_ready.connect(self._send_stdout_data)
-        self._worker.stderr_data_ready.connect(self._send_stderr_data)
-        self._worker.error.connect(self._error)
-        self._worker.install_done.connect(self._install_done)
-        self._worker.get_ext_vswitches_completed.connect(
-            self._get_ext_vswitches_completed)
-        self._worker.get_available_host_nics_completed.connect(
-            self._get_available_host_nics_completed)
-        self._worker.add_ext_vswitch_completed.connect(
-            self._add_ext_vswitch_completed)
-        self._worker.get_deployment_details_completed.connect(
-            self._get_deployment_details_completed)
-        self._worker.platform_requirements_checked.connect(
-            self._platform_requirements_checked)
-        self._worker.progress_status_update.connect(
+        self._worker.set_stdout_callback(self._send_stdout_data)
+        self._worker.set_stderr_callback(self._send_stderr_data)
+        self._worker.set_error_callback(self._error)
+        self._worker.set_progress_status_update_callback(
             self._progress_status_update)
-        self._worker.host_user_validated.connect(
-            self._host_user_validated)
-        self._worker.openstack_deployment_removed.connect(
-            self._openstack_deployment_removed)
-        self._worker.get_config_completed.connect(
-            self._get_config_completed)
-        self._worker.product_update_available.connect(
-            self._product_update_available)
-        self._worker.get_compute_nodes_completed.connect(
-            self._get_compute_nodes_completed)
 
     def set_main_window(self, main_window):
         self._main_window = main_window
@@ -125,72 +109,49 @@ class Controller(QtCore.QObject):
     def _error(self, ex):
         self.on_error_event.emit(ex.message)
 
-    def _install_done(self, success):
-        self.on_install_done_event.emit(success)
-        if success:
-            self.show_deployment_details()
-        else:
-            self._enable_retry_deployment(True)
-
-    def _get_compute_nodes_completed(self, compute_nodes):
-        self.on_get_compute_nodes_completed_event.emit(
-            json.dumps(compute_nodes))
-
-    def _get_ext_vswitches_completed(self, ext_vswitches):
-        self.on_get_ext_vswitches_completed_event.emit(
-            json.dumps(ext_vswitches))
-
-    def _get_available_host_nics_completed(self, host_nics):
-        self.on_get_available_host_nics_completed_event.emit(
-            json.dumps(host_nics))
-
-    def _add_ext_vswitch_completed(self, vswitch_name):
-        self.on_add_ext_vswitch_completed_event.emit(vswitch_name)
-
-    def _get_deployment_details_completed(self, controller_ip, horizon_url):
-        self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
-        self.hide_splash()
-
     def _disable_deployment(self):
         self.on_deployment_disabled_event.emit()
 
-    def _platform_requirements_checked(self, success):
+    def _product_update_available(self, future):
+        new_version_info = future.result()
+        if new_version_info:
+            (current_version,
+             new_version,
+             update_required,
+             update_url) = new_version_info
+            self.on_product_update_available_event.emit(
+                current_version, new_version, update_required, update_url)
+
+    def _check_for_updates(self):
+        _run_async_task(
+            self._worker.check_for_updates(),
+            self._product_update_available)
+
+    def _platform_requirements_checked(self, future):
+        LOG.debug("_platform_requirements_checked called")
+        success = future.result()
         self.show_controller_config()
         if not success:
             self._disable_deployment()
-        self.hide_splash()
+
+        # Must be called in MainThread
+        QtCore.QMetaObject.invokeMethod(self, 'hide_splash',
+                                        QtCore.Qt.QueuedConnection)
         self._check_for_updates()
 
-    def _product_update_available(self, current_version, new_version,
-                                  update_required, update_url):
-        self.on_product_update_available_event.emit(
-            current_version, new_version, update_required, update_url)
-
-    def _check_for_updates(self):
-        QtCore.QMetaObject.invokeMethod(self._worker,
-                                        'check_for_updates',
-                                        QtCore.Qt.QueuedConnection)
-
     def _check_platform_requirements(self):
-        QtCore.QMetaObject.invokeMethod(self._worker,
-                                        'check_platform_requirements',
-                                        QtCore.Qt.QueuedConnection)
+        LOG.debug("Checking platform requirements")
+        _run_async_task(
+            self._worker.check_platform_requirements(),
+            self._platform_requirements_checked)
 
     def _enable_retry_deployment(self, enable):
         self.on_enable_retry_deployment_event.emit(enable)
 
-    def _host_user_validated(self):
-        self.on_review_config_event.emit()
-
-    def _openstack_deployment_removed(self):
-        self.show_controller_config()
-
-    def _get_config_completed(self, config_dict):
-        self.on_get_config_completed_event.emit(json.dumps(config_dict))
-
     def show_splash(self):
         self._splash_window.show()
 
+    @QtCore.pyqtSlot()
     def hide_splash(self):
         LOG.debug("hide_splash called")
         self._splash_window.hide()
@@ -213,11 +174,22 @@ class Controller(QtCore.QObject):
             LOG.exception(ex)
             raise
 
+    def _get_deployment_details_completed(self, future):
+        controller_ip, horizon_url = future.result()
+        self.on_show_deployment_details_event.emit(controller_ip, horizon_url)
+
+        # Must be called in MainThread
+        QtCore.QMetaObject.invokeMethod(self, 'hide_splash',
+                                        QtCore.Qt.QueuedConnection)
+
+        self._check_for_updates()
+
     @QtCore.pyqtSlot()
     def show_deployment_details(self):
         LOG.debug("show_deployment_details called")
-        QtCore.QMetaObject.invokeMethod(self._worker, 'get_deployment_details',
-                                        QtCore.Qt.QueuedConnection)
+        _run_async_task(
+            self._worker.get_deployment_details(),
+            self._get_deployment_details_completed)
         self.get_compute_nodes()
 
     @QtCore.pyqtSlot()
@@ -253,9 +225,10 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def cancel_deployment(self):
         LOG.debug("cancel_deployment called")
+
         # TODO: replace with HTML UI
         reply = QtWidgets.QMessageBox.question(
-            self._main_window, 'v-magine',
+            self._main_window, constants.PRODUCT_NAME,
             "Cancel the OpenStack deployment?",
             QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
@@ -268,34 +241,63 @@ class Controller(QtCore.QObject):
         LOG.debug("reconfig_deployment called")
         self.on_review_config_event.emit()
 
+    def _host_user_validated(self, future):
+        user_ok = future.result()
+        if user_ok:
+            self.on_review_config_event.emit()
+
     @QtCore.pyqtSlot(str)
     def review_config(self, json_args):
         LOG.debug("review_config called")
 
         args = json.loads(str(json_args))
-        QtCore.QMetaObject.invokeMethod(
-            self._worker, 'validate_host_user',
-            QtCore.Qt.QueuedConnection,
-            QtCore.Q_ARG(str, args.get("hyperv_host_username")),
-            QtCore.Q_ARG(str, args.get("hyperv_host_password")))
+        _run_async_task(
+            self._worker.validate_host_user(
+                args.get("hyperv_host_username"),
+                args.get("hyperv_host_password")),
+            self._host_user_validated)
+
+    def _get_repo_urls_completed(self, future):
+        repo_url, repo_urls = future.result()
+        self.on_get_repo_urls_completed_event.emit(
+            json.dumps({"repo_url": repo_url, "repo_urls": repo_urls}))
+
+    def _get_config_completed(self, future):
+        config_dict = future.result()
+        if config_dict:
+            self.on_get_config_completed_event.emit(json.dumps(config_dict))
 
     @QtCore.pyqtSlot()
     def get_config(self):
         LOG.debug("get_config called")
-        QtCore.QMetaObject.invokeMethod(
-            self._worker, 'get_config',
-            QtCore.Qt.QueuedConnection)
+
+        _run_async_tasks(
+            [(self._worker.get_config(), self._get_config_completed),
+             (self._worker.get_repo_urls(), self._get_repo_urls_completed)])
+
+    def _get_compute_nodes_completed(self, future):
+        compute_nodes = future.result()
+        self.on_get_compute_nodes_completed_event.emit(
+            json.dumps(compute_nodes))
 
     @QtCore.pyqtSlot()
     def get_compute_nodes(self):
         LOG.debug("get_compute_nodes called")
-        QtCore.QMetaObject.invokeMethod(
-            self._worker, 'get_compute_nodes',
-            QtCore.Qt.QueuedConnection)
+        _run_async_task(
+            self._worker.get_compute_nodes(),
+            self._get_compute_nodes_completed)
 
     @QtCore.pyqtSlot(str, int, int)
     def set_term_info(self, term_type, cols, rows):
         self._worker.set_term_info(str(term_type), cols, rows)
+
+    def _install_done(self, future):
+        success = future.result()
+        self.on_install_done_event.emit(success)
+        if success:
+            self.show_deployment_details()
+        else:
+            self._enable_retry_deployment(True)
 
     @QtCore.pyqtSlot(str)
     def install(self, json_args):
@@ -303,68 +305,84 @@ class Controller(QtCore.QObject):
 
         self.on_install_started_event.emit()
         self._enable_retry_deployment(False)
-
-        try:
-            QtCore.QMetaObject.invokeMethod(
-                self._worker, 'deploy_openstack',
-                QtCore.Qt.QueuedConnection,
-                QtCore.Q_ARG(str, json_args))
-        except Exception as ex:
-            LOG.exception(ex)
-            raise
+        _run_async_task(
+            self._worker.deploy_openstack(json.loads(str(json_args))),
+            self._install_done)
 
     @QtCore.pyqtSlot()
     def redeploy_openstack(self):
         self._check_platform_requirements()
+
+    def _openstack_deployment_removed(self, future):
+        removed = future.result()
+        if removed:
+            self.show_controller_config()
 
     @QtCore.pyqtSlot()
     def remove_openstack(self):
         LOG.debug("remove_openstack called")
         # TODO: replace with HTML UI
         reply = QtWidgets.QMessageBox.question(
-            self._main_window, 'v-magine',
+            self._main_window, constants.PRODUCT_NAME,
             "Remove the current OpenStack deployment? All OpenStack "
             "controller data will be deleted.",
             QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
-            QtCore.QMetaObject.invokeMethod(self._worker,
-                                            'remove_openstack_deployment',
-                                            QtCore.Qt.QueuedConnection)
+            _run_async_task(
+                self._worker.remove_openstack_deployment(),
+                self._openstack_deployment_removed)
+
+    def _get_ext_vswitches_completed(self, future):
+        ext_vswitches = future.result()
+        self.on_get_ext_vswitches_completed_event.emit(
+            json.dumps(ext_vswitches))
 
     @QtCore.pyqtSlot()
     def get_ext_vswitches(self):
         LOG.debug("get_ext_vswitches called")
-        QtCore.QMetaObject.invokeMethod(self._worker, 'get_ext_vswitches',
-                                        QtCore.Qt.QueuedConnection)
+        _run_async_task(
+            self._worker.get_ext_vswitches(),
+            self._get_ext_vswitches_completed)
+
+    def _get_available_host_nics_completed(self, future):
+        host_nics = future.result()
+        if host_nics:
+            self.on_get_available_host_nics_completed_event.emit(
+                json.dumps(host_nics))
 
     @QtCore.pyqtSlot()
     def get_available_host_nics(self):
         LOG.debug("get_available_host_nics called")
-        QtCore.QMetaObject.invokeMethod(self._worker,
-                                        'get_available_host_nics',
-                                        QtCore.Qt.QueuedConnection)
+        self.on_get_available_host_nics_completed_event.emit(
+            json.dumps([]))
+
+        _run_async_task(
+            self._worker.get_available_host_nics(),
+            self._get_available_host_nics_completed)
+
+    def _add_ext_vswitch_completed(self, future):
+        vswitch_name = future.result()
+        if vswitch_name:
+            # Refresh VSwitch list
+            self.get_ext_vswitches()
+            self.on_add_ext_vswitch_completed_event.emit(vswitch_name)
 
     @QtCore.pyqtSlot(str, str)
     def add_ext_vswitch(self, vswitch_name, nic_name):
         LOG.debug("add_ext_vswitch called")
-        QtCore.QMetaObject.invokeMethod(self._worker, 'add_ext_vswitch',
-                                        QtCore.Qt.QueuedConnection,
-                                        QtCore.Q_ARG(str, vswitch_name),
-                                        QtCore.Q_ARG(str, nic_name))
+        _run_async_task(
+            self._worker.add_ext_vswitch(str(vswitch_name), str(nic_name)),
+            self._add_ext_vswitch_completed)
 
     @QtCore.pyqtSlot()
     def open_horizon_url(self):
         LOG.debug("open_horizon_url called")
-        QtCore.QMetaObject.invokeMethod(self._worker,
-                                        'open_horizon_url',
-                                        QtCore.Qt.QueuedConnection)
+        _run_async_task(self._worker.open_horizon_url())
 
     @QtCore.pyqtSlot()
     def open_controller_ssh(self):
         LOG.debug("open_controller_ssh called")
-        QtCore.QMetaObject.invokeMethod(self._worker,
-                                        'open_controller_ssh',
-                                        QtCore.Qt.QueuedConnection)
+        _run_async_task(self._worker.open_controller_ssh())
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -419,7 +437,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             # TODO: replace with HTML UI
             reply = QtWidgets.QMessageBox.question(
-                self, 'v-magine',
+                self, constants.PRODUCT_NAME,
                 "Interrupt the OpenStack deployment?",
                 QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             if reply == QtWidgets.QMessageBox.Yes:
@@ -452,17 +470,11 @@ class QWebPageWithoutJsWarning(QtWebKitWidgets.QWebPage):
 def _config_logging(log_dir):
     log_format = ("%(asctime)-15s %(levelname)s %(module)s %(funcName)s "
                   "%(lineno)d %(thread)d %(threadName)s %(message)s")
-    log_file = os.path.join(log_dir, 'v-magine.log')
+    log_file = os.path.join(log_dir, '%s.log' % constants.PRODUCT_NAME)
     logging.basicConfig(filename=log_file, level=logging.DEBUG,
                         format=log_format)
     logging.getLogger("paramiko").setLevel(logging.WARNING)
-
-
-def _init_worker():
-    thread = QtCore.QThread()
-    worker = deployment_worker.Worker(thread)
-    thread.start()
-    return worker
+    logging.info("{0} - {1}".format(constants.PRODUCT_NAME, constants.VERSION))
 
 
 def _create_splash_window(main_window):
@@ -487,15 +499,63 @@ def main(url=None):
         os.chdir(base_dir)
         _config_logging(base_dir)
 
-        worker = _init_worker()
-        controller = Controller(worker)
+        controller = Controller(deployment_worker.Worker())
 
         main_window = MainWindow(controller)
         splash = _create_splash_window(main_window)
         controller.set_splash_window(splash)
         controller.show_splash()
 
-    sys.exit(app.exec_())
+    loop = trollius.get_event_loop()
+    loop.set_exception_handler(_async_exception_handler)
+    # Need to run trollius event loop in a separate thread due to Qt event loop
+    thread = threading.Thread(target=_run_async_loop, args=(loop,))
+    thread.start()
+
+    exit_code = app.exec_()
+    loop.call_soon_threadsafe(loop.stop)
+    thread.join()
+    loop.close()
+
+    sys.exit(exit_code)
+
+
+def _run_async_task(coroutine, callback=None):
+    return _run_async_tasks([(coroutine, callback)])[0]
+
+
+def _run_async_tasks(tasks_info):
+    tasks = []
+    loop = trollius.get_event_loop()
+    for (coroutine, callback) in tasks_info:
+        task = trollius.async(coroutine)
+        if callback:
+            task.add_done_callback(callback)
+        loop.call_soon_threadsafe(task)
+        tasks.append(task)
+    return tasks
+
+
+def _async_exception_handler(loop, context):
+    LOG.error(context.get("message"))
+    ex = context.get("exception")
+    if ex:
+        LOG.exception(ex)
+
+
+def _run_async_loop(loop):
+    LOG.debug("run_async_loop")
+
+    threading.current_thread().name = "AsyncLoopThread"
+    pythoncom.CoInitialize()
+
+    trollius.set_event_loop(loop)
+    try:
+        loop.run_forever()
+    except Exception as ex:
+        LOG.exception(ex)
+    finally:
+        loop.close()
 
 
 if __name__ == "__main__":

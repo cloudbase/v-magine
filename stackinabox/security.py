@@ -15,6 +15,7 @@
 import logging
 import os
 
+from stackinabox import constants
 from stackinabox import utils
 
 LOG = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ def generate_ssh_key(key_path, key_type="rsa", key_bits=2048):
     ssh_keygen_bin = os.path.join(utils.get_bin_dir(), "ssh-keygen.exe")
     (out, err) = utils.execute_process(
         [ssh_keygen_bin, "-t", key_type, "-b", str(key_bits), "-N", "", "-C",
-         "v-magine controller", "-f", key_path])
+         "%s controller" % constants.PRODUCT_NAME, "-f", key_path])
     LOG.debug("ssh-keygen output: %s" % out)
 
     return (key_path, pub_key_path)

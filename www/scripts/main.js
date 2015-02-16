@@ -7,6 +7,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.hostNic = null;
     $scope.adminPassword = null;
     $scope.centosMirror = null;
+    $scope.centosMirrors = null;
     $scope.maxOpenStackVMMem = 0;
     $scope.minOpenStackVMMem = 0;
     $scope.suggestedOpenStackVMMem = 0;
@@ -149,6 +150,7 @@ function getDeploymentConfigDict() {
 
     var dict = {};
     dict["ext_vswitch_name"] = $scope.extVSwitch;
+    dict["centos_mirror"] = $scope.centosMirror;
     dict["openstack_vm_mem_mb"] = $scope.openStackVMMem;
     dict["openstack_base_dir"] = $scope.openstackBaseDir;
     dict["admin_password"] = $scope.adminPassword;
@@ -294,7 +296,6 @@ function configCompleted(configJson) {
     var defaultConfig = JSON.parse(configJson);
 
     var $scope = angular.element("#maindiv").scope();
-    $scope.centosMirror = defaultConfig.default_centos_mirror;
     $scope.maxOpenStackVMMem = defaultConfig.max_openstack_vm_mem_mb;
     $scope.minOpenStackVMMem = defaultConfig.min_openstack_vm_mem_mb;
     $scope.openStackVMMem = defaultConfig.suggested_openstack_vm_mem_mb;
@@ -311,6 +312,17 @@ function configCompleted(configJson) {
     $scope.$apply();
 
     initControllerMemSlider();
+}
+
+function getRepoUrlsCompleted(repoUrlJson) {
+    var repoUrlDict = JSON.parse(repoUrlJson);
+
+    var $scope = angular.element("#maindiv").scope();
+    $scope.centosMirror = repoUrlDict.repo_url;
+    $scope.centosMirrors = repoUrlDict.repo_urls;
+    $scope.$apply();
+
+    $("#centosmirror").selectmenu("refresh", true);
 }
 
 function setDefaultConfigValues() {
@@ -372,6 +384,20 @@ function initHostNicsSelect() {
             var $scope = angular.element(this).scope();
             $scope.$apply(function() {
                 $scope.hostNic = $scope.hostNics[value];
+            });
+        }
+    });
+}
+
+function initRepoUrlSelect() {
+    $("#centosmirror").selectmenu({
+        change: function(event, ui) {
+            // AngularJs two way databinding does not work
+            // with selectmenu
+            var value = $(this).val();
+            var $scope = angular.element(this).scope();
+            $scope.$apply(function() {
+                $scope.centosMirror = $scope.centosMirrors[value];
             });
         }
     });
@@ -532,6 +558,7 @@ function initUi() {
     initControllerMemSlider();
 
     $("#selectdistro").selectmenu();
+    initRepoUrlSelect();
     initExtVSwitchSelect();
     initHostNicsSelect();
 
@@ -601,6 +628,8 @@ function ApplicationIsReady() {
             disableDeployment);
         controller.on_product_update_available_event.connect(
             productUpdateAvailable);
+        controller.on_get_repo_urls_completed_event.connect(
+            getRepoUrlsCompleted);
 
         setDefaultConfigValues();
      }

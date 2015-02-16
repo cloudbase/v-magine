@@ -7,6 +7,7 @@ from PyQt5 import QtWebKit
 from PyQt5 import QtWidgets
 from PyQt5 import QtWebKitWidgets
 
+from stackinabox import constants
 from stackinabox import utils
 
 
@@ -17,7 +18,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         app_icon_path = os.path.join(utils.get_resources_dir(), "app.ico")
         self.setWindowIcon(QtGui.QIcon(app_icon_path))
-        self.setWindowTitle('v-magine')
+        self.setWindowTitle(constants.PRODUCT_NAME)
 
         self.resize(1024, 768)
 
@@ -55,7 +56,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._web.show()
 
     def url_changed(self, url):
-        self.setWindowTitle('v-magine - %s' % url.toString())
+        self.setWindowTitle(
+            '{0} - {1}'.format(constants.PRODUCT_NAME, url.toString()))
 
     def load_started(self):
         self._progressbar.setValue(0)

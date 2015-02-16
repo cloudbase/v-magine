@@ -149,9 +149,9 @@
                     </select>
 
                     <label>Repository location</label>
-                    <div class="input-container has_tooltip" data-tooltip="Url location of the Linux repository">
-                        <div class="icon-awesome"><i class="fa fa-globe on-right" ></i></div>
-                        <input class="field" type="text" id="centosmirror" ng-model="centosMirror" required>
+                    <div class="input-container has_tooltip" data-tooltip="Url location of the Linux repository. The list contains the fastest mirrors in your area">
+                        <select id="centosmirror" ng-model="centosMirror" ng-options="mirror for mirror in centosMirrors" required>
+                        </select>
                     </div>
 
                     <label>Controller and OpenStack services password</label>
