@@ -33,7 +33,7 @@ function handleError(msg) {
 
 function showMessage(caption, msg) {
     $("#showError").addClass("active-page");
-    $('#errormessage').focus();
+    $("#errormessageok").focus();
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
     $(".nano").nanoScroller();
@@ -42,6 +42,7 @@ function showMessage(caption, msg) {
 function showPage(pageSelector) {
     $(".active-page").removeClass("active-page");
     $(pageSelector).addClass("active-page");
+    $(pageSelector).focus();
 }
 
 function hidePage(pageSelector) {
@@ -449,9 +450,8 @@ function initUi() {
         return false;
     });
 
-    $("#showError").keyup(function(event) {
+    $("#showError").keypress(function(event) {
         if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
-            console.log("enter pressed")
             hidePage("#showError");
         }
         return false;
