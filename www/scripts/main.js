@@ -33,7 +33,7 @@ function handleError(msg) {
 
 function showMessage(caption, msg) {
     $("#showError").addClass("active-page");
-    $('#errormessageok').focus();
+    $("#errormessageok").focus();
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
     $(".nano").nanoScroller();
