@@ -11,5 +11,6 @@ python-keystoneclient
 python-glanceclient
 ecdsa
 trollius
+fastestmirror
 #sip
 #PyQt5
