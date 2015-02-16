@@ -87,6 +87,10 @@ label {
 
 }
 
+#page-maas{
+    display: none;
+}
+
 #page-1{
     display: none;
 }
@@ -662,6 +666,14 @@ label {
 }
 
 #networking{
+    float:right;
+}
+
+#maas-controller-1{
+    float:left;
+}
+
+#maas-controller-2{
     float:right;
 }
 
@@ -1653,4 +1665,23 @@ select:required:invalid, select:focus:invalid {
     -webkit-transform:scale(.3);
     background-color:#00AEFF;
 }
+}
 
+#maas-logo-font{
+    width:25px !important;
+    margin-right:5px !important;
+    padding-bottom:10px;
+}
+
+.mini-label{
+    width: 48% !important;
+    display: inline-block !important;
+}
+
+#right-mini-label{
+    float:right;
+}
+
+.mini-label .icon-awesome{
+    margin-left: 82%;
+}
