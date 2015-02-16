@@ -507,7 +507,7 @@ def main(url=None):
         controller.show_splash()
 
     loop = trollius.get_event_loop()
-    loop.set_debug(True)
+    loop.set_exception_handler(_async_exception_handler)
     # Need to run trollius event loop in a separate thread due to Qt event loop
     thread = threading.Thread(target=_run_async_loop, args=(loop,))
     thread.start()
@@ -534,6 +534,13 @@ def _run_async_tasks(tasks_info):
         loop.call_soon_threadsafe(task)
         tasks.append(task)
     return tasks
+
+
+def _async_exception_handler(loop, context):
+    LOG.error(context.get("message"))
+    ex = context.get("exception")
+    if ex:
+        LOG.exception(ex)
 
 
 def _run_async_loop(loop):
