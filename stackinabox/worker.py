@@ -26,6 +26,7 @@ import trollius
 from stackinabox import actions
 from stackinabox import centos
 from stackinabox import constants
+from stackinabox import exceptions
 from stackinabox import rdo
 from stackinabox import security
 from stackinabox import utils
@@ -38,20 +39,25 @@ OPENSTACK_CONTROLLER_VM_NAME = "openstack-controller"
 OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
 
 
-class CancelDeploymentException(Exception):
-    def __init__(self):
-        msg = "Deployment cancelled by the user"
-        super(CancelDeploymentException, self).__init__(msg)
-
-
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
         super(_VMConsoleThread, self).__init__()
         self.setDaemon(True)
         self._console_named_pipe = console_named_pipe
         self._stdout_callback = stdout_callback
+        self._exception = None
+
+    def get_exception(self):
+        return self._exception
 
     def run(self):
+        try:
+            self._read_console()
+            self._exception = None
+        except Exception as ex:
+            self._exception = ex
+
+    def _read_console(self):
         base_dir = utils.get_base_dir()
         console_log_file = os.path.join(
             base_dir, "%s-console.log" % constants.PRODUCT_NAME)
@@ -90,6 +96,9 @@ class _VMConsoleThread(threading.Thread):
                     if data.find("Reached target Shutdown.") != -1:
                         LOG.debug("Console: reached target Shutdown")
                         break
+
+                    if data.find("Warning: Could not boot.") != -1:
+                        raise exceptions.CouldNotBootException()
 
 
 class Worker(object):
@@ -155,7 +164,7 @@ class Worker(object):
 
     def _update_status(self, msg):
         if self._cancel_deployment:
-            raise CancelDeploymentException()
+            raise exceptions.CancelDeploymentException()
 
         self._curr_step += 1
         self._progress_status_update_callback(
@@ -246,6 +255,16 @@ class Worker(object):
                                           self._stdout_callback)
         console_thread.start()
         console_thread.join()
+
+        ex = console_thread.get_exception()
+        if ex:
+            if isinstance(ex, exceptions.CouldNotBootException):
+                raise exceptions.CouldNotBootException(
+                    'Unable to deploy the controller VM. Make sure that DHCP '
+                    'is enabled on the "{0}" network and that the repository '
+                    '"{1}" is accessible'.format(ext_vswitch_name, repo_url))
+            else:
+                raise ex
 
         self._update_status('Rebooting OpenStack controller VM...')
         self._dep_actions.reboot_openstack_vm()
