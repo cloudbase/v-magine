@@ -458,7 +458,7 @@ function initUi() {
     });
 
     $("#controllerconfignext").click(function(){
-        if(validateControllerConfigForm()) {
+        if((validateControllerConfigForm()) && (validateIP())) {
             controller.show_host_config();
         }
         return false;
@@ -577,6 +577,69 @@ function validateControllerConfigForm() {
         var $scope = angular.element("#controllerconfigform").scope();
         $scope.$apply();
     }
+    return true;
+}
+
+function validateIP() {
+    var subnet_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/([0-3]?[0-9]?)$/;
+    var ip_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    var subnet = $("#subnet").val();
+    var ip_start = $("#fiprangestart").val();
+    var ip_end = $("#fiprangeend").val();
+    var gateway = $("#gateway").val();
+    var prefix = subnet.split('/').slice(1);
+    var prefix_length = 0;
+
+    if ((prefix >= 8) && (prefix <=15)) {
+        prefix_length = 1;
+    } else if ((prefix >= 16) && (prefix <=23)) {
+        prefix_length = 2;
+    } else if ((prefix >= 24) && (prefix <=32)) {
+        prefix_length = 3;
+    } else {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid prefix length");
+        $("#subnet").focus();
+        return false;
+    }
+
+    var part = subnet.split('.').slice(0,prefix_length);
+    var range = part.join('.');
+
+    if(!subnet.match(subnet_format)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid floating IP subnet");
+        $("#subnet").focus();
+        return false;
+    }
+
+    part = ip_start.split('.').slice(0,prefix_length);
+    var iprange = part.join('.');
+    if(!(ip_start.match(ip_format)) || (range != iprange)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
+        $("#fiprangestart").focus();
+        return false;
+    }
+
+    part = ip_end.split('.').slice(0,prefix_length);
+    iprange = part.join('.');
+    if(!(ip_end.match(ip_format)) || (range != iprange)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
+        $("#fiprangeend").focus();
+        return false;
+    }
+
+    part = gateway.split('.').slice(0,prefix_length);
+    iprange = part.join('.');
+    if(!(gateway.match(ip_format)) || (range != iprange)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid gateway");
+        $("#gateway").focus();
+        return false;
+    }
+
     return true;
 }
 
