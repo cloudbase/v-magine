@@ -461,6 +461,8 @@ function initUi() {
         if((validateControllerConfigForm()) && (validateIP())) {
             controller.show_host_config();
         }
+        $("#adminpassword").removeClass("hide_validation");
+        $("#adminpasswordrepeat").removeClass("hide_validation");
         return false;
     });
 
@@ -474,6 +476,8 @@ function initUi() {
             controller.review_config(
                 JSON.stringify(getDeploymentConfigDict()));
         }
+        $("#hypervhostusername").removeClass("hide_validation");
+        $("#hypervhostpassword").removeClass("hide_validation");
         return false;
     });
 
@@ -568,6 +572,35 @@ function initUi() {
     setupTerm();
 }
 
+function validations() {
+    $("#adminpassword").change(function(){
+        $("#adminpassword").removeClass("hide_validation");
+        $("#adminpasswordrepeat").removeClass("hide_validation");
+        return false;
+    });
+
+    $("#fiprangestart").focus(function(){
+        $("#fiprangestart").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#fiprangeend").focus(function(){
+        $("#fiprangeend").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#subnet").focus(function(){
+        $("#subnet").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#gateway").focus(function(){
+        $("#gateway").removeClass("is_invalid");
+        return false;
+    });
+
+}
+
 function validateControllerConfigForm() {
     if(!$("#controllerconfigform")[0].checkValidity()) {
         showMessage("OpenStack configuration",
@@ -600,6 +633,7 @@ function validateIP() {
         showMessage("OpenStack configuration",
                     "Please enter a valid prefix length");
         $("#subnet").focus();
+        $("#subnet").addClass("is_invalid");
         return false;
     }
 
@@ -610,6 +644,7 @@ function validateIP() {
         showMessage("OpenStack configuration",
                     "Please enter a valid floating IP subnet");
         $("#subnet").focus();
+        $("#subnet").addClass("is_invalid");
         return false;
     }
 
@@ -619,6 +654,7 @@ function validateIP() {
         showMessage("OpenStack configuration",
                     "Please enter a valid IP");
         $("#fiprangestart").focus();
+        $("#fiprangestart").addClass("is_invalid");
         return false;
     }
 
@@ -628,6 +664,7 @@ function validateIP() {
         showMessage("OpenStack configuration",
                     "Please enter a valid IP");
         $("#fiprangeend").focus();
+        $("#fiprangeend").addClass("is_invalid");
         return false;
     }
 
@@ -637,6 +674,21 @@ function validateIP() {
         showMessage("OpenStack configuration",
                     "Please enter a valid gateway");
         $("#gateway").focus();
+        $("#gateway").addClass("is_invalid");
+        return false;
+    }
+
+    var part2 = ip_start.split('.').slice(prefix_length,prefix_length+1);
+    var ip_start_compare = part2.join('.');
+
+    part2 = ip_end.split('.').slice(prefix_length,prefix_length+1);
+    var ip_end_compare = part2.join('.');
+
+    if (ip_start_compare > ip_end_compare) {
+        showMessage("OpenStack configuration",
+                    "Floating IP range end is smaller than range start ");
+        $("#fiprangeend").focus();
+        $("#fiprangeend").addClass("is_invalid");
         return false;
     }
 
@@ -662,6 +714,8 @@ function ApplicationIsReady() {
         initUi();
 
         tooltips();
+
+        validations();
 
         controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);

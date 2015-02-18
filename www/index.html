@@ -57,17 +57,17 @@
                 <div class="widget" id="maas-controller-1">
                     <h2><img id="maas-logo-font" src="images/MAAS-logo.svg">MAAS Controller</h2>
                     <label>MAAS Controller BMC IP</label>
-                    <input class="field has_tooltip" type="text" id="bmcip" ng-model="BMCIP" required data-tooltip="Input BMC IP" />
+                    <input class="field has_tooltip hide_validation" type="text" id="bmcip" ng-model="BMCIP" required data-tooltip="Input BMC IP" />
                     <div class="mini-label">
                         <label>BMC Username</label>
-                        <input class="field has_tooltip" type="text" id="bmcusername" ng-model="BMCUsername" required data-tooltip="Input BMC Username" />
+                        <input class="field has_tooltip hide_validation" type="text" id="bmcusername" ng-model="BMCUsername" required data-tooltip="Input BMC Username" />
                     </div>
                     <div class="mini-label" id="right-mini-label">
                         <label>BMC Password</label>
                         <div class="input-container">
                             <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(bmcpassword)"
                                                          onmouseout="hidePassword(bmcpassword)"></i></div>
-                            <input class="field has_tooltip" type="password" id="bmcpassword" ng-model="BMCPassword" required autofocus
+                            <input class="field has_tooltip hide_validation" type="password" id="bmcpassword" ng-model="BMCPassword" required autofocus
                                    data-tooltip="Admin password for the controller VM and for the OpenStack deployment" />
                         </div>
                     </div>
@@ -93,19 +93,19 @@
                 </div>
 
                 <div class="widget" id="maas-controller-2">
-                    <h2><img id="maas-logo-font" src="images/MAAS-logo.svg">Secondary MAAS Controller(opt.)</h2>
+                    <h2><img id="maas-logo-font" src="images/MAAS-logo.svg">Secondary MAAS Controller (opt.)</h2>
                     <label>MAAS Controller BMC IP</label>
-                    <input class="field has_tooltip" type="text" id="bmcip2" ng-model="BMCIP2" required data-tooltip="Input BMC IP" />
+                    <input class="field has_tooltip hide_validation" type="text" id="bmcip2" ng-model="BMCIP2" required data-tooltip="Input BMC IP" />
                     <div class="mini-label">
                         <label>BMC Username</label>
-                        <input class="field has_tooltip" type="text" id="bmcusername2" ng-model="BMCUsername2" required data-tooltip="Input BMC Username" />
+                        <input class="field has_tooltip hide_validation" type="text" id="bmcusername2" ng-model="BMCUsername2" required data-tooltip="Input BMC Username" />
                     </div>
                     <div class="mini-label" id="right-mini-label">
                         <label>BMC Password</label>
                         <div class="input-container">
                             <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(bmppassword2)"
                                                          onmouseout="hidePassword(bmppassword2)"></i></div>
-                            <input class="field has_tooltip" type="password" id="bmppassword2" ng-model="BMPPassword2" required autofocus
+                            <input class="field has_tooltip hide_validation" type="password" id="bmppassword2" ng-model="BMPPassword2" required autofocus
                                    data-tooltip="Admin password for the controller VM and for the OpenStack deployment" />
                         </div>
                     </div>
@@ -120,7 +120,7 @@
                     <div class="widget">
                         <h2> &emsp;&emsp;&emsp;&emsp;&emsp;</h2>
                         <label>Repository</label>
-                        <input class="field has_tooltip" type="text" id="pxe-iso" ng-model="PXEISO" required data-tooltip="Input Repository" />
+                        <input class="field has_tooltip hide_validation" type="text" id="pxe-iso" ng-model="PXEISO" required data-tooltip="Input Repository" />
                     </div>
                 </div>
 
@@ -189,13 +189,13 @@
                     <h2 style="color:#fff;"><i class="fa fa-windows on-left"></i>Host</h2>
 
                     <label>Host Admin username</label>
-                    <input class="field has_tooltip" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required
+                    <input class="field has_tooltip hide_validation" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required
                      data-tooltip="Hyper-V host username with administrative rights, can be a domain or a local user" />
                     <label>Host Admin password</label>
 
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
-                        <input class="field has_tooltip" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required
+                        <input class="field has_tooltip hide_validation" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required
                          autofocus data-tooltip="Please provide the password for the host admin username. Tip: make sure the password does not expire." />
                     </div>
                 </div>
@@ -255,7 +255,7 @@
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpassword)"
                         onmouseout="hidePassword(adminpassword)"></i></div>
-                        <input class="field has_tooltip" type="password" id="adminpassword" ng-model="adminPassword" required autofocus
+                        <input class="field has_tooltip hide_validation" type="password" id="adminpassword" ng-model="adminPassword" required autofocus
                          data-tooltip="Admin password for the controller VM and for the OpenStack deployment" />
                     </div>
 
@@ -263,7 +263,7 @@
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpasswordrepeat)"
                         onmouseout="hidePassword(adminpasswordrepeat)"></i></div>
-                        <input class="field has_tooltip" type="password" id="adminpasswordrepeat" required
+                        <input class="field has_tooltip hide_validation" type="password" id="adminpasswordrepeat" required
                          data-tooltip="Please repeat the controller and OpenStack services password" />
                     </div>
 
