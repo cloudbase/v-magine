@@ -130,7 +130,7 @@ function getAvailableHostNicsCompleted(hostNicsJson) {
     var $scope = angular.element("#createswitch").scope();
 
     $scope.hostNics = JSON.parse(hostNicsJson);
-    $scope.hostNic = null;
+    $scope.hostNic = '';
     $scope.$apply();
 
     $("#hostnics").selectmenu("refresh", true);
@@ -382,6 +382,7 @@ function initHostNicsSelect() {
             // AngularJs two way databinding does not work
             // with selectmenu
             var value = $(this).val();
+            console.log("Selected NIC: " + value);
             var $scope = angular.element(this).scope();
             $scope.$apply(function() {
                 $scope.hostNic = $scope.hostNics[value];

@@ -406,6 +406,7 @@
                 <div class="widget compute-createSwitch">
                     <label>Network interface</label>
                     <select id="hostnics" ng-model="hostNic" placeholder="Select a host nic" ng-options="hostNic.name group by hostNic.type for hostNic in hostNics | orderBy:name" required>
+                        <option style="display:none" value="">Please select a host NIC</option>
                     </select>
                     <label>External virtual switch name</label>
                     <input class="small-field" type="text" id="vswitchname" ng-model="newExtVSwitch" required
