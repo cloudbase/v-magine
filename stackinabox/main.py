@@ -361,11 +361,16 @@ class Controller(QtCore.QObject):
             self._get_available_host_nics_completed)
 
     def _add_ext_vswitch_completed(self, future):
+        def _get_ext_vswitches_completed_callback(future):
+            self._get_ext_vswitches_completed(future)
+            self.on_add_ext_vswitch_completed_event.emit(vswitch_name)
+
         vswitch_name = future.result()
         if vswitch_name:
             # Refresh VSwitch list
-            self.get_ext_vswitches()
-            self.on_add_ext_vswitch_completed_event.emit(vswitch_name)
+            _run_async_task(
+                self._worker.get_ext_vswitches(),
+                _get_ext_vswitches_completed_callback)
 
     @QtCore.pyqtSlot(str, str)
     def add_ext_vswitch(self, vswitch_name, nic_name):

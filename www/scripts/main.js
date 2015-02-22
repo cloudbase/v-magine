@@ -245,6 +245,7 @@ function addExtVSwitchCompleted(vswitch_name) {
 
     var $scope = angular.element("#maindiv").scope();
     $scope.extVSwitch = vswitch_name
+    console.log("Setting selected external vswitch: " + vswitch_name);
     $scope.$apply();
 
     $("#extvswitch").selectmenu("refresh", true);
