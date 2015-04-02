@@ -437,6 +437,13 @@ class WindowsUtils(object):
 
         return domain, username
 
+    def get_file_version(self, path):
+        info = win32api.GetFileVersionInfo(path, '\\')
+        ms = info['FileVersionMS']
+        ls = info['FileVersionLS']
+        return (win32api.HIWORD(ms), win32api.LOWORD(ms),
+                win32api.HIWORD(ls), win32api.LOWORD(ls))
+
     def get_windows_version_info(self):
         version_info = self._conn_cimv2.Win32_OperatingSystem()[0]
         return {"description": version_info.Caption,

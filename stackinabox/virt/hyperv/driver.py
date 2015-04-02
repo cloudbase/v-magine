@@ -30,6 +30,7 @@ LOG = logging.getLogger(__name__)
 
 class HyperVDriver(base.BaseDriver):
     HOST_MEMORY_BUFFER_MB = 100
+    BLUE_MIN_VERSION = (6, 3, 9600, 16384)
 
     def __init__(self):
         LOG.debug("Initializing HyperVDriver")
@@ -149,9 +150,6 @@ class HyperVDriver(base.BaseDriver):
                                                  allow, description)
 
     def check_platform(self):
-        VLAN_HOTFIX_ID = '2982439'
-        OCT14_RLP_HOTFIX_ID = '2995388'
-
         if not self._windows_utils.check_os_version(
                 6, 2, comparison=windows.VER_GREATER_EQUAL):
             raise Exception("Windows 8 or Windows Server / Hyper Server 2012 "
@@ -165,14 +163,17 @@ class HyperVDriver(base.BaseDriver):
             raise Exception("Please enable Hyper-V on this host before "
                             "installing OpenStack")
 
-        if (self._windows_utils.check_os_version(6, 3) and
-                not (self._windows_utils.check_hotfix(VLAN_HOTFIX_ID) or
-                     self._windows_utils.check_hotfix(OCT14_RLP_HOTFIX_ID))):
+        # TODO: check if we are on Python x64 and use System32 instead
+        system_path = os.path.join(os.environ['WINDIR'], "sysnative")
+        vmms_path = os.path.join(system_path, "vmms.exe")
+        vmms_version = self._windows_utils.get_file_version(vmms_path)
+
+        if (vmms_version[0:2] == (6, 3) and
+                vmms_version < self.BLUE_MIN_VERSION):
             raise Exception(
-                "Windows update KB%(hotfix_id)s needs to be installed for "
-                "OpenStack to work properly on this host. Please see: "
-                "http://support.microsoft.com/?kbid=%(hotfix_id)s" %
-                {"hotfix_id": VLAN_HOTFIX_ID})
+                "Please run Windows Updates on this host. "
+                "The minimum supported version for this Windows OS is "
+                "%s." % ".".join([str(n) for n in self.BLUE_MIN_VERSION]))
 
     def get_guest_ip_addresses(self, vm_name):
         guest_info = self._vmutils.get_guest_info(vm_name)
