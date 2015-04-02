@@ -1094,8 +1094,15 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     font-weight:normal;
 }
 
-input:required:invalid, input:focus:invalid
-select:required:invalid, select:focus:invalid {
+input:not(.hide_validation):invalid {
+    background-color: #BC1D2C;
+    border: solid;
+    border-color: #BC1D2C;
+    border-width: 1px;
+    color: #FFFFFF;
+}
+
+.is_invalid {
     background-color: #BC1D2C;
     border: solid;
     border-color: #BC1D2C;

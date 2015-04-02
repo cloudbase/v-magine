@@ -460,9 +460,11 @@ function initUi() {
     });
 
     $("#controllerconfignext").click(function(){
-        if(validateControllerConfigForm()) {
+        if((validateControllerConfigForm()) && (validateIP())) {
             controller.show_host_config();
         }
+        $("#adminpassword").removeClass("hide_validation");
+        $("#adminpasswordrepeat").removeClass("hide_validation");
         return false;
     });
 
@@ -476,6 +478,8 @@ function initUi() {
             controller.review_config(
                 JSON.stringify(getDeploymentConfigDict()));
         }
+        $("#hypervhostusername").removeClass("hide_validation");
+        $("#hypervhostpassword").removeClass("hide_validation");
         return false;
     });
 
@@ -570,6 +574,35 @@ function initUi() {
     setupTerm();
 }
 
+function validations() {
+    $("#adminpassword").change(function(){
+        $("#adminpassword").removeClass("hide_validation");
+        $("#adminpasswordrepeat").removeClass("hide_validation");
+        return false;
+    });
+
+    $("#fiprangestart").focus(function(){
+        $("#fiprangestart").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#fiprangeend").focus(function(){
+        $("#fiprangeend").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#subnet").focus(function(){
+        $("#subnet").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#gateway").focus(function(){
+        $("#gateway").removeClass("is_invalid");
+        return false;
+    });
+
+}
+
 function validateControllerConfigForm() {
     if(!$("#controllerconfigform")[0].checkValidity()) {
         showMessage("OpenStack configuration",
@@ -579,6 +612,88 @@ function validateControllerConfigForm() {
         var $scope = angular.element("#controllerconfigform").scope();
         $scope.$apply();
     }
+    return true;
+}
+
+function validateIP() {
+    var subnet_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/([0-3]?[0-9]?)$/;
+    var ip_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    var subnet = $("#subnet").val();
+    var ip_start = $("#fiprangestart").val();
+    var ip_end = $("#fiprangeend").val();
+    var gateway = $("#gateway").val();
+    var prefix = subnet.split('/').slice(1);
+    var prefix_length = 0;
+
+    if ((prefix >= 8) && (prefix <=15)) {
+        prefix_length = 1;
+    } else if ((prefix >= 16) && (prefix <=23)) {
+        prefix_length = 2;
+    } else if ((prefix >= 24) && (prefix <=32)) {
+        prefix_length = 3;
+    } else {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid prefix length");
+        $("#subnet").focus();
+        $("#subnet").addClass("is_invalid");
+        return false;
+    }
+
+    var part = subnet.split('.').slice(0,prefix_length);
+    var range = part.join('.');
+
+    if(!subnet.match(subnet_format)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid floating IP subnet");
+        $("#subnet").focus();
+        $("#subnet").addClass("is_invalid");
+        return false;
+    }
+
+    part = ip_start.split('.').slice(0,prefix_length);
+    var iprange = part.join('.');
+    if(!(ip_start.match(ip_format)) || (range != iprange)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
+        $("#fiprangestart").focus();
+        $("#fiprangestart").addClass("is_invalid");
+        return false;
+    }
+
+    part = ip_end.split('.').slice(0,prefix_length);
+    iprange = part.join('.');
+    if(!(ip_end.match(ip_format)) || (range != iprange)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
+        $("#fiprangeend").focus();
+        $("#fiprangeend").addClass("is_invalid");
+        return false;
+    }
+
+    part = gateway.split('.').slice(0,prefix_length);
+    iprange = part.join('.');
+    if(!(gateway.match(ip_format)) || (range != iprange)) {
+        showMessage("OpenStack configuration",
+                    "Please enter a valid gateway");
+        $("#gateway").focus();
+        $("#gateway").addClass("is_invalid");
+        return false;
+    }
+
+    var part2 = ip_start.split('.').slice(prefix_length,prefix_length+1);
+    var ip_start_compare = part2.join('.');
+
+    part2 = ip_end.split('.').slice(prefix_length,prefix_length+1);
+    var ip_end_compare = part2.join('.');
+
+    if (ip_start_compare > ip_end_compare) {
+        showMessage("OpenStack configuration",
+                    "Floating IP range end is smaller than range start ");
+        $("#fiprangeend").focus();
+        $("#fiprangeend").addClass("is_invalid");
+        return false;
+    }
+
     return true;
 }
 
@@ -601,6 +716,8 @@ function ApplicationIsReady() {
         initUi();
 
         tooltips();
+
+        validations();
 
         controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);
