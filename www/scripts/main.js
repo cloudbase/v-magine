@@ -27,8 +27,12 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
 }]);
 
 function handleError(msg) {
-    showMessage('Error', msg);
-
+    var checkExist = setInterval(function() {
+       if ($('#showError').length) {
+          showMessage('Error', msg);
+          clearInterval(checkExist);
+       }
+    }, 100);
 }
 
 function showMessage(caption, msg) {
@@ -37,6 +41,7 @@ function showMessage(caption, msg) {
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
     $(".nano").nanoScroller();
+
 }
 
 function showPage(pageSelector) {
