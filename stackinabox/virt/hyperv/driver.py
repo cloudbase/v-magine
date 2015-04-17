@@ -167,13 +167,16 @@ class HyperVDriver(base.BaseDriver):
         system_path = os.path.join(os.environ['WINDIR'], "sysnative")
         vmms_path = os.path.join(system_path, "vmms.exe")
         vmms_version = self._windows_utils.get_file_version(vmms_path)
+        LOG.debug("vmms.exe file version: %s" % str(vmms_version))
 
         if (vmms_version[0:2] == (6, 3) and
                 vmms_version < self.BLUE_MIN_VERSION):
-            raise Exception(
-                "Please run Windows Updates on this host. "
-                "The minimum supported version for this Windows OS is "
-                "%s." % ".".join([str(n) for n in self.BLUE_MIN_VERSION]))
+            LOG.error(
+                "The minimum supported version for this Windows OS is %s." %
+                ".".join([str(n) for n in self.BLUE_MIN_VERSION]))
+            raise Exception("Please run Windows Updates on this host before "
+                            "installing OpenStack. This includes required "
+                            "Hyper-V feature updates currently not installed")
 
     def get_guest_ip_addresses(self, vm_name):
         guest_info = self._vmutils.get_guest_info(vm_name)
