@@ -153,6 +153,8 @@ function disable_nova_compute() {
 function disable_network_manager() {
     /bin/systemctl stop NetworkManager.service
     /bin/systemctl disable NetworkManager.service
+    /sbin/service network start
+    /sbin/chkconfig network on
 }
 
 function enable_horizon_password_retrieve() {
