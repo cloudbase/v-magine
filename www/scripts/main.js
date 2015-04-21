@@ -454,9 +454,6 @@ function initUi() {
     });
 
     $("#showError").keypress(function(event) {
-        if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
-            hidePage("#showError");
-        }
         if ((event.which == 13) && ($("#showError").hasClass("error-visible"))) {
             hidePage("#showError");
         }
