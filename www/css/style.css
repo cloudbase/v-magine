@@ -133,6 +133,10 @@ label {
     display: inline !important;
 }
 
+.error-visible{
+    display: inline !important;
+}
+
 /*----------------------------------------------------------------------------------*/
 
 .progress_bar {
