@@ -163,6 +163,15 @@ function enable_horizon_password_retrieve() {
     /bin/systemctl restart httpd.service
 }
 
+function remove_httpd_default_site() {
+    local HTTPD_DEFAULT_SITE_CONF="/etc/httpd/conf.d/15-default.conf"
+    if [ -f $HTTPD_DEFAULT_SITE_CONF ]
+    then
+        /usr/bin/rm $HTTPD_DEFAULT_SITE_CONF
+        /usr/sbin/service httpd restart
+    fi
+}
+
 rdo_cleanup
 
 if ! /usr/bin/rpm -q epel-release > /dev/null
@@ -270,6 +279,8 @@ fi
 /usr/bin/ovs-vsctl add-port $OVS_EXT_BRIDGE $EXT_IFACE
 
 exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
+
+remove_httpd_default_site
 
 source /root/keystonerc_admin
 
