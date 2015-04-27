@@ -285,7 +285,7 @@ label {
     height: 355px;
 }
 
-#wraperrormessage, #wrapconfirmmessage {
+#wraperrormessage, #wrapconfirmmessage, #wrapdownloadmessage {
     display: block;
     height: 120px;
     margin-top: 20px;
@@ -310,7 +310,7 @@ label {
     overflow-y: auto;
 }
 
-#wraperrormessage .content-text, #wrapconfirmmessage .content-text {
+#wraperrormessage .content-text, #wrapconfirmmessage .content-text, #wrapdownloadmessage .content-text {
     margin-top: 0px;
     height: 110px;
     padding: 4% 0;
@@ -833,16 +833,16 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 .icon-buttons {
     margin-left: 25px;
-    width: 250px;
+    width: 300px;
 }
 
-#errorMessage .icon-buttons, #confirmMessage .icon-buttons {
-    margin-left: 340px;
+#errorMessage .icon-buttons, #confirmMessage .icon-buttons, #downloadMessage .icon-buttons {
+    margin-left: 320px;
     bottom: 235px;
     position: fixed;
 }
 
-#errorMessage h2, #confirmMessage h2 {
+#errorMessage h2, #confirmMessage h2, #downloadMessage h2 {
     margin-top: -20px;
 }
 
@@ -1114,7 +1114,7 @@ input:not(.hide_validation):invalid {
     color: #FFFFFF;
 }
 
-#showError, #showConfirm {
+#showError, #showConfirm, #showDownload {
     display: none;
     margin-top: -768px;
     background-color: rgba(255, 255, 255, 0.4);
@@ -1123,7 +1123,7 @@ input:not(.hide_validation):invalid {
 }
 
 
-#errorMessage, #confirmMessage {
+#errorMessage, #confirmMessage, #downloadMessage {
     display: inline;
     height: 300px;
     text-align: center;
@@ -1135,14 +1135,14 @@ input:not(.hide_validation):invalid {
     right: 0px
 }
 
-#errormessage, #confirmmessage {
+#errormessage, #confirmmessage, #downloadmessage {
     color: white;
     font-size: 15px;
     line-height: 20px;
     outline: none;
 }
 
-#errormessageok, #confirmmessageyes, #confirmmessageno {
+#errormessageok, #confirmmessageyes, #confirmmessageno, #showdownloadbutton, #downloadmessagelater {
     height: 55px;
 }
 

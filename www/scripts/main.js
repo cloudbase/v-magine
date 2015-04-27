@@ -23,6 +23,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.hypervHostName = null;
     $scope.controllerIp = null;
     $scope.horizonUrl = null;
+    $scope.downloadUrl = null;
     $scope.computeNodes = null;
 }]);
 
@@ -35,6 +36,14 @@ function showMessage(caption, msg) {
     $("#errormessageok").focus();
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
+    $(".nano").nanoScroller();
+}
+
+function showDownload(caption, msg) {
+    $("#showDownload").addClass("error-visible");
+    $("#downloadmessagelater").focus();
+    $("#downloadcaption").text(caption);
+    $("#downloadmessage").text(msg);
     $(".nano").nanoScroller();
 
 }
@@ -260,7 +269,7 @@ function productUpdateAvailable(currentVersion, newVersion, updateRequired, upda
     updateMessage += 'Current version: ' + currentVersion + '. ';
     updateMessage += 'New available version: ' + newVersion;
 
-    showMessage('v-magine update available', updateMessage);
+    showDownload('v-magine update available', updateMessage);
 }
 
 function showProgressStatus(enable, step, total_steps, msg) {
@@ -448,6 +457,11 @@ function initUi() {
         return false;
     });
 
+    $("#downloadmessagelater").click(function(){
+        hidePage("#showDownload");
+        return false;
+    });
+
     $("#confirmmessageno").click(function(){
         hidePage("#showConfirm");
         return false;
@@ -540,6 +554,11 @@ function initUi() {
     });
 
     $("#agreement").load("eula.html");
+
+    $('#showdownloadbutton').click(function(){
+        controller.open_download_url();
+        return false;
+    });
 
     $('#showhorizonbutton').click(function(){
         controller.open_horizon_url();
