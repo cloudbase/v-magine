@@ -32,7 +32,6 @@ from stackinabox.virt.hyperv import vmutils
 
 kernel32 = windll.kernel32
 advapi32 = windll.Advapi32
-userenv = windll.userenv
 
 LOG = logging
 
