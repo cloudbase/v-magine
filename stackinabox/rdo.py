@@ -1,6 +1,7 @@
 import logging
 import os
 import paramiko
+import time
 
 from stackinabox import utils
 
@@ -21,6 +22,7 @@ class RDOInstaller(object):
                                       width=self._term_cols,
                                       height=self._term_rows)
         # Close session after the command executed
+        time.sleep(3)
         chan.send("%s\nexit\n" % cmd)
 
         running = True
