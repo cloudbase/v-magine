@@ -69,6 +69,7 @@ class VMUtils(object):
     _PROCESSOR_SETTING_DATA_CLASS = 'Msvm_ProcessorSettingData'
     _MEMORY_SETTING_DATA_CLASS = 'Msvm_MemorySettingData'
     _STORAGE_ALLOC_SETTING_DATA_CLASS = _RESOURCE_ALLOC_SETTING_DATA_CLASS
+    _SERIAL_PORT_SETTING_DATA_CLASS = _RESOURCE_ALLOC_SETTING_DATA_CLASS
     _SYNTHETIC_ETHERNET_PORT_SETTING_DATA_CLASS = \
         'Msvm_SyntheticEthernetPortSettingData'
     _EMULATED_ETHERNET_PORT_SETTING_DATA_CLASS = \
@@ -697,7 +698,7 @@ class VMUtils(object):
         vmsettings = vm.associators(
             wmi_result_class=self._VIRTUAL_SYSTEM_SETTING_DATA_CLASS)
         rasds = vmsettings[0].associators(
-            wmi_result_class=self._RESOURCE_ALLOC_SETTING_DATA_CLASS)
+            wmi_result_class=self._SERIAL_PORT_SETTING_DATA_CLASS)
         return (vm, [r for r in rasds if
                      r.ResourceSubType == self._SERIAL_PORT_RES_SUB_TYPE and
                      r.ElementName == name][0])

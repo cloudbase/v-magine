@@ -27,6 +27,7 @@ from xml.etree import ElementTree
 
 from stackinabox.virt.hyperv import constants
 from stackinabox.virt.hyperv import vmutils
+from stackinabox import windows
 
 LOG = logging.getLogger(__name__)
 
@@ -56,6 +57,8 @@ class VMUtilsV2(vmutils.VMUtils):
     _ETHERNET_PORT_ALLOCATION_SETTING_DATA_CLASS = \
         'Msvm_EthernetPortAllocationSettingData'
 
+    _TH_SERIAL_PORT_SETTING_DATA_CLASS = 'Msvm_SerialPortSettingData'
+
     _AUTO_STARTUP_NONE = 2
     _AUTO_STARTUP_RESTART_ACTIVE = 3
 
@@ -73,6 +76,12 @@ class VMUtilsV2(vmutils.VMUtils):
 
     def __init__(self, host='.'):
         super(VMUtilsV2, self).__init__(host)
+
+        if windows.WindowsUtils().check_os_version(
+                10, 0, comparison=windows.VER_GREATER_EQUAL):
+            LOG.debug("Configuring Threshold settings")
+            self._SERIAL_PORT_SETTING_DATA_CLASS = \
+                self._TH_SERIAL_PORT_SETTING_DATA_CLASS
 
     def _init_hyperv_wmi_conn(self, host):
         self._wmi_namespace = '//%s/root/virtualization/v2' % host
