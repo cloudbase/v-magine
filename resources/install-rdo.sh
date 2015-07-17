@@ -278,6 +278,11 @@ fi
 /usr/bin/ovs-vsctl add-br $OVS_EXT_BRIDGE
 /usr/bin/ovs-vsctl add-port $OVS_EXT_BRIDGE $EXT_IFACE
 
+exec_with_retry 5 0 /usr/bin/yum install -y python-pip
+exec_with_retry 5 0 /usr/bin/yum install -y python-netifaces
+# TODO: check OpenStack version
+exec_with_retry 5 0 /usr/bin/python -m pip install "networking-hyperv>=2015.1.0,<2015.2.0"
+
 exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
 remove_httpd_default_site

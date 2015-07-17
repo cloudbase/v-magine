@@ -64,7 +64,7 @@ HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V Nova Compute'
 FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
-                  "HyperVNovaCompute_Juno_2014_2.msi")
+                  "HyperVNovaCompute_Kilo_2015_1.msi")
 CIRROS_VHDX_URL = ("https://raw.githubusercontent.com/cloudbase/"
                    "ci-overcloud-init-scripts/master/scripts/devstack_vm/"
                    "cirros-0.3.3-x86_64.vhdx.gz")
@@ -240,7 +240,7 @@ class DeploymentActions(object):
         properties = {}
         properties["RPCBACKEND"] = "RabbitMQ"
 
-        rabbit_hosts = nova_config["DEFAULT"]["rabbit_hosts"]
+        rabbit_hosts = nova_config["oslo_messaging_rabbit"]["rabbit_hosts"]
         (rabbit_host, rabbit_port) = rabbit_hosts.split(",")[0].split(':')
 
         properties["RPCBACKENDHOST"] = rabbit_host

@@ -7,7 +7,7 @@ from stackinabox import utils
 
 LOG = logging
 RDO_RELEASE_RPM_URL = ("https://repos.fedorapeople.org/repos/openstack/"
-                       "openstack-juno/rdo-release-juno-1.noarch.rpm")
+                       "openstack-kilo/rdo-release-kilo-1.noarch.rpm")
 
 
 class RDOInstaller(object):
@@ -111,7 +111,7 @@ class RDOInstaller(object):
     def get_nova_config(self):
         config_file = "/etc/nova/nova.conf"
 
-        config_names = {"DEFAULT":
+        config_names = {"oslo_messaging_rabbit":
                         [
                             "rabbit_hosts",
                             "rabbit_userid",
