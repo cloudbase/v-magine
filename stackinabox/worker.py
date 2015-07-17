@@ -595,6 +595,19 @@ class Worker(object):
             self._stop_progress_status()
 
     @trollius.coroutine
+    def open_download_url(self):
+        try:
+            self._start_progress_status('Opening download page...')
+            download_url = "www.cloudbase.it/downloads/v-magine.zip"
+            self._dep_actions.open_url(download_url)
+        except Exception as ex:
+            LOG.exception(ex)
+            LOG.error(ex)
+            self._error_callback(ex)
+        finally:
+            self._stop_progress_status()
+
+    @trollius.coroutine
     def open_controller_ssh(self):
         try:
             self._start_progress_status('Opening OpenStack SSH console...')

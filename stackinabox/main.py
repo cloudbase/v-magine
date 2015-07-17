@@ -385,6 +385,11 @@ class Controller(QtCore.QObject):
         _run_async_task(self._worker.open_horizon_url())
 
     @QtCore.pyqtSlot()
+    def open_download_url(self):
+        LOG.debug("open_download_url called")
+        _run_async_task(self._worker.open_download_url())
+
+    @QtCore.pyqtSlot()
     def open_controller_ssh(self):
         LOG.debug("open_controller_ssh called")
         _run_async_task(self._worker.open_controller_ssh())

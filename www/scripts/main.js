@@ -23,23 +23,27 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.hypervHostName = null;
     $scope.controllerIp = null;
     $scope.horizonUrl = null;
+    $scope.downloadUrl = null;
     $scope.computeNodes = null;
 }]);
 
 function handleError(msg) {
-    var checkExist = setInterval(function() {
-       if ($('#showError').length) {
-          showMessage('Error', msg);
-          clearInterval(checkExist);
-       }
-    }, 100);
+    showMessage('Error', msg);
 }
 
 function showMessage(caption, msg) {
-    $("#showError").addClass("active-page");
+    $("#showError").addClass("error-visible");
     $("#errormessageok").focus();
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
+    $(".nano").nanoScroller();
+}
+
+function showDownload(caption, msg) {
+    $("#showDownload").addClass("error-visible");
+    $("#downloadmessagelater").focus();
+    $("#downloadcaption").text(caption);
+    $("#downloadmessage").text(msg);
     $(".nano").nanoScroller();
 
 }
@@ -52,6 +56,7 @@ function showPage(pageSelector) {
 
 function hidePage(pageSelector) {
     $(pageSelector).removeClass("active-page");
+    $(pageSelector).removeClass("error-visible");
 }
 
 function showWelcome() {
@@ -264,7 +269,7 @@ function productUpdateAvailable(currentVersion, newVersion, updateRequired, upda
     updateMessage += 'Current version: ' + currentVersion + '. ';
     updateMessage += 'New available version: ' + newVersion;
 
-    showMessage('v-magine update available', updateMessage);
+    showDownload('v-magine update available', updateMessage);
 }
 
 function showProgressStatus(enable, step, total_steps, msg) {
@@ -452,13 +457,18 @@ function initUi() {
         return false;
     });
 
+    $("#downloadmessagelater").click(function(){
+        hidePage("#showDownload");
+        return false;
+    });
+
     $("#confirmmessageno").click(function(){
         hidePage("#showConfirm");
         return false;
     });
 
     $("#showError").keypress(function(event) {
-        if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
+        if ((event.which == 13) && ($("#showError").hasClass("error-visible"))) {
             hidePage("#showError");
         }
         return false;
@@ -544,6 +554,11 @@ function initUi() {
     });
 
     $("#agreement").load("eula.html");
+
+    $('#showdownloadbutton').click(function(){
+        controller.open_download_url();
+        return false;
+    });
 
     $('#showhorizonbutton').click(function(){
         controller.open_horizon_url();
@@ -637,10 +652,10 @@ function validateIP() {
     } else if ((prefix >= 24) && (prefix <=32)) {
         prefix_length = 3;
     } else {
-        showMessage("OpenStack configuration",
-                    "Please enter a valid prefix length");
         $("#subnet").focus();
         $("#subnet").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid prefix length");
         return false;
     }
 
@@ -648,40 +663,40 @@ function validateIP() {
     var range = part.join('.');
 
     if(!subnet.match(subnet_format)) {
-        showMessage("OpenStack configuration",
-                    "Please enter a valid floating IP subnet");
         $("#subnet").focus();
         $("#subnet").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid floating IP subnet");
         return false;
     }
 
     part = ip_start.split('.').slice(0,prefix_length);
     var iprange = part.join('.');
     if(!(ip_start.match(ip_format)) || (range != iprange)) {
-        showMessage("OpenStack configuration",
-                    "Please enter a valid IP");
         $("#fiprangestart").focus();
         $("#fiprangestart").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
         return false;
     }
 
     part = ip_end.split('.').slice(0,prefix_length);
     iprange = part.join('.');
     if(!(ip_end.match(ip_format)) || (range != iprange)) {
-        showMessage("OpenStack configuration",
-                    "Please enter a valid IP");
         $("#fiprangeend").focus();
         $("#fiprangeend").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
         return false;
     }
 
     part = gateway.split('.').slice(0,prefix_length);
     iprange = part.join('.');
     if(!(gateway.match(ip_format)) || (range != iprange)) {
-        showMessage("OpenStack configuration",
-                    "Please enter a valid gateway");
         $("#gateway").focus();
         $("#gateway").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid gateway");
         return false;
     }
 
@@ -692,10 +707,10 @@ function validateIP() {
     var ip_end_compare = part2.join('.');
 
     if (ip_start_compare > ip_end_compare) {
-        showMessage("OpenStack configuration",
-                    "Floating IP range end is smaller than range start ");
         $("#fiprangeend").focus();
         $("#fiprangeend").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Floating IP range end is smaller than range start ");
         return false;
     }
 
