@@ -35,6 +35,7 @@ LOG = logging
 
 OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
 OPENSTACK_CONTROLLER_VM_NAME = "openstack-controller"
+VMAGINE_DOWNLOAD_URL = "https://www.cloudbase.it/v-magine"
 
 OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
 
@@ -598,8 +599,7 @@ class Worker(object):
     def open_download_url(self):
         try:
             self._start_progress_status('Opening download page...')
-            download_url = "www.cloudbase.it/downloads/v-magine.zip"
-            self._dep_actions.open_url(download_url)
+            self._dep_actions.open_url(VMAGINE_DOWNLOAD_URL)
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
