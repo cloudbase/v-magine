@@ -146,28 +146,6 @@ advapi32.CreateProcessAsUserW.argtypes = [wintypes.HANDLE,
                                               Win32_PROCESS_INFORMATION)]
 advapi32.CreateProcessAsUserW.restype = wintypes.BOOL
 
-
-VER_MAJORVERSION = 1
-VER_MINORVERSION = 2
-VER_BUILDNUMBER = 4
-VER_PLATFORMID = 0x8
-VER_SERVICEPACKMINOR = 0x10
-VER_SERVICEPACKMAJOR = 0x20
-VER_SUITENAME = 0x40
-VER_PRODUCT_TYPE = 0x80
-
-VER_EQUAL = 1
-VER_GREATER = 2
-VER_GREATER_EQUAL = 3
-VER_LESS = 4
-VER_LESS_EQUAL = 5
-VER_AND = 6
-VER_OR = 7
-
-VER_NT_DOMAIN_CONTROLLER = 2
-VER_NT_SERVER = 3
-VER_NT_WORKSTATION = 1
-
 ERROR_OLD_WIN_VERSION = 1150
 
 PROTOCOL_TCP = "TCP"
@@ -247,42 +225,10 @@ class WindowsUtils(object):
         LOG.debug("Installing MSI: %s" % args)
         utils.execute_process(args)
 
-    def check_os_version(self, major=None, minor=None, product_type=None,
-                         comparison=VER_EQUAL):
-        vi = Win32_OSVERSIONINFOEX_W()
-        vi.dwOSVersionInfoSize = ctypes.sizeof(Win32_OSVERSIONINFOEX_W)
-
-        type_masks = []
-        if major is not None:
-            vi.dwMajorVersion = major
-            type_masks.append(VER_MAJORVERSION)
-
-        if major is not None:
-            vi.dwMinorVersion = minor
-            type_masks.append(VER_MINORVERSION)
-
-        if product_type is not None:
-            vi.wProductType = product_type
-            type_masks.append(VER_PRODUCT_TYPE)
-
-        mask = 0
-        type_mask_or = 0
-        for type_mask in type_masks:
-            mask = kernel32.VerSetConditionMask(mask, type_mask,
-                                                comparison)
-            type_mask_or |= type_mask
-
-        ret_val = kernel32.VerifyVersionInfoW(ctypes.byref(vi), type_mask_or,
-                                              mask)
-        if ret_val:
-            return True
-        else:
-            err = kernel32.GetLastError()
-            if err == ERROR_OLD_WIN_VERSION:
-                return False
-            else:
-                raise vmutils.HyperVException(
-                    "VerifyVersionInfo failed with error: %s" % err)
+    def check_os_version(self, major, minor):
+        os_version_str = self._conn_cimv2.Win32_OperatingSystem()[0].Version
+        os_version = map(int, os_version_str.split("."))
+        return os_version >= [major, minor]
 
     def firewall_create_rule(self, rule_name, local_ports, protocol,
                              interface_names, allow=True, description="",

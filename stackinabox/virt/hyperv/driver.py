@@ -150,8 +150,7 @@ class HyperVDriver(base.BaseDriver):
                                                  allow, description)
 
     def check_platform(self):
-        if not self._windows_utils.check_os_version(
-                6, 2, comparison=windows.VER_GREATER_EQUAL):
+        if not self._windows_utils.check_os_version(6, 2):
             raise Exception("Windows 8 or Windows Server / Hyper Server 2012 "
                             "or above are required for this product")
 

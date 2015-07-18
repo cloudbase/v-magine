@@ -77,8 +77,7 @@ class VMUtilsV2(vmutils.VMUtils):
     def __init__(self, host='.'):
         super(VMUtilsV2, self).__init__(host)
 
-        if windows.WindowsUtils().check_os_version(
-                10, 0, comparison=windows.VER_GREATER_EQUAL):
+        if windows.WindowsUtils().check_os_version(10, 0):
             LOG.debug("Configuring Threshold settings")
             self._SERIAL_PORT_SETTING_DATA_CLASS = \
                 self._TH_SERIAL_PORT_SETTING_DATA_CLASS
