@@ -1171,6 +1171,7 @@ input:not(.hide_validation):invalid {
     bottom: 0px;
     right: 0px;
     left: 0px;
+    overflow: hidden;
 }
 
 /* slider */
