@@ -180,7 +180,7 @@ then
     exec_with_retry 5 0 /usr/bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
 fi
 
-disable_network_manager
+#disable_network_manager
 
 RDO_RELEASE_RPM_URL=$1
 ADMIN_PASSWORD=$2
