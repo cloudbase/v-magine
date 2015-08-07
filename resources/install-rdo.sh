@@ -79,7 +79,7 @@ function rdo_cleanup() {
     yum remove -y mariadb
     yum remove -y "*openstack*" "*nova*" "*neutron*" "*keystone*" "*glance*" "*cinder*" "*swift*" "*heat*" "*rdo-release*"
 
-    rm -rf /etc/nagios /etc/yum.repos.d/packstack_* /root/.my.cnf \
+    rm -rf /etc/yum.repos.d/packstack_* /root/.my.cnf \
     /var/lib/mysql/ /var/lib/glance /var/lib/nova /etc/nova /etc/neutron /etc/swift \
     /srv/node/device*/* /var/lib/cinder/ /etc/rsync.d/frag* \
     /var/cache/swift /var/log/keystone || true
