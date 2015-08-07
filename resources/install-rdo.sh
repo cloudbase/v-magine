@@ -239,7 +239,7 @@ openstack-config --set $ANSWER_FILE general CONFIG_HEAT_INSTALL y
 #openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CFN_INSTALL y
 #openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CLOUDWATCH_INSTALL y
 
-openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST y
+openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST n
 
 openstack-config --set $ANSWER_FILE general CONFIG_CEILOMETER_INSTALL n
 
