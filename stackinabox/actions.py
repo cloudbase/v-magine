@@ -22,7 +22,7 @@ import socket
 import sys
 import urllib2
 
-from oslo.utils import units
+from oslo_utils import units
 
 from stackinabox import config
 from stackinabox import constants
@@ -360,7 +360,7 @@ class DeploymentActions(object):
         return vm_network_config
 
     def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
-                            vm_network_config, console_named_pipe):
+                            iso_path, vm_network_config, console_named_pipe):
         (min_mem_mb, max_mem_mb_auto,
          max_mem_mb_limit) = self.get_openstack_vm_memory_mb(vm_name)
 
@@ -375,7 +375,7 @@ class DeploymentActions(object):
 
         self._virt_driver.create_vm(vm_name, vm_dir, vhd_max_size,
                                     max_mem_mb, min_mem_mb, vcpu_count,
-                                    vm_network_config, vfd_path, None,
+                                    vm_network_config, vfd_path, iso_path,
                                     console_named_pipe)
         self._vm_name = vm_name
 
@@ -428,18 +428,18 @@ class DeploymentActions(object):
 
         return vnic_ip_info
 
-    def create_kickstart_vfd(self, vfd_path, encrypted_password,
-                             mgmt_ext_mac_address, mgmt_int_mac_address,
-                             data_mac_address, ext_mac_address, inst_repo,
-                             ssh_pub_key_path):
+    def create_kickstart_image(self, ks_image_path, encrypted_password,
+                               mgmt_ext_mac_address, mgmt_int_mac_address,
+                               data_mac_address, ext_mac_address, inst_repo,
+                               ssh_pub_key_path):
         def _format_udev_mac(mac):
             return mac.lower().replace('-', ':')
 
         with open(ssh_pub_key_path, 'rb') as f:
             ssh_pub_key = f.read()
 
-        kickstart.generate_kickstart_vfd(
-            vfd_path,
+        kickstart.generate_kickstart_image(
+            ks_image_path,
             {"encrypted_password": encrypted_password,
              "mgmt_ext_mac_address": _format_udev_mac(mgmt_ext_mac_address),
              "mgmt_int_mac_address": _format_udev_mac(mgmt_int_mac_address),

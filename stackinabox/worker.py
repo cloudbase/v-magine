@@ -188,7 +188,7 @@ class Worker(object):
         pxe_os_id = "centos7"
         console_named_pipe = r"\\.\pipe\%s" % vm_name
 
-        vfd_path = os.path.join(vm_dir, "floppy.vfd")
+        iso_path = os.path.join(vm_dir, "ks.iso")
 
         self._update_status('Generating SSH key...')
         (ssh_key_path,
@@ -223,15 +223,15 @@ class Worker(object):
         pxe_mac_address = self._get_mac_address(vm_network_config,
                                                 "%s-pxe" % vm_name)
 
-        self._dep_actions.create_kickstart_vfd(
-            vfd_path, encrypted_password, mgmt_ext_mac_address,
+        self._dep_actions.create_kickstart_image(
+            iso_path, encrypted_password, mgmt_ext_mac_address,
             mgmt_int_mac_address, data_mac_address, ext_mac_address,
             repo_url, ssh_pub_key_path)
 
         self._update_status('Creating the OpenStack controller VM...')
         self._dep_actions.create_openstack_vm(
-            vm_name, vm_dir, openstack_vm_mem_mb, vfd_path, vm_network_config,
-            console_named_pipe)
+            vm_name, vm_dir, openstack_vm_mem_mb, None, iso_path,
+            vm_network_config, console_named_pipe)
 
         vnic_ip_info = self._dep_actions.get_openstack_vm_ip_info(
             vm_network_config, internal_net_config["subnet"])

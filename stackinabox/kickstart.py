@@ -17,7 +17,7 @@ import os
 import tempfile
 
 from stackinabox import utils
-from stackinabox import vfd
+from stackinabox import diskimage
 
 LOG = logging
 
@@ -34,22 +34,21 @@ def _generate_kickstart_file(params):
     for (key, value) in params.items():
         ks = ks.replace("<%%%s%%>" % key, value)
 
-    ks_fd, ks_file = tempfile.mkstemp()
-    os.write(ks_fd, ks)
-    os.close(ks_fd)
+    ks_file = os.path.join(tempfile.gettempdir(), 'ks.cfg')
+    with open(ks_file, "wb") as f:
+        f.write(ks)
 
     return ks_file
 
 
-def generate_kickstart_vfd(vfd_path, params):
+def generate_kickstart_image(ks_image_path, params):
     ks_file = _generate_kickstart_file(params)
     try:
-        vfd_manager = vfd.get_vfd_manager()
-        vfd_manager.create_vfd(vfd_path, "ks")
-        vfd_manager.copy_to_vfd(vfd_path, ks_file, "/ks.cfg")
+        image_manager = diskimage.get_image_manager()
+        image_manager.create_image(ks_image_path, ks_file, label="ks")
     except Exception as ex:
-        if os.path.exists(vfd_path):
-            os.remove(vfd_path)
+        if os.path.exists(ks_image_path):
+            os.remove(ks_image_path)
         raise
     finally:
         os.remove(ks_file)
