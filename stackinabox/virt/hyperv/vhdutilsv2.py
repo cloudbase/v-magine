@@ -24,7 +24,7 @@ import wmi
 
 from xml.etree import ElementTree
 
-from oslo.utils import units
+from oslo_utils import units
 
 from stackinabox.i18n import _
 from stackinabox.virt.hyperv import constants
