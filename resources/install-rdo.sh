@@ -297,7 +297,7 @@ configure_public_subnet
 configure_private_subnet
 enable_horizon_password_retrieve
 
-rpm -Uvh https://github.com/cloudbase/horizon-cloudbase/releases/download/v1.0/horizon-cloudbase-theme-2015.1.0-0.noarch.rpm
+rpm -Uvh --nodeps https://github.com/cloudbase/horizon-cloudbase/releases/download/v1.0/horizon-cloudbase-theme-2015.1.0-0.noarch.rpm
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
