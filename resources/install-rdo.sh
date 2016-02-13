@@ -259,6 +259,8 @@ openstack-config --set $ANSWER_FILE general CONFIG_KEYSTONE_DEMO_PW "$ADMIN_PASS
 
 openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_DEMO_FLOATRANGE $FIP_RANGE
 
+openstack-config --set $ANSWER_FILE general CONFIG_NAGIOS_INSTALL n
+
 exec_with_retry 5 0 /usr/bin/yum install -y openvswitch
 /bin/systemctl start openvswitch.service
 
