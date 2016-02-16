@@ -283,7 +283,7 @@ fi
 exec_with_retry 5 0 /usr/bin/yum install -y python-pip
 exec_with_retry 5 0 /usr/bin/yum install -y python-netifaces
 # TODO: check OpenStack version
-exec_with_retry 5 0 /usr/bin/python -m pip install "networking-hyperv>=2015.1.0,<2015.2.0"
+exec_with_retry 5 0 /usr/bin/python -m pip install "networking-hyperv>=1.0.0,<2.0.0"
 
 exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
@@ -297,7 +297,7 @@ configure_public_subnet
 configure_private_subnet
 enable_horizon_password_retrieve
 
-rpm -Uvh --nodeps https://github.com/cloudbase/horizon-cloudbase/releases/download/v1.0/horizon-cloudbase-theme-2015.1.0-0.noarch.rpm
+#rpm -Uvh --nodeps https://github.com/cloudbase/horizon-cloudbase/releases/download/v1.0/horizon-cloudbase-theme-2015.1.0-0.noarch.rpm
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
