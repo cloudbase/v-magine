@@ -118,6 +118,16 @@ function fix_cinder_chap_length() {
     fi
 }
 
+function fix_cinder_keystone_authtoken() {
+    local CINDER_KS_PASSWD=`openstack-config --get packstack-answers.txt general CONFIG_CINDER_KS_PW`
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken auth_uri http://$HOST_IP:5000
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken auth_url http://$HOST_IP:35357
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken username cinder
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken password $CINDER_KS_PASSWD
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken identity_uri http://localhost:35357/
+    /bin/systemctl restart openstack-cinder-api.service
+}
+
 function configure_private_subnet() {
     # PackStack does not handle the private subnet DNS
     local PRIVATE_SUBNET=private_subnet
@@ -293,6 +303,7 @@ source /root/keystonerc_admin
 
 disable_nova_compute
 fix_cinder_chap_length
+fix_cinder_keystone_authtoken
 configure_public_subnet
 configure_private_subnet
 enable_horizon_password_retrieve
