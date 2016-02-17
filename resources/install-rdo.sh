@@ -120,7 +120,6 @@ function fix_cinder_chap_length() {
 
 function fix_cinder_keystone_authtoken() {
     local CINDER_KS_PASSWD=`openstack-config --get packstack-answers.txt general CONFIG_CINDER_KS_PW`
-    # openstack-config --set /etc/cinder/cinder.conf [section] [param] [value]
     openstack-config --set /etc/cinder/cinder.conf keystone_authtoken auth_uri http://$HOST_IP:5000
     openstack-config --set /etc/cinder/cinder.conf keystone_authtoken auth_url http://$HOST_IP:35357
     openstack-config --set /etc/cinder/cinder.conf keystone_authtoken username cinder
