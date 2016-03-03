@@ -245,8 +245,8 @@ class NetworkUtilsV2(netutils.NetworkUtils):
             port_alloc_int = self._get_default_setting_data(
                 self._PORT_ALLOC_SET_DATA, self._ETH_CONN_RES_SUB_TYPE)
 
-            host = self._conn.Msvm_ComputerSystem(
-                Description='Microsoft Hosting Computer System')[0]
+            host = self._conn.query("SELECT * from Msvm_ComputerSystem "
+                                    "WHERE InstallDate is NULL")[0]
             port_alloc_int.HostResource = [host.path_()]
             port_alloc_int.ElementName = vswitch_name
 
