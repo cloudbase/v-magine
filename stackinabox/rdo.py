@@ -6,8 +6,6 @@ import time
 from stackinabox import utils
 
 LOG = logging
-RDO_RELEASE_RPM_URL = ("https://repos.fedorapeople.org/repos/openstack/"
-                       "openstack-liberty/rdo-release-liberty-5.noarch.rpm")
 
 
 class RDOInstaller(object):
@@ -179,12 +177,11 @@ class RDOInstaller(object):
         LOG.info("Installing RDO")
         self._exec_shell_cmd_check_exit_status(
             '/bin/chmod u+x /root/%(install_script)s && '
-            '/root/%(install_script)s %(rdo_release_rpm_url)s '
+            '/root/%(install_script)s '
             '\"%(rdo_admin_password)s\" '
             '\"%(fip_range)s\" \"%(fip_range_start)s\" \"%(fip_range_end)s\" '
             '\"%(fip_gateway)s\" %(fip_name_servers)s' %
             {'install_script': install_script,
-             'rdo_release_rpm_url': RDO_RELEASE_RPM_URL,
              'rdo_admin_password': rdo_admin_password,
              'fip_range': fip_range,
              'fip_range_start': fip_range_start,

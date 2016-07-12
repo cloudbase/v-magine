@@ -192,14 +192,14 @@ fi
 
 #disable_network_manager
 
-RDO_RELEASE_RPM_URL=$1
-ADMIN_PASSWORD=$2
-FIP_RANGE=$3
-FIP_RANGE_START=$4
-FIP_RANGE_END=$5
-FIP_RANGE_GATEWAY=$6
-FIP_RANGE_NAME_SERVERS=${@:7}
+ADMIN_PASSWORD=$1
+FIP_RANGE=$2
+FIP_RANGE_START=$3
+FIP_RANGE_END=$4
+FIP_RANGE_GATEWAY=$5
+FIP_RANGE_NAME_SERVERS=${@:6}
 
+RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-liberty/rdo-release-liberty-5.noarch.rpm
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
 DATA_IFACE=data
