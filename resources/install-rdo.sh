@@ -186,8 +186,8 @@ rdo_cleanup
 
 if ! /usr/bin/rpm -q epel-release > /dev/null
 then
-    # TODO the release link version is not reliable and will return a 404 as soon as it gets updated to 7-6
-    exec_with_retry 5 0 /usr/bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+    # TODO the release link version is not reliable and will return a 404 as soon as it gets updated
+    exec_with_retry 5 0 /usr/bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-7.noarch.rpm
 fi
 
 #disable_network_manager
