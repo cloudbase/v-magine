@@ -7,7 +7,7 @@ from stackinabox import utils
 
 LOG = logging
 RDO_RELEASE_RPM_URL = ("https://repos.fedorapeople.org/repos/openstack/"
-                       "openstack-liberty/rdo-release-liberty-2.noarch.rpm")
+                       "openstack-liberty/rdo-release-liberty-5.noarch.rpm")
 
 
 class RDOInstaller(object):
