@@ -199,7 +199,7 @@ FIP_RANGE_END=$4
 FIP_RANGE_GATEWAY=$5
 FIP_RANGE_NAME_SERVERS=${@:6}
 
-RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-liberty/rdo-release-liberty-5.noarch.rpm
+RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
 DATA_IFACE=data
@@ -293,7 +293,7 @@ fi
 exec_with_retry 5 0 /usr/bin/yum install -y python-pip
 exec_with_retry 5 0 /usr/bin/yum install -y python-netifaces
 # TODO: check OpenStack version
-exec_with_retry 5 0 /usr/bin/python -m pip install "networking-hyperv>=1.0.0,<2.0.0"
+exec_with_retry 5 0 /usr/bin/python -m pip install "networking-hyperv>=2.0.0,<3.0.0"
 
 exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 

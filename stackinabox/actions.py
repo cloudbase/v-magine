@@ -64,7 +64,7 @@ HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V Nova Compute'
 FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
-                  "HyperVNovaCompute_Liberty_12_0_0.msi")
+                  "HyperVNovaCompute_Mitaka_13_0_0.msi")
 CIRROS_VHDX_URL = ("https://raw.githubusercontent.com/cloudbase/"
                    "ci-overcloud-init-scripts/master/scripts/devstack_vm/"
                    "cirros-0.3.3-x86_64.vhdx.gz")
