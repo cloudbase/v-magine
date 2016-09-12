@@ -198,7 +198,7 @@ class DeploymentActions(object):
         properties["ENABLE_FIREWALL_RULES"] = "1"
 
         properties["OPENSTACK_AUTH_URL"] = nova_config["neutron"][
-            "admin_auth_url"]
+            "auth_url"]
         properties["OPENSTACK_TENANT_NAME"] = nova_config[
             "keystone_authtoken"]["admin_tenant_name"]
         properties["OPENSTACK_USERNAME"] = nova_config["keystone_authtoken"][
@@ -273,13 +273,13 @@ class DeploymentActions(object):
 
         properties["NEUTRONURL"] = nova_config["neutron"]["url"]
         properties["NEUTRONADMINTENANTNAME"] = nova_config["neutron"][
-            "admin_tenant_name"]
+            "project_name"]
         properties["NEUTRONADMINUSERNAME"] = nova_config["neutron"][
-            "admin_username"]
+            "username"]
         properties["NEUTRONADMINPASSWORD"] = nova_config["neutron"][
-            "admin_password"]
+            "password"]
         properties["NEUTRONADMINAUTHURL"] = nova_config["neutron"][
-            "admin_auth_url"]
+            "auth_url"]
 
         if hyperv_host_username:
             properties["NOVACOMPUTESERVICEUSER"] = self._check_username(

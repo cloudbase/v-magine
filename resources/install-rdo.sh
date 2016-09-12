@@ -80,7 +80,7 @@ function rdo_cleanup() {
     yum remove -y "*openstack*" "*nova*" "*neutron*" "*keystone*" "*glance*" "*cinder*" "*swift*" "*heat*" "*rdo-release*"
 
     rm -rf /etc/yum.repos.d/packstack_* /root/.my.cnf \
-    /var/lib/mysql/ /var/lib/glance /var/lib/nova /etc/nova /etc/neutron /etc/swift \
+    /var/lib/mysql/ /var/lib/glance /var/lib/nova /etc/keystone /etc/nova /etc/neutron /etc/swift \
     /srv/node/device*/* /var/lib/cinder/ /etc/rsync.d/frag* \
     /var/cache/swift /var/log/keystone || true
 
@@ -184,12 +184,6 @@ function remove_httpd_default_site() {
 
 rdo_cleanup
 
-if ! /usr/bin/rpm -q epel-release > /dev/null
-then
-    # TODO the release link version is not reliable and will return a 404 as soon as it gets updated
-    exec_with_retry 5 0 /usr/bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-7.noarch.rpm
-fi
-
 #disable_network_manager
 
 ADMIN_PASSWORD=$1
@@ -244,7 +238,7 @@ openstack-config --set $ANSWER_FILE general CONFIG_AMQP_HOST $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_MARIADB_HOST $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_MONGODB_HOST $HOST_IP
 
-openstack-config --set $ANSWER_FILE general CONFIG_USE_EPEL y
+openstack-config --set $ANSWER_FILE general CONFIG_USE_EPEL n
 openstack-config --set $ANSWER_FILE general CONFIG_HEAT_INSTALL y
 #openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CFN_INSTALL y
 #openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CLOUDWATCH_INSTALL y
@@ -308,7 +302,7 @@ configure_public_subnet
 configure_private_subnet
 enable_horizon_password_retrieve
 
-exec_with_retry 10 0 rpm -Uvh https://github.com/cloudbase/horizon-cloudbase/releases/download/v1.1/openstack-dashboard-cloudbase-theme-1.1-0.noarch.rpm > /dev/null
+# exec_with_retry 10 0 rpm -Uvh https://github.com/cloudbase/horizon-cloudbase/releases/download/v1.1/openstack-dashboard-cloudbase-theme-1.1-0.noarch.rpm > /dev/null
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT

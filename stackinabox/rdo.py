@@ -118,10 +118,12 @@ class RDOInstaller(object):
                         "neutron":
                         [
                             "url",
-                            "admin_auth_url",
-                            "admin_tenant_name",
-                            "admin_username",
-                            "admin_password"
+                            "auth_url",
+                            "project_name",
+                            "user_domain_name",
+                            "project_domain_name",
+                            "username",
+                            "password"
                         ],
                         "glance":
                         [
