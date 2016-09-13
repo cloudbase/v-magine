@@ -32,7 +32,9 @@ class NetworkUtilsV2(netutils.NetworkUtils):
     _PORT_SECURITY_SET_DATA = 'Msvm_EthernetSwitchPortSecuritySettingData'
     _PORT_ALLOC_ACL_SET_DATA = 'Msvm_EthernetSwitchPortAclSettingData'
     _PORT_EXT_ACL_SET_DATA = _PORT_ALLOC_ACL_SET_DATA
-    _LAN_ENDPOINT = 'Msvm_LANEndpoint'
+    _LAN_ENDPOINT = 'CIM_LANEndpoint'
+    _DEVICE_SAP = 'CIM_DeviceSAPImplementation'
+    _ACTIVE_CONN = 'Msvm_ActiveConnection'
     _STATE_DISABLED = 3
     _OPERATION_MODE_ACCESS = 1
     _OPERATION_MODE_TRUNK = 2
@@ -160,18 +162,17 @@ class NetworkUtilsV2(netutils.NetworkUtils):
         for ext_port in (self._conn.Msvm_ExternalEthernetPort() +
                          self._conn.Msvm_WifiPort()):
             lan_endpoints = ext_port.associators(
-                wmi_result_class=self._LAN_ENDPOINT)
+                wmi_result_class=self._LAN_ENDPOINT,
+                wmi_association_class=self._DEVICE_SAP)
             if len(lan_endpoints):
                 lan_endpoints = lan_endpoints[0].associators(
-                    wmi_result_class=self._LAN_ENDPOINT)
+                    wmi_result_class=self._LAN_ENDPOINT,
+                    wmi_association_class=self._ACTIVE_CONN)
                 if len(lan_endpoints):
-                    vswitch_ports = lan_endpoints[0].associators(
-                        wmi_result_class=self._ETHERNET_SWITCH_PORT)
-                    if len(vswitch_ports):
-                        vswitches = vswitch_ports[0].associators(
-                            wmi_result_class='Msvm_VirtualEthernetSwitch')
-                        if vswitches:
-                            ext_vswitches.append(vswitches[0])
+                    vswitches = self._conn.Msvm_VirtualEthernetSwitch(
+                        Name=lan_endpoints[0].SystemName)
+                    if vswitches:
+                        ext_vswitches.append(vswitches[0])
         return ext_vswitches
 
     def _get_vswitch_external_port(self, vswitch):
@@ -198,7 +199,7 @@ class NetworkUtilsV2(netutils.NetworkUtils):
         for ext_port in (self._conn.Msvm_ExternalEthernetPort(EnabledState=2) +
                          self._conn.Msvm_WifiPort(EnabledState=2)):
 
-            if ext_port.path().CLASS == self._EXTERNAL_PORT:
+            if ext_port.path().Class == self._EXTERNAL_PORT:
                 port_type = "ethernet"
             else:
                 port_type = "wifi"
@@ -207,7 +208,8 @@ class NetworkUtilsV2(netutils.NetworkUtils):
                 {"name": ext_port.ElementName,
                  "type": port_type,
                  "in_use": len(ext_port.associators(
-                               wmi_result_class=self._LAN_ENDPOINT)) > 0})
+                               wmi_result_class=self._LAN_ENDPOINT,
+                               wmi_association_class=self._DEVICE_SAP)) > 0})
         return ext_ports
 
     def create_vswitch(self, vswitch_name, external_port_name=None,
