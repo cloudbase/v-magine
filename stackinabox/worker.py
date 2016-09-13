@@ -280,7 +280,7 @@ class Worker(object):
     def _install_rdo(self, rdo_installer, host, ssh_key_path, username,
                      password, rdo_admin_password, fip_range, fip_range_start,
                      fip_range_end, fip_gateway, fip_name_servers):
-        max_connect_attempts = 20
+        max_connect_attempts = 30
         reboot_sleep_s = 30
 
         try:
