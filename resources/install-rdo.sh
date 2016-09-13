@@ -183,8 +183,7 @@ function remove_httpd_default_site() {
 }
 
 rdo_cleanup
-
-#disable_network_manager
+disable_network_manager
 
 ADMIN_PASSWORD=$1
 FIP_RANGE=$2
@@ -194,6 +193,7 @@ FIP_RANGE_GATEWAY=$5
 FIP_RANGE_NAME_SERVERS=${@:6}
 
 RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm
+DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/9.0.0/openstack-dashboard-cloudbase-theme-9.0.0-0.noarch.rpm
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
 DATA_IFACE=data
@@ -218,13 +218,13 @@ read HOST_IP NETMASK_BITS BCAST  <<< `get_interface_ipv4 $MGMT_IFACE`
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 
-if ! /usr/bin/rpm -q rdo-release > /dev/null
-then
-    exec_with_retry 5 0 /usr/bin/yum install -y $RDO_RELEASE_RPM_URL
-fi
+exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-mitaka yum-utils
+# Disabling due to 404 errors on the repo url
+/usr/bin/yum-config-manager --disable centos-ceph-jewel
 
-exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack
-exec_with_retry 5 0 /usr/bin/yum install openstack-utils -y
+exec_with_retry 5 0 /usr/bin/yum update -y
+
+exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack openstack-utils
 
 generate_ssh_key $SSH_KEY_PATH
 
@@ -284,10 +284,10 @@ fi
 /usr/bin/ovs-vsctl add-br $OVS_EXT_BRIDGE
 /usr/bin/ovs-vsctl add-port $OVS_EXT_BRIDGE $EXT_IFACE
 
-exec_with_retry 5 0 /usr/bin/yum install -y python-pip
-exec_with_retry 5 0 /usr/bin/yum install -y python-netifaces
-# TODO: check OpenStack version
-exec_with_retry 5 0 /usr/bin/python -m pip install "networking-hyperv>=2.0.0,<3.0.0"
+# Install common Python modules to avoid conflicts in Packstack
+exec_with_retry 5 0 /usr/bin/yum install -y python-pip python-cmd2 python-requests python-netifaces
+
+exec_with_retry 5 0 /bin/pip install "networking-hyperv>=2.0.0,<3.0.0"
 
 exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
@@ -302,7 +302,8 @@ configure_public_subnet
 configure_private_subnet
 enable_horizon_password_retrieve
 
-# exec_with_retry 10 0 rpm -Uvh https://github.com/cloudbase/horizon-cloudbase/releases/download/v1.1/openstack-dashboard-cloudbase-theme-1.1-0.noarch.rpm > /dev/null
+exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
+
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
