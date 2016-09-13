@@ -332,7 +332,8 @@ class Worker(object):
                             'Hyper-V are already installed...')
         for msi_info in self._dep_actions.check_installed_components():
             self._update_status('Uninstalling %s' % msi_info[1])
-            self._dep_actions.uninstall_product(msi_info[0])
+            self._dep_actions.uninstall_product(
+                msi_info[0], "uninstall_%s.log" % msi_info[1])
 
         nova_msi_path = "hyperv_nova_compute.msi"
         freerdp_webconnect_msi_path = "freerdp_webconnect.msi"

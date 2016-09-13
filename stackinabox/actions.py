@@ -61,7 +61,7 @@ OPENSTACK_VM_VHD_MAX_SIZE = 60 * units.Gi
 DATA_VLAN_RANGE = range(500, 2000)
 
 HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
-HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V Nova Compute'
+HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V'
 FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
                   "HyperVNovaCompute_Mitaka_13_0_0.msi")
@@ -151,8 +151,8 @@ class DeploymentActions(object):
         key_path = self._get_controller_ssh_key_path()
         return security.generate_ssh_key(key_path)
 
-    def uninstall_product(self, product_id):
-        self._windows_utils.uninstall_product(product_id, "nova_uninstall.log")
+    def uninstall_product(self, product_id, log_file):
+        self._windows_utils.uninstall_product(product_id, log_file)
 
     def download_hyperv_compute_msi(self, target_path):
         utils.retry_action(
