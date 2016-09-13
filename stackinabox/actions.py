@@ -184,6 +184,10 @@ class DeploymentActions(object):
         with gzip.open(gzipped_image_path, 'rb') as f:
             g.create_image('cirros', 'vhd', 'bare', f, 'hyperv', 'public')
 
+    @staticmethod
+    def _get_keystone_v2_url(auth_url):
+        return auth_url[:-2] + "v2.0" if auth_url.endswith("v3") else auth_url
+
     def install_freerdp_webconnect(self, msi_path, nova_config,
                                    hyperv_host_username,
                                    hyperv_host_password):
@@ -197,8 +201,8 @@ class DeploymentActions(object):
         properties["HTTPS_PORT"] = FREERDP_WEBCONNECT_HTTPS_PORT
         properties["ENABLE_FIREWALL_RULES"] = "1"
 
-        properties["OPENSTACK_AUTH_URL"] = nova_config["neutron"][
-            "auth_url"]
+        properties["OPENSTACK_AUTH_URL"] = self._get_keystone_v2_url(
+            nova_config["neutron"]["auth_url"])
         properties["OPENSTACK_TENANT_NAME"] = nova_config[
             "keystone_authtoken"]["admin_tenant_name"]
         properties["OPENSTACK_USERNAME"] = nova_config["keystone_authtoken"][
