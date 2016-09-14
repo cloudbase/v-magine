@@ -183,7 +183,8 @@ function remove_httpd_default_site() {
 }
 
 rdo_cleanup
-disable_network_manager
+# Network manager is needed for mgmt-ext, not used by OpenStack
+#disable_network_manager
 
 ADMIN_PASSWORD=$1
 FIP_RANGE=$2
