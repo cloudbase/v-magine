@@ -283,6 +283,18 @@ class Worker(object):
         max_connect_attempts = 30
         reboot_sleep_s = 30
 
+        def reboot_and_reconnect():
+            self._update_status('Rebooting RDO VM...')
+            rdo_installer.reboot()
+
+            time.sleep(reboot_sleep_s)
+
+            self._update_status(
+                'Enstablishing SSH connection with RDO VM...')
+            rdo_installer.connect(host, ssh_key_path, username, password,
+                                  self._term_type, self._term_cols,
+                                  self._term_rows, max_connect_attempts)
+
         try:
             self._update_status(
                 'Waiting for the RDO VM to reboot...')
@@ -305,16 +317,11 @@ class Worker(object):
             self._update_status(
                 'Checking if rebooting the RDO VM is required...')
             if rdo_installer.check_new_kernel():
-                self._update_status('Rebooting RDO VM...')
-                rdo_installer.reboot()
+                reboot_and_reconnect()
 
-                time.sleep(reboot_sleep_s)
-
-                self._update_status(
-                    'Enstablishing SSH connection with RDO VM...')
-                rdo_installer.connect(host, ssh_key_path, username, password,
-                                      self._term_type, self._term_cols,
-                                      self._term_rows, max_connect_attempts)
+            self._update_status('Installing Hyper-V LIS components...')
+            rdo_installer.install_lis()
+            reboot_and_reconnect()
 
             self._update_status("Retrieving OpenStack configuration...")
             nova_config = rdo_installer.get_nova_config()
