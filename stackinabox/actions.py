@@ -154,30 +154,31 @@ class DeploymentActions(object):
     def uninstall_product(self, product_id, log_file):
         self._windows_utils.uninstall_product(product_id, log_file)
 
+    @utils.retry_on_error()
     def download_hyperv_compute_msi(self, target_path):
-        utils.retry_action(
-            lambda: utils.download_file(HYPERV_MSI_URL, target_path))
+        utils.download_file(HYPERV_MSI_URL, target_path)
 
+    @utils.retry_on_error()
     def download_freerdp_webconnect_msi(self, target_path):
-        utils.retry_action(
-            lambda: utils.download_file(FREERDP_WEBCONNECT_MSI_URL,
-                                        target_path))
+        utils.download_file(FREERDP_WEBCONNECT_MSI_URL, target_path)
 
+    @utils.retry_on_error()
     def download_cirros_image(self, target_path):
-        utils.retry_action(
-            lambda: utils.download_file(CIRROS_VHDX_URL, target_path))
+        utils.download_file(CIRROS_VHDX_URL, target_path)
 
     def get_openstack_credentials(self, mgmt_int_ip, password):
         auth_url = 'http://%s:5000/v2.0/' % mgmt_int_ip
         return {'tenant_name': 'admin', 'username': 'admin',
                 'password': password, 'auth_url': auth_url}
 
+    @utils.retry_on_error()
     def delete_existing_images(self, openstack_cred):
         g = glance.GlanceClient()
         g.login(**openstack_cred)
         for image in g.get_images():
             g.delete_image(image['id'])
 
+    @utils.retry_on_error()
     def create_cirros_image(self, openstack_cred, gzipped_image_path):
         g = glance.GlanceClient()
         g.login(**openstack_cred)

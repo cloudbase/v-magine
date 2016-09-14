@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import functools
 import logging
 import os
 import random
@@ -47,23 +48,32 @@ def download_file(url, target_path, report_hook=None):
                                              reporthook=report_hook)
 
 
-def retry_action(action, error_action=None, max_attempts=10, interval=0):
-    i = 0
-    while True:
-        try:
-            return action()
-            break
-        except Exception as ex:
-            i += 1
-            if i < max_attempts:
-                LOG.exception(ex)
-                if error_action:
-                    error_action(ex)
-                if interval:
-                    LOG.debug("Sleeping for %s seconds" % interval)
-                    time.sleep(interval)
-            else:
-                raise
+def retry_on_error(max_attempts=10, sleep_seconds=0,
+                   terminal_exceptions=[]):
+    def _retry_on_error(func):
+        @functools.wraps(func)
+        def _exec_retry(*args, **kwargs):
+            i = 0
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except KeyboardInterrupt as ex:
+                    LOG.debug("Got a KeyboardInterrupt, skip retrying")
+                    LOG.exception(ex)
+                    raise
+                except Exception as ex:
+                    if any([isinstance(ex, tex)
+                            for tex in terminal_exceptions]):
+                        raise
+
+                    i += 1
+                    if i < max_attempts:
+                        LOG.warn("Exception occurred, retrying: %s", ex)
+                        time.sleep(sleep_seconds)
+                    else:
+                        raise
+        return _exec_retry
+    return _retry_on_error
 
 
 def copy_to_temp_file(src_file):

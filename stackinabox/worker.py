@@ -280,7 +280,6 @@ class Worker(object):
     def _install_rdo(self, rdo_installer, host, ssh_key_path, username,
                      password, rdo_admin_password, fip_range, fip_range_start,
                      fip_range_end, fip_gateway, fip_name_servers):
-        max_connect_attempts = 30
         reboot_sleep_s = 30
 
         def reboot_and_reconnect():
@@ -293,7 +292,7 @@ class Worker(object):
                 'Enstablishing SSH connection with RDO VM...')
             rdo_installer.connect(host, ssh_key_path, username, password,
                                   self._term_type, self._term_cols,
-                                  self._term_rows, max_connect_attempts)
+                                  self._term_rows)
 
         try:
             self._update_status(
@@ -304,7 +303,7 @@ class Worker(object):
                 'Enstablishing SSH connection with RDO VM...')
             rdo_installer.connect(host, ssh_key_path, username, password,
                                   self._term_type, self._term_cols,
-                                  self._term_rows, max_connect_attempts)
+                                  self._term_rows)
 
             self._update_status('Updating RDO VM...')
             rdo_installer.update_os()

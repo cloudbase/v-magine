@@ -15,7 +15,8 @@ class RDOInstaller(object):
         self._stderr_callback = stderr_callback
         self._ssh = None
 
-    def _exec_shell_cmd_check_exit_status_single(self, cmd):
+    @utils.retry_on_error(sleep_seconds=5)
+    def _exec_shell_cmd_check_exit_status(self, cmd):
         chan = self._ssh.invoke_shell(term=self._term_type,
                                       width=self._term_cols,
                                       height=self._term_rows)
@@ -38,21 +39,17 @@ class RDOInstaller(object):
         if exit_status:
             raise Exception("Command failed with exit code: %d" % exit_status)
 
-    def _exec_shell_cmd_check_exit_status(self, cmd):
-        utils.retry_action(
-            lambda: self._exec_shell_cmd_check_exit_status_single(cmd),
-            interval=5)
-
-    def _exec_cmd_single(self, cmd):
+    @utils.retry_on_error()
+    def _exec_cmd(self, cmd):
         chan = self._ssh.get_transport().open_session()
         chan.exec_command(cmd)
         return chan.recv_exit_status()
 
-    def _exec_cmd(self, cmd):
-        return utils.retry_action(lambda: self._exec_cmd_single(cmd))
+    @utils.retry_on_error(max_attempts=30, sleep_seconds=30)
+    def connect(self, host, ssh_key_path, username, password, term_type,
+                term_cols, term_rows):
+        LOG.debug("Connection info: %s" % str((host, username, password)))
 
-    def _connect_single(self, host, ssh_key_path, username, password,
-                        term_type, term_cols, term_rows):
         self.disconnect()
         LOG.debug("connecting")
 
@@ -65,15 +62,6 @@ class RDOInstaller(object):
         self._ssh.connect(host, username=username, password=password,
                           key_filename=ssh_key_path)
         LOG.debug("connected")
-
-    def connect(self, host, ssh_key_path, username, password, term_type,
-                term_cols, term_rows, max_attempts=1, sleep_interval=30):
-        LOG.debug("Connection info: %s" % str((host, username, password)))
-        utils.retry_action(
-            lambda: self._connect_single(
-                host, ssh_key_path, username, password, term_type, term_cols,
-                term_rows),
-            max_attempts=max_attempts, interval=sleep_interval)
 
     def disconnect(self):
         if self._ssh:
@@ -144,7 +132,8 @@ class RDOInstaller(object):
                     config_file, section, name)
         return config
 
-    def _copy_resource_file_single(self, file_name):
+    @utils.retry_on_error()
+    def _copy_resource_file(self, file_name):
         LOG.debug("Copying %s" % file_name)
         sftp = self._ssh.open_sftp()
         path = os.path.join(utils.get_resources_dir(), file_name)
@@ -152,11 +141,8 @@ class RDOInstaller(object):
         sftp.close()
         LOG.debug("%s copied" % file_name)
 
-    def _copy_resource_file(self, file_name):
-        return utils.retry_action(
-            lambda: self._copy_resource_file_single(file_name))
-
-    def _check_hyperv_compute_services(self, host_name):
+    @utils.retry_on_error(sleep_seconds=5)
+    def check_hyperv_compute_services(self, host_name):
         if (self._exec_utils_function(
                 "source ~/keystonerc_admin && check_nova_service_up %s" %
                 host_name) != 0):
@@ -166,10 +152,6 @@ class RDOInstaller(object):
                 "source ~/keystonerc_admin && check_neutron_agent_up %s" %
                 host_name) != 0):
             raise Exception("The Hyper-V neutron agent is not enabled in RDO")
-
-    def check_hyperv_compute_services(self, host_name):
-        utils.retry_action(
-            lambda: self._check_hyperv_compute_services(host_name), interval=5)
 
     def install_rdo(self, rdo_admin_password, fip_range, fip_range_start,
                     fip_range_end, fip_gateway, fip_name_servers):
