@@ -215,6 +215,7 @@ config_ovs_network_adapter $EXT_IFACE
 /usr/sbin/ifup $EXT_IFACE
 
 read HOST_IP NETMASK_BITS BCAST  <<< `get_interface_ipv4 $MGMT_IFACE`
+echo $HOST_IP $(hostname) >> /etc/hosts
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 exec_with_retry 5 0 /usr/bin/yum install -y ntpdate
