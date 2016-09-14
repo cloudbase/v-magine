@@ -217,6 +217,8 @@ config_ovs_network_adapter $EXT_IFACE
 read HOST_IP NETMASK_BITS BCAST  <<< `get_interface_ipv4 $MGMT_IFACE`
 
 exec_with_retry 5 0 /usr/bin/yum update -y
+exec_with_retry 5 0 /usr/bin/yum install -y ntpdate
+exec_with_retry 5 0 /sbin/ntpdate pool.ntp.org
 
 exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-mitaka yum-utils
 # Disabling due to 404 errors on the repo url
