@@ -17,6 +17,7 @@ import ctypes
 import logging
 import os
 import pywintypes
+import six
 import win32api
 import win32con
 import win32process
@@ -27,11 +28,13 @@ from ctypes import windll
 from ctypes import wintypes
 from win32com import client
 
+from stackinabox import exceptions
 from stackinabox import utils
 from stackinabox.virt.hyperv import vmutils
 
 kernel32 = windll.kernel32
 advapi32 = windll.Advapi32
+netapi32 = windll.netapi32
 
 LOG = logging
 
@@ -81,6 +84,12 @@ class Win32_PROCESS_INFORMATION(ctypes.Structure):
         ('hThread', wintypes.HANDLE),
         ('dwProcessId', wintypes.DWORD),
         ('dwThreadId', wintypes.DWORD),
+    ]
+
+
+class Win32_LOCALGROUP_MEMBERS_INFO_3(ctypes.Structure):
+    _fields_ = [
+        ('lgrmi3_domainandname', wintypes.LPWSTR)
     ]
 
 
@@ -163,6 +172,8 @@ INFINITE = 0xFFFFFFFF
 
 CREATE_NEW_CONSOLE = 0x10
 
+GROUP_SID_REMOTE_DESKTOP_USERS = "S-1-5-32-555"
+
 
 class LogonFailedException(Exception):
     pass
@@ -176,6 +187,14 @@ class WindowsUtils(object):
 
     _NET_FW_ACTION_BLOCK = 0
     _NET_FW_ACTION_ALLOW = 1
+
+    _NERR_GroupNotFound = 2220
+    _NERR_UserNotFound = 2221
+    _ERROR_ACCESS_DENIED = 5
+    _ERROR_NO_SUCH_MEMBER = 1387
+    _ERROR_MEMBER_IN_ALIAS = 1378
+    _ERROR_INVALID_MEMBER = 1388
+
 
     def __init__(self):
         self._wmi_conn_cimv2 = None
@@ -393,6 +412,34 @@ class WindowsUtils(object):
         version_info = self._conn_cimv2.Win32_OperatingSystem()[0]
         return {"description": version_info.Caption,
                 "version": version_info.Version}
+
+    def get_group_by_sid(self, sid):
+        l = self._conn_cimv2.Win32_Group(SID=sid)
+        if l:
+            return (l[0].Domain, l[0].Name)
+        else:
+            raise exceptions.GroupNotFoundException()
+
+    def add_user_to_local_group(self, username, groupname):
+        lmi = Win32_LOCALGROUP_MEMBERS_INFO_3()
+        lmi.lgrmi3_domainandname = six.text_type(username)
+
+        ret_val = netapi32.NetLocalGroupAddMembers(0, six.text_type(groupname),
+                                                   3, ctypes.addressof(lmi), 1)
+
+        if ret_val == self._NERR_GroupNotFound:
+            raise exceptions.GroupNotFoundException()
+        elif ret_val == self._ERROR_ACCESS_DENIED:
+            raise exceptions.AccessDeniedException()
+        elif ret_val == self._ERROR_NO_SUCH_MEMBER:
+            raise exceptions.UserNotFoundException()
+        elif ret_val == self._ERROR_MEMBER_IN_ALIAS:
+            # The user is already a member of the group
+            pass
+        elif ret_val == self._ERROR_INVALID_MEMBER:
+            raise exceptions.BaseVMagineException('Invalid user')
+        elif ret_val != 0:
+            raise exceptions.BaseVMagineException('Unknown error')
 
 
 def kill_process(pid):

@@ -47,6 +47,8 @@ FIREWALL_PXE_RULE_NAME = "%s PXE" % constants.PRODUCT_NAME
 DHCP_PORT = 67
 TFTP_PORT = 69
 
+FREERDP_WEBCONNECT_SERVICE_USER = "FreeRDP-WebConnect"
+
 FREERDP_WEBCONNECT_HTTP_PORT = 8000
 FREERDP_WEBCONNECT_HTTPS_PORT = 4430
 
@@ -217,7 +219,14 @@ class DeploymentActions(object):
         LOG.info("Installing FreeRDP-WebConnect")
         self._windows_utils.install_msi(msi_path, features, properties,
                                         "freerdp_webconnect.log")
-        LOG.info("FreeRDP-WebConnect")
+        LOG.info("FreeRDP-WebConnect installed")
+
+        LOG.info("Adding FreeRDP-WebConnect user to Remote Desktop Users")
+        # This is needed on client OS
+        group_domain, group_name = self._windows_utils.get_group_by_sid(
+            windows.GROUP_SID_REMOTE_DESKTOP_USERS)
+        self._windows_utils.add_user_to_local_group(
+            FREERDP_WEBCONNECT_SERVICE_USER, group_name)
 
     def _check_username(self, username):
         username = username.strip()

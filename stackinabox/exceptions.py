@@ -12,3 +12,15 @@ class CancelDeploymentException(BaseVMagineException):
     def __init__(self):
         msg = "Deployment cancelled by the user"
         super(CancelDeploymentException, self).__init__(msg)
+
+
+class GroupNotFoundException(BaseVMagineException):
+    pass
+
+
+class UserNotFoundException(BaseVMagineException):
+    pass
+
+
+class AccessDeniedException(BaseVMagineException):
+    pass
