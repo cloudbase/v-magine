@@ -192,6 +192,10 @@ function add_hostname_to_hosts() {
     grep -q "^$HOSTS_LINE\$" /etc/hosts || echo $HOSTS_LINE >> /etc/hosts
 }
 
+function get_total_memory_mb() {
+    echo $(($(grep MemTotal /proc/meminfo | awk '{print $2}') / 1024))
+}
+
 rdo_cleanup
 # Network manager is needed for mgmt-ext, not used by OpenStack
 #disable_network_manager
@@ -244,6 +248,19 @@ generate_ssh_key $SSH_KEY_PATH
 
 /usr/bin/packstack --gen-answer-file=$ANSWER_FILE
 
+if [ "$(get_total_memory_mb)" -lt "8196" ]
+then
+    # Reduce number of workers to save memory
+    MAX_SERVICE_WORKERS=2
+else
+    # Don't exceed 4
+    MAX_SERVICE_WORKERS=4
+fi
+
+NPROC=$(/usr/bin/nproc)
+SERVICE_WORKERS=$(($NPROC<$MAX_SERVICE_WORKERS?$NPROC:$MAX_SERVICE_WORKERS))
+openstack-config --set $ANSWER_FILE general CONFIG_SERVICE_WORKERS $SERVICE_WORKERS
+
 openstack-config --set $ANSWER_FILE general CONFIG_CONTROLLER_HOST $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_COMPUTE_HOSTS $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_NETWORK_HOSTS $HOST_IP
@@ -254,8 +271,6 @@ openstack-config --set $ANSWER_FILE general CONFIG_MONGODB_HOST $HOST_IP
 
 openstack-config --set $ANSWER_FILE general CONFIG_USE_EPEL n
 openstack-config --set $ANSWER_FILE general CONFIG_HEAT_INSTALL y
-#openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CFN_INSTALL y
-#openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CLOUDWATCH_INSTALL y
 
 openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST n
 
