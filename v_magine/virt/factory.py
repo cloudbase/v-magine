@@ -13,7 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from stackinabox.virt.hyperv import driver
+from v_magine.virt.hyperv import driver
 
 
 def get_virt_driver():

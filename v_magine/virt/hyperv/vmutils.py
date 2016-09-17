@@ -24,9 +24,9 @@ import time
 import uuid
 import wmi
 
-from stackinabox.i18n import _, _LW
+from v_magine.i18n import _, _LW
 
-from stackinabox.virt.hyperv import constants
+from v_magine.virt.hyperv import constants
 
 LOG = logging.getLogger(__name__)
 

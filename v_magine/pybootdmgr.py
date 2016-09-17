@@ -20,8 +20,8 @@ import os
 import subprocess
 import sys
 
-from stackinabox import utils
-from stackinabox import windows
+from v_magine import utils
+from v_magine import windows
 
 LOG = logging
 

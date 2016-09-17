@@ -7,8 +7,8 @@ from PyQt5 import QtWebKit
 from PyQt5 import QtWidgets
 from PyQt5 import QtWebKitWidgets
 
-from stackinabox import constants
-from stackinabox import utils
+from v_magine import constants
+from v_magine import utils
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -48,7 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
         page.setViewportSize(frame.contentsSize())
 
         if os.name == 'nt':
-            appid = 'StackInABox.1.0.0'
+            appid = 'v_magine.1.0.0'
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
                 appid)
 

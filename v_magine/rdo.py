@@ -3,7 +3,7 @@ import os
 import paramiko
 import time
 
-from stackinabox import utils
+from v_magine import utils
 
 LOG = logging
 

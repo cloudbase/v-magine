@@ -24,16 +24,16 @@ import urllib2
 
 from oslo_utils import units
 
-from stackinabox import config
-from stackinabox import constants
-from stackinabox import glance
-from stackinabox import kickstart
-from stackinabox import pybootdmgr
-from stackinabox import security
-from stackinabox import utils
-from stackinabox import windows
-from stackinabox.virt import base as base_virt_driver
-from stackinabox.virt import factory as virt_factory
+from v_magine import config
+from v_magine import constants
+from v_magine import glance
+from v_magine import kickstart
+from v_magine import pybootdmgr
+from v_magine import security
+from v_magine import utils
+from v_magine import windows
+from v_magine.virt import base as base_virt_driver
+from v_magine.virt import factory as virt_factory
 
 LOG = logging
 

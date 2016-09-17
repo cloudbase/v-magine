@@ -20,7 +20,7 @@ See http://docs.openstack.org/developer/oslo.i18n/usage.html .
 
 import oslo_i18n
 
-from stackinabox import constants
+from v_magine import constants
 
 DOMAIN = constants.PRODUCT_NAME
 

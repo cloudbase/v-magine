@@ -15,8 +15,8 @@
 import logging
 import os
 
-from stackinabox import constants
-from stackinabox import utils
+from v_magine import constants
+from v_magine import utils
 
 LOG = logging.getLogger(__name__)
 

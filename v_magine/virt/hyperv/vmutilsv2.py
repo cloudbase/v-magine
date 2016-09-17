@@ -25,9 +25,9 @@ import wmi
 
 from xml.etree import ElementTree
 
-from stackinabox.virt.hyperv import constants
-from stackinabox.virt.hyperv import vmutils
-from stackinabox import windows
+from v_magine.virt.hyperv import constants
+from v_magine.virt.hyperv import vmutils
+from v_magine import windows
 
 LOG = logging.getLogger(__name__)
 

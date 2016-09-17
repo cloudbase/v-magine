@@ -12,8 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from stackinabox import mtools
-from stackinabox import mkisofs
+from v_magine import mtools
+from v_magine import mkisofs
 
 IMAGE_TYPE_ISO = "ISO"
 IMAGE_TYPE_VFD = "VFD"

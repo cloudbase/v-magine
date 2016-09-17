@@ -16,8 +16,8 @@ import logging
 import os
 import tempfile
 
-from stackinabox import utils
-from stackinabox import diskimage
+from v_magine import utils
+from v_magine import diskimage
 
 LOG = logging
 

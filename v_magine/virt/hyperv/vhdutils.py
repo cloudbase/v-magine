@@ -29,9 +29,9 @@ import wmi
 
 from xml.etree import ElementTree
 
-from stackinabox.i18n import _
-from stackinabox.virt.hyperv import constants
-from stackinabox.virt.hyperv import vmutils
+from v_magine.i18n import _
+from v_magine.virt.hyperv import constants
+from v_magine.virt.hyperv import vmutils
 
 
 VHD_HEADER_SIZE_FIX = 512

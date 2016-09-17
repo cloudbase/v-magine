@@ -28,9 +28,9 @@ from ctypes import windll
 from ctypes import wintypes
 from win32com import client
 
-from stackinabox import exceptions
-from stackinabox import utils
-from stackinabox.virt.hyperv import vmutils
+from v_magine import exceptions
+from v_magine import utils
+from v_magine.virt.hyperv import vmutils
 
 kernel32 = windll.kernel32
 advapi32 = windll.Advapi32

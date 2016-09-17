@@ -23,13 +23,13 @@ import time
 import sys
 import trollius
 
-from stackinabox import actions
-from stackinabox import centos
-from stackinabox import constants
-from stackinabox import exceptions
-from stackinabox import rdo
-from stackinabox import security
-from stackinabox import utils
+from v_magine import actions
+from v_magine import centos
+from v_magine import constants
+from v_magine import exceptions
+from v_magine import rdo
+from v_magine import security
+from v_magine import utils
 
 LOG = logging
 

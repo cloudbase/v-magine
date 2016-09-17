@@ -4,7 +4,7 @@ import urllib2
 
 import fastestmirror
 
-from stackinabox import constants
+from v_magine import constants
 
 LOG = logging
 

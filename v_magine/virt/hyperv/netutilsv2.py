@@ -15,9 +15,9 @@
 
 import logging
 
-from stackinabox.i18n import _
-from stackinabox.virt.hyperv import netutils
-from stackinabox.virt.hyperv import vmutils
+from v_magine.i18n import _
+from v_magine.virt.hyperv import netutils
+from v_magine.virt.hyperv import vmutils
 
 LOG = logging.getLogger(__name__)
 

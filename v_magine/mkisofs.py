@@ -1,7 +1,7 @@
 import os
 
-from stackinabox import constants
-from stackinabox import utils
+from v_magine import constants
+from v_magine import utils
 
 
 def create_iso_image(iso_path, content_path, label=constants.PRODUCT_NAME):

@@ -26,11 +26,11 @@ from xml.etree import ElementTree
 
 from oslo_utils import units
 
-from stackinabox.i18n import _
-from stackinabox.virt.hyperv import constants
-from stackinabox.virt.hyperv import vhdutils
-from stackinabox.virt.hyperv import vmutils
-from stackinabox.virt.hyperv import vmutilsv2
+from v_magine.i18n import _
+from v_magine.virt.hyperv import constants
+from v_magine.virt.hyperv import vhdutils
+from v_magine.virt.hyperv import vmutils
+from v_magine.virt.hyperv import vmutilsv2
 
 
 VHDX_BAT_ENTRY_SIZE = 8
