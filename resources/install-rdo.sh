@@ -208,7 +208,7 @@ FIP_RANGE_GATEWAY=$5
 FIP_RANGE_NAME_SERVERS=${@:6}
 
 RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm
-DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/9.0.0/openstack-dashboard-cloudbase-theme-9.0.0-0.noarch.rpm
+DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/9.0.1/openstack-dashboard-cloudbase-theme-9.0.1-0.noarch.rpm
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
 DATA_IFACE=data
