@@ -232,17 +232,21 @@ class WindowsUtils(object):
         else:
             ui = "/qb"
 
-        args = ["msiexec.exe", "/i", msi_path, ui, "/l*v", log_path]
+        args = ["msiexec.exe", "/i", '"%s"' % msi_path, ui, "/l*v",
+                '"%s"' % log_path]
 
         if features:
             args.append("ADDLOCAL=%s" % ",".join(features))
 
         if properties:
             for (k, v) in properties.items():
-                args.append("%(k)s=%(v)s" % {"k": k, "v": v})
+                args.append('%(k)s="%(v)s"' % {"k": k, "v": v})
 
         LOG.debug("Installing MSI: %s" % args)
-        utils.execute_process(args)
+        # When passing a args list, peopen escapes quotes and other
+        # characters. This can be avoided by passing the entire command
+        # line as a string
+        utils.execute_process(" ".join(args))
 
     def check_os_version(self, major, minor):
         os_version_str = self._conn_cimv2.Win32_OperatingSystem()[0].Version
