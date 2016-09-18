@@ -87,6 +87,10 @@ label {
 
 }
 
+#page-maas{
+    display: none;
+}
+
 #page-1{
     display: none;
 }
@@ -126,6 +130,10 @@ label {
 }
 
 .active-page{
+    display: inline !important;
+}
+
+.error-visible{
     display: inline !important;
 }
 
@@ -219,8 +227,8 @@ label {
 
 .v-magine{
     width:100%;
-    height:400px;
-    margin-top: 150px;
+    height:350px;
+    margin-top: 50px;
 }
 
 .v-magine img{
@@ -277,7 +285,7 @@ label {
     height: 355px;
 }
 
-#wraperrormessage, #wrapconfirmmessage {
+#wraperrormessage, #wrapconfirmmessage, #wrapdownloadmessage {
     display: block;
     height: 120px;
     margin-top: 20px;
@@ -302,7 +310,7 @@ label {
     overflow-y: auto;
 }
 
-#wraperrormessage .content-text, #wrapconfirmmessage .content-text {
+#wraperrormessage .content-text, #wrapconfirmmessage .content-text, #wrapdownloadmessage .content-text {
     margin-top: 0px;
     height: 110px;
     padding: 4% 0;
@@ -565,6 +573,29 @@ label {
     border-radius: 5px;
 }
 
+#splash-button{
+    height:35px;
+    border: 1px solid #fff;
+    color: #fff;
+    border-radius: 5px;
+    display:block;
+}
+
+#splash-button:hover {
+    background-color:#fff;
+    color: #201134;
+    border: 1px solid #fff;
+    border-radius: 5px;
+}
+
+#splash-button:focus {
+    background-color:#fff;
+    color: #201134;
+    border: 1px solid #fff;
+    border-radius: 5px;
+}
+
+
 #back-review{
      margin-left:29%;
 }
@@ -662,6 +693,14 @@ label {
 }
 
 #networking{
+    float:right;
+}
+
+#maas-controller-1{
+    float:left;
+}
+
+#maas-controller-2{
     float:right;
 }
 
@@ -794,16 +833,16 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
 
 .icon-buttons {
     margin-left: 25px;
-    width: 250px;
+    width: 300px;
 }
 
-#errorMessage .icon-buttons, #confirmMessage .icon-buttons {
-    margin-left: 340px;
+#errorMessage .icon-buttons, #confirmMessage .icon-buttons, #downloadMessage .icon-buttons {
+    margin-left: 320px;
     bottom: 235px;
     position: fixed;
 }
 
-#errorMessage h2, #confirmMessage h2 {
+#errorMessage h2, #confirmMessage h2, #downloadMessage h2 {
     margin-top: -20px;
 }
 
@@ -1059,8 +1098,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     font-weight:normal;
 }
 
-input:required:invalid, input:focus:invalid
-select:required:invalid, select:focus:invalid {
+input:not(.hide_validation):invalid {
     background-color: #BC1D2C;
     border: solid;
     border-color: #BC1D2C;
@@ -1068,7 +1106,15 @@ select:required:invalid, select:focus:invalid {
     color: #FFFFFF;
 }
 
-#showError, #showConfirm {
+.is_invalid {
+    background-color: #BC1D2C;
+    border: solid;
+    border-color: #BC1D2C;
+    border-width: 1px;
+    color: #FFFFFF;
+}
+
+#showError, #showConfirm, #showDownload {
     display: none;
     margin-top: -768px;
     background-color: rgba(255, 255, 255, 0.4);
@@ -1077,7 +1123,7 @@ select:required:invalid, select:focus:invalid {
 }
 
 
-#errorMessage, #confirmMessage {
+#errorMessage, #confirmMessage, #downloadMessage {
     display: inline;
     height: 300px;
     text-align: center;
@@ -1089,14 +1135,14 @@ select:required:invalid, select:focus:invalid {
     right: 0px
 }
 
-#errormessage, #confirmmessage {
+#errormessage, #confirmmessage, #downloadmessage {
     color: white;
     font-size: 15px;
     line-height: 20px;
     outline: none;
 }
 
-#errormessageok, #confirmmessageyes, #confirmmessageno {
+#errormessageok, #confirmmessageyes, #confirmmessageno, #showdownloadbutton, #downloadmessagelater {
     height: 55px;
 }
 
@@ -1125,6 +1171,7 @@ select:required:invalid, select:focus:invalid {
     bottom: 0px;
     right: 0px;
     left: 0px;
+    overflow: hidden;
 }
 
 /* slider */
@@ -1653,4 +1700,30 @@ select:required:invalid, select:focus:invalid {
     -webkit-transform:scale(.3);
     background-color:#00AEFF;
 }
+}
 
+#maas-logo-font{
+    width:25px !important;
+    margin-right:5px !important;
+    padding-bottom:10px;
+}
+
+.mini-label{
+    width: 48% !important;
+    display: inline-block !important;
+}
+
+#right-mini-label{
+    float:right;
+}
+
+.mini-label .icon-awesome{
+    margin-left: 82%;
+}
+
+.cbsl-logo{
+    width: 200px;
+    height: 200px;
+    margin-left: 40%;
+    margin-top: 100px;
+}

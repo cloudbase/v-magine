@@ -31,3 +31,4 @@ keys
 local_settings.py
 MANIFEST
 nosetests.xml
+pxe/centos7/pxelinux.cfg

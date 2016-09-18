@@ -23,29 +23,40 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.hypervHostName = null;
     $scope.controllerIp = null;
     $scope.horizonUrl = null;
+    $scope.downloadUrl = null;
     $scope.computeNodes = null;
 }]);
 
 function handleError(msg) {
     showMessage('Error', msg);
-
 }
 
 function showMessage(caption, msg) {
-    $("#showError").addClass("active-page");
-    $('#errormessage').focus();
+    $("#showError").addClass("error-visible");
+    $("#errormessageok").focus();
     $("#errorcaption").text(caption);
     $("#errormessage").text(msg);
     $(".nano").nanoScroller();
 }
 
+function showDownload(caption, msg) {
+    $("#showDownload").addClass("error-visible");
+    $("#downloadmessagelater").focus();
+    $("#downloadcaption").text(caption);
+    $("#downloadmessage").text(msg);
+    $(".nano").nanoScroller();
+
+}
+
 function showPage(pageSelector) {
     $(".active-page").removeClass("active-page");
     $(pageSelector).addClass("active-page");
+    $(pageSelector).focus();
 }
 
 function hidePage(pageSelector) {
     $(pageSelector).removeClass("active-page");
+    $(pageSelector).removeClass("error-visible");
 }
 
 function showWelcome() {
@@ -129,7 +140,7 @@ function getAvailableHostNicsCompleted(hostNicsJson) {
     var $scope = angular.element("#createswitch").scope();
 
     $scope.hostNics = JSON.parse(hostNicsJson);
-    $scope.hostNic = null;
+    $scope.hostNic = '';
     $scope.$apply();
 
     $("#hostnics").selectmenu("refresh", true);
@@ -244,6 +255,7 @@ function addExtVSwitchCompleted(vswitch_name) {
 
     var $scope = angular.element("#maindiv").scope();
     $scope.extVSwitch = vswitch_name
+    console.log("Setting selected external vswitch: " + vswitch_name);
     $scope.$apply();
 
     $("#extvswitch").selectmenu("refresh", true);
@@ -257,7 +269,7 @@ function productUpdateAvailable(currentVersion, newVersion, updateRequired, upda
     updateMessage += 'Current version: ' + currentVersion + '. ';
     updateMessage += 'New available version: ' + newVersion;
 
-    showMessage('v-magine update available', updateMessage);
+    showDownload('v-magine update available', updateMessage);
 }
 
 function showProgressStatus(enable, step, total_steps, msg) {
@@ -381,6 +393,7 @@ function initHostNicsSelect() {
             // AngularJs two way databinding does not work
             // with selectmenu
             var value = $(this).val();
+            console.log("Selected NIC: " + value);
             var $scope = angular.element(this).scope();
             $scope.$apply(function() {
                 $scope.hostNic = $scope.hostNics[value];
@@ -444,23 +457,29 @@ function initUi() {
         return false;
     });
 
+    $("#downloadmessagelater").click(function(){
+        hidePage("#showDownload");
+        return false;
+    });
+
     $("#confirmmessageno").click(function(){
         hidePage("#showConfirm");
         return false;
     });
 
-    $("#showError").keyup(function(event) {
-        if ((event.which == 13) && ($("#showError").hasClass("active-page"))) {
-            console.log("enter pressed")
+    $("#showError").keypress(function(event) {
+        if ((event.which == 13) && ($("#showError").hasClass("error-visible"))) {
             hidePage("#showError");
         }
         return false;
     });
 
     $("#controllerconfignext").click(function(){
-        if(validateControllerConfigForm()) {
+        if((validateControllerConfigForm()) && (validateIP())) {
             controller.show_host_config();
         }
+        $("#adminpassword").removeClass("hide_validation");
+        $("#adminpasswordrepeat").removeClass("hide_validation");
         return false;
     });
 
@@ -474,6 +493,8 @@ function initUi() {
             controller.review_config(
                 JSON.stringify(getDeploymentConfigDict()));
         }
+        $("#hypervhostusername").removeClass("hide_validation");
+        $("#hypervhostpassword").removeClass("hide_validation");
         return false;
     });
 
@@ -534,6 +555,11 @@ function initUi() {
 
     $("#agreement").load("eula.html");
 
+    $('#showdownloadbutton').click(function(){
+        controller.open_download_url();
+        return false;
+    });
+
     $('#showhorizonbutton').click(function(){
         controller.open_horizon_url();
         return false;
@@ -558,11 +584,43 @@ function initUi() {
     initControllerMemSlider();
 
     $("#selectdistro").selectmenu();
+    $("#pxe-interface").selectmenu();
+    $("#bmc-type").selectmenu();
+    $("#bmc-type2").selectmenu();
     initRepoUrlSelect();
     initExtVSwitchSelect();
     initHostNicsSelect();
 
     setupTerm();
+}
+
+function validations() {
+    $("#adminpassword").change(function(){
+        $("#adminpassword").removeClass("hide_validation");
+        $("#adminpasswordrepeat").removeClass("hide_validation");
+        return false;
+    });
+
+    $("#fiprangestart").focus(function(){
+        $("#fiprangestart").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#fiprangeend").focus(function(){
+        $("#fiprangeend").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#subnet").focus(function(){
+        $("#subnet").removeClass("is_invalid");
+        return false;
+    });
+
+    $("#gateway").focus(function(){
+        $("#gateway").removeClass("is_invalid");
+        return false;
+    });
+
 }
 
 function validateControllerConfigForm() {
@@ -574,6 +632,88 @@ function validateControllerConfigForm() {
         var $scope = angular.element("#controllerconfigform").scope();
         $scope.$apply();
     }
+    return true;
+}
+
+function validateIP() {
+    var subnet_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/([0-3]?[0-9]?)$/;
+    var ip_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    var subnet = $("#subnet").val();
+    var ip_start = $("#fiprangestart").val();
+    var ip_end = $("#fiprangeend").val();
+    var gateway = $("#gateway").val();
+    var prefix = subnet.split('/').slice(1);
+    var prefix_length = 0;
+
+    if ((prefix >= 8) && (prefix <=15)) {
+        prefix_length = 1;
+    } else if ((prefix >= 16) && (prefix <=23)) {
+        prefix_length = 2;
+    } else if ((prefix >= 24) && (prefix <=32)) {
+        prefix_length = 3;
+    } else {
+        $("#subnet").focus();
+        $("#subnet").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid prefix length");
+        return false;
+    }
+
+    var part = subnet.split('.').slice(0,prefix_length);
+    var range = part.join('.');
+
+    if(!subnet.match(subnet_format)) {
+        $("#subnet").focus();
+        $("#subnet").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid floating IP subnet");
+        return false;
+    }
+
+    part = ip_start.split('.').slice(0,prefix_length);
+    var iprange = part.join('.');
+    if(!(ip_start.match(ip_format)) || (range != iprange)) {
+        $("#fiprangestart").focus();
+        $("#fiprangestart").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
+        return false;
+    }
+
+    part = ip_end.split('.').slice(0,prefix_length);
+    iprange = part.join('.');
+    if(!(ip_end.match(ip_format)) || (range != iprange)) {
+        $("#fiprangeend").focus();
+        $("#fiprangeend").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid IP");
+        return false;
+    }
+
+    part = gateway.split('.').slice(0,prefix_length);
+    iprange = part.join('.');
+    if(!(gateway.match(ip_format)) || (range != iprange)) {
+        $("#gateway").focus();
+        $("#gateway").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Please enter a valid gateway");
+        return false;
+    }
+
+    var part2 = ip_start.split('.').slice(prefix_length,prefix_length+1);
+    var ip_start_compare = part2.join('.');
+
+    part2 = ip_end.split('.').slice(prefix_length,prefix_length+1);
+    var ip_end_compare = part2.join('.');
+
+    if (ip_start_compare > ip_end_compare) {
+        $("#fiprangeend").focus();
+        $("#fiprangeend").addClass("is_invalid");
+        showMessage("OpenStack configuration",
+                    "Floating IP range end is smaller than range start ");
+        return false;
+    }
+
     return true;
 }
 
@@ -596,6 +736,8 @@ function ApplicationIsReady() {
         initUi();
 
         tooltips();
+
+        validations();
 
         controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);

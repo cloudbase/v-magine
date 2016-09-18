@@ -1,6 +1,6 @@
 @echo off
 
-pyinstaller --noconfirm --log-level=WARN --onedir stackinabox.spec
+pyinstaller --noconfirm --log-level=WARN --onedir v-magine.spec
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 xcopy /S /E /Y www dist\v-magine\www\

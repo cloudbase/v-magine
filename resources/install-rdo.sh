@@ -79,8 +79,8 @@ function rdo_cleanup() {
     yum remove -y mariadb
     yum remove -y "*openstack*" "*nova*" "*neutron*" "*keystone*" "*glance*" "*cinder*" "*swift*" "*heat*" "*rdo-release*"
 
-    rm -rf /etc/nagios /etc/yum.repos.d/packstack_* /root/.my.cnf \
-    /var/lib/mysql/ /var/lib/glance /var/lib/nova /etc/nova /etc/neutron /etc/swift \
+    rm -rf /etc/yum.repos.d/packstack_* /root/.my.cnf \
+    /var/lib/mysql/ /var/lib/glance /var/lib/nova /etc/keystone /etc/nova /etc/neutron /etc/swift \
     /srv/node/device*/* /var/lib/cinder/ /etc/rsync.d/frag* \
     /var/cache/swift /var/log/keystone || true
 
@@ -118,6 +118,16 @@ function fix_cinder_chap_length() {
     fi
 }
 
+function fix_cinder_keystone_authtoken() {
+    local CINDER_KS_PASSWD=`openstack-config --get packstack-answers.txt general CONFIG_CINDER_KS_PW`
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken auth_uri http://$HOST_IP:5000
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken auth_url http://$HOST_IP:35357
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken username cinder
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken password $CINDER_KS_PASSWD
+    openstack-config --set /etc/cinder/cinder.conf keystone_authtoken identity_uri http://localhost:35357/
+    /bin/systemctl restart openstack-cinder-api.service
+}
+
 function configure_private_subnet() {
     # PackStack does not handle the private subnet DNS
     local PRIVATE_SUBNET=private_subnet
@@ -153,6 +163,8 @@ function disable_nova_compute() {
 function disable_network_manager() {
     /bin/systemctl stop NetworkManager.service
     /bin/systemctl disable NetworkManager.service
+    /sbin/service network start
+    /sbin/chkconfig network on
 }
 
 function enable_horizon_password_retrieve() {
@@ -161,24 +173,42 @@ function enable_horizon_password_retrieve() {
     /bin/systemctl restart httpd.service
 }
 
+function remove_httpd_default_site() {
+    local HTTPD_DEFAULT_SITE_CONF="/etc/httpd/conf.d/15-default.conf"
+    if [ -f $HTTPD_DEFAULT_SITE_CONF ]
+    then
+        /usr/bin/rm $HTTPD_DEFAULT_SITE_CONF
+        /usr/sbin/service httpd restart
+    fi
+}
+
+function add_hostname_to_hosts() {
+    local HOST_IP=$1
+    local HOSTNAME=$2
+
+    local HOSTS_LINE="$HOST_IP $HOSTNAME"
+    grep -q "^$HOSTS_LINE\$" /etc/hosts || echo $HOSTS_LINE >> /etc/hosts
+    HOSTS_LINE="$HOST_IP ${HOSTNAME%.*}"
+    grep -q "^$HOSTS_LINE\$" /etc/hosts || echo $HOSTS_LINE >> /etc/hosts
+}
+
+function get_total_memory_mb() {
+    echo $(($(grep MemTotal /proc/meminfo | awk '{print $2}') / 1024))
+}
+
 rdo_cleanup
+# Network manager is needed for mgmt-ext, not used by OpenStack
+#disable_network_manager
 
-if ! /usr/bin/rpm -q epel-release > /dev/null
-then
-    # TODO the release link version is not reliable and will return a 404 as soon as it gets updated to 7-6
-    exec_with_retry 5 0 /usr/bin/rpm -Uvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-fi
+ADMIN_PASSWORD=$1
+FIP_RANGE=$2
+FIP_RANGE_START=$3
+FIP_RANGE_END=$4
+FIP_RANGE_GATEWAY=$5
+FIP_RANGE_NAME_SERVERS=${@:6}
 
-disable_network_manager
-
-RDO_RELEASE_RPM_URL=$1
-ADMIN_PASSWORD=$2
-FIP_RANGE=$3
-FIP_RANGE_START=$4
-FIP_RANGE_END=$5
-FIP_RANGE_GATEWAY=$6
-FIP_RANGE_NAME_SERVERS=${@:7}
-
+RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm
+DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/9.0.1/openstack-dashboard-cloudbase-theme-9.0.1-0.noarch.rpm
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
 DATA_IFACE=data
@@ -200,20 +230,36 @@ config_ovs_network_adapter $EXT_IFACE
 /usr/sbin/ifup $EXT_IFACE
 
 read HOST_IP NETMASK_BITS BCAST  <<< `get_interface_ipv4 $MGMT_IFACE`
+add_hostname_to_hosts $HOST_IP $(hostname)
+
+exec_with_retry 5 0 /usr/bin/yum update -y
+exec_with_retry 5 0 /usr/bin/yum install -y ntpdate
+exec_with_retry 5 0 /sbin/ntpdate pool.ntp.org
+
+exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-mitaka yum-utils
+# Disabling due to 404 errors on the repo url
+/usr/bin/yum-config-manager --disable centos-ceph-jewel
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 
-if ! /usr/bin/rpm -q rdo-release > /dev/null
-then
-    exec_with_retry 5 0 /usr/bin/yum install -y $RDO_RELEASE_RPM_URL
-fi
-
-exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack
-exec_with_retry 5 0 /usr/bin/yum install openstack-utils -y
+exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack openstack-utils
 
 generate_ssh_key $SSH_KEY_PATH
 
 /usr/bin/packstack --gen-answer-file=$ANSWER_FILE
+
+if [ "$(get_total_memory_mb)" -lt "8196" ]
+then
+    # Reduce number of workers to save memory
+    MAX_SERVICE_WORKERS=2
+else
+    # Don't exceed 4
+    MAX_SERVICE_WORKERS=4
+fi
+
+NPROC=$(/usr/bin/nproc)
+SERVICE_WORKERS=$(($NPROC<$MAX_SERVICE_WORKERS?$NPROC:$MAX_SERVICE_WORKERS))
+openstack-config --set $ANSWER_FILE general CONFIG_SERVICE_WORKERS $SERVICE_WORKERS
 
 openstack-config --set $ANSWER_FILE general CONFIG_CONTROLLER_HOST $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_COMPUTE_HOSTS $HOST_IP
@@ -223,12 +269,10 @@ openstack-config --set $ANSWER_FILE general CONFIG_AMQP_HOST $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_MARIADB_HOST $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_MONGODB_HOST $HOST_IP
 
-openstack-config --set $ANSWER_FILE general CONFIG_USE_EPEL y
+openstack-config --set $ANSWER_FILE general CONFIG_USE_EPEL n
 openstack-config --set $ANSWER_FILE general CONFIG_HEAT_INSTALL y
-#openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CFN_INSTALL y
-#openstack-config --set $ANSWER_FILE general CONFIG_HEAT_CLOUDWATCH_INSTALL y
 
-openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST y
+openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST n
 
 openstack-config --set $ANSWER_FILE general CONFIG_CEILOMETER_INSTALL n
 
@@ -247,6 +291,8 @@ openstack-config --set $ANSWER_FILE general CONFIG_KEYSTONE_ADMIN_PW "$ADMIN_PAS
 openstack-config --set $ANSWER_FILE general CONFIG_KEYSTONE_DEMO_PW "$ADMIN_PASSWORD"
 
 openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_DEMO_FLOATRANGE $FIP_RANGE
+
+openstack-config --set $ANSWER_FILE general CONFIG_NAGIOS_INSTALL n
 
 exec_with_retry 5 0 /usr/bin/yum install -y openvswitch
 /bin/systemctl start openvswitch.service
@@ -267,15 +313,26 @@ fi
 /usr/bin/ovs-vsctl add-br $OVS_EXT_BRIDGE
 /usr/bin/ovs-vsctl add-port $OVS_EXT_BRIDGE $EXT_IFACE
 
+# Install common Python modules to avoid conflicts in Packstack
+exec_with_retry 5 0 /usr/bin/yum install -y python-pip python-cmd2 python-requests python-netifaces
+
+exec_with_retry 5 0 /bin/pip install "networking-hyperv>=2.0.0,<3.0.0"
+
 exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
+
+remove_httpd_default_site
 
 source /root/keystonerc_admin
 
 disable_nova_compute
 fix_cinder_chap_length
+fix_cinder_keystone_authtoken
 configure_public_subnet
 configure_private_subnet
 enable_horizon_password_retrieve
+
+exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
+
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
