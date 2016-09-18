@@ -134,19 +134,32 @@ class DeploymentActions(object):
             elif ipv6_addresses:
                 return ipv6_addresses[0]
 
+    @staticmethod
+    def _get_powershell_encoded_cmd(cmd):
+        return cmd.encode('utf-16le').encode('base64')
+
+    @staticmethod
+    def _get_powershell_path():
+        return (r"%s\System32\WindowsPowerShell\v1.0\powershell.exe" %
+                os.environ["SystemRoot"])
+
     def open_controller_ssh(self, host_address):
         key_path = self._get_controller_ssh_key_path()
 
         ssh_user = "root"
-
         bin_dir = utils.get_bin_dir()
         ssh_path = os.path.join(bin_dir, "ssh.exe")
+        title = "V-Magine - OpenStack SSH Console"
+
+        encoded_cmd = self._get_powershell_encoded_cmd(
+            '$host.ui.RawUI.WindowTitle = "%(title)s"; '
+            '& "%(ssh_path)s" -o StrictHostKeyChecking=no -i "%(key_path)s" '
+            '%(user)s@%(host)s -t bash --rcfile keystonerc_admin -i' %
+            {"title": title, "ssh_path": ssh_path, "key_path": key_path,
+             "user": ssh_user, "host": host_address})
 
         self._windows_utils.run_safe_process(
-            ssh_path,
-            ('-o StrictHostKeyChecking=no -i "%(key_path)s" %(user)s@%(host)s '
-             '-t bash --rcfile keystonerc_admin -i') %
-            {"key_path": key_path, "user": ssh_user, "host": host_address},
+            self._get_powershell_path(), "-EncodedCommand %s" % encoded_cmd,
             new_console=True)
 
     def generate_controller_ssh_key(self):
