@@ -195,7 +195,6 @@ class WindowsUtils(object):
     _ERROR_MEMBER_IN_ALIAS = 1378
     _ERROR_INVALID_MEMBER = 1388
 
-
     def __init__(self):
         self._wmi_conn_cimv2 = None
 
@@ -240,7 +239,8 @@ class WindowsUtils(object):
 
         if properties:
             for (k, v) in properties.items():
-                args.append('%(k)s="%(v)s"' % {"k": k, "v": v})
+                args.append('%(k)s="%(v)s"' %
+                            {"k": k, "v": str(v).replace('"', '""')})
 
         LOG.debug("Installing MSI: %s" % args)
         # When passing a args list, peopen escapes quotes and other
