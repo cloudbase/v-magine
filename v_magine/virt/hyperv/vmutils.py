@@ -19,7 +19,6 @@ Utility class for VM related operations on Hyper-V.
 """
 
 import logging
-import sys
 import time
 import uuid
 import wmi

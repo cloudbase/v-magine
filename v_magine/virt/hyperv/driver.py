@@ -21,7 +21,6 @@ from v_magine.virt.hyperv import constants
 from v_magine.virt.hyperv import hostutilsv2
 from v_magine.virt.hyperv import netutilsv2
 from v_magine.virt.hyperv import vhdutilsv2
-from v_magine.virt.hyperv import vmutils
 from v_magine.virt.hyperv import vmutilsv2
 from v_magine import windows
 

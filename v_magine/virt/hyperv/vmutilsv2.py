@@ -19,7 +19,6 @@ Hyper-V Server / Windows Server 2012.
 """
 
 import logging
-import sys
 import uuid
 import wmi
 

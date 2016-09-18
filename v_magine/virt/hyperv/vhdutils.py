@@ -24,7 +24,6 @@ Official VHDX format specs can be retrieved at:
 http://www.microsoft.com/en-us/download/details.aspx?id=34750
 """
 import struct
-import sys
 import wmi
 
 from xml.etree import ElementTree

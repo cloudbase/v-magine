@@ -15,7 +15,6 @@
 #    under the License.
 
 import logging
-import sys
 import time
 import wmi
 
@@ -260,7 +259,7 @@ class NetworkUtils(object):
         try:
             self._get_vswitch(vswitch_name)
             return True
-        except vmutils.HyperVException as e:
+        except vmutils.HyperVException:
             return False
 
     def create_vswitch(self, vswitch_name, external_port_name=None,

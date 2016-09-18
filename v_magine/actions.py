@@ -521,7 +521,7 @@ class DeploymentActions(object):
             token = self._windows_utils.create_user_logon_session(
                 domain_username, password, domain)
             self._windows_utils.close_user_logon_session(token)
-        except windows.LogonFailedException as ex:
+        except windows.LogonFailedException:
             raise Exception('Login failed for user "%s"' % username)
 
     def check_for_updates(self):

@@ -46,7 +46,7 @@ def generate_kickstart_image(ks_image_path, params):
     try:
         image_manager = diskimage.get_image_manager()
         image_manager.create_image(ks_image_path, ks_file, label="ks")
-    except Exception as ex:
+    except Exception:
         if os.path.exists(ks_image_path):
             os.remove(ks_image_path)
         raise

@@ -19,8 +19,6 @@ Based on the "root/virtualization/v2" namespace available starting with
 Hyper-V Server / Windows Server 2012.
 """
 import struct
-import sys
-import wmi
 
 from xml.etree import ElementTree
 

@@ -22,8 +22,8 @@ import threading
 import trollius
 
 # For PyInstaller
-import pkg_resources
-import xmlrpclib
+import pkg_resources  # noqa
+import xmlrpclib  # noqa
 
 from pybootd import daemons as pybootd_daemons
 from PyQt5 import QtCore
@@ -32,7 +32,7 @@ from PyQt5 import QtWebKit
 from PyQt5 import QtWidgets
 from PyQt5 import QtWebKitWidgets
 
-import v_magine
+import v_magine  # noqa
 from v_magine import constants
 from v_magine import utils
 from v_magine import webbrowser
