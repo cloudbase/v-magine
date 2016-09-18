@@ -1,3 +1,7 @@
+# Copyright 2014 Cloudbase Solutions Srl
+# All Rights Reserved.
+# Licensed under the AGPLv3, see LICENCE file for details.
+
 class BaseVMagineException(Exception):
     def __init__(self, message=None):
         super(BaseVMagineException, self).__init__(message)
