@@ -322,7 +322,10 @@ exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
 remove_httpd_default_site
 
-source /root/keystonerc_admin
+export OS_USERNAME=admin
+export OS_PASSWORD="$ADMIN_PASSWORD"
+export OS_TENANT_NAME=admin
+export OS_AUTH_URL="http://$HOST_IP:5000/v2.0"
 
 disable_nova_compute
 fix_cinder_chap_length
@@ -332,7 +335,6 @@ configure_private_subnet
 enable_horizon_password_retrieve
 
 exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
-
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT

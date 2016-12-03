@@ -157,6 +157,10 @@ class RDOInstaller(object):
                 host_name) != 0):
             raise Exception("The Hyper-V neutron agent is not enabled in RDO")
 
+    @staticmethod
+    def _shell_escape(s):
+        return s.replace("\\", "\\\\").replace("'", "\\'")
+
     def install_rdo(self, rdo_admin_password, fip_range, fip_range_start,
                     fip_range_end, fip_gateway, fip_name_servers):
         install_script = 'install-rdo.sh'
@@ -166,11 +170,11 @@ class RDOInstaller(object):
         self._exec_shell_cmd_check_exit_status(
             '/bin/chmod u+x /root/%(install_script)s && '
             '/root/%(install_script)s '
-            '\"%(rdo_admin_password)s\" '
+            '$\'%(rdo_admin_password)s\' '
             '\"%(fip_range)s\" \"%(fip_range_start)s\" \"%(fip_range_end)s\" '
             '\"%(fip_gateway)s\" %(fip_name_servers)s' %
             {'install_script': install_script,
-             'rdo_admin_password': rdo_admin_password,
+             'rdo_admin_password': self._shell_escape(rdo_admin_password),
              'fip_range': fip_range,
              'fip_range_start': fip_range_start,
              'fip_range_end': fip_range_end,
