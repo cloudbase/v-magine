@@ -7,6 +7,7 @@ import os
 import paramiko
 import time
 
+from v_magine import exceptions
 from v_magine import utils
 
 LOG = logging
@@ -96,6 +97,11 @@ class RDOInstaller(object):
             '/usr/bin/openstack-config --get \"%(config_file)s\" '
             '\"%(section)s\" \"%(name)s\"' %
             {'config_file': config_file, 'section': section, 'name': name})
+
+        if stdout.channel.recv_exit_status() != 0:
+            raise exceptions.ConfigFileErrorException(
+                "Could not read configuration file \"%s\"" % config_file)
+
         return stdout.read()[:-1]
 
     def get_nova_config(self):

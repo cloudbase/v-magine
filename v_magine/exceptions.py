@@ -28,3 +28,6 @@ class UserNotFoundException(BaseVMagineException):
 
 class AccessDeniedException(BaseVMagineException):
     pass
+
+class ConfigFileErrorException(BaseVMagineException):
+    pass
