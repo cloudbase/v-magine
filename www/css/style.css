@@ -97,11 +97,11 @@ label {
 
 #host-setup{
 
-   display: none;
+    display: none;
 }
 
 #page-2{
-   display: none;
+    display: none;
 
 }
 
@@ -282,7 +282,49 @@ label {
 
 #wrapforscroll {
     display: block;
-    height: 355px;
+    height: 295px;
+}
+
+#gh-issues {
+    display: table;
+    margin-top: 25px;
+    height: 50px;
+    width: 100%;
+}
+
+.gh-issues p{
+    display: table-cell;
+    font-size: 14px;
+    color: #82798D;
+    text-align: center;
+    vertical-align: middle;
+}
+
+#gh-tabs {
+    display: table;
+    margin-top: 10px;
+    height: 50px;
+    width: 100%;
+}
+
+#gh-tabs .gh-link {
+    width: 33.3%;
+    float: left;
+}
+
+.clearfix::after {
+    content: " ";
+    display: block;
+    clear: both;
+    height: 0;
+}
+
+#gh-tabs .gh-link p{
+    /*display: table-cell;*/
+    font-size: 17px;
+    color: #82798D;
+    text-align: center;
+    vertical-align: middle;
 }
 
 #wraperrormessage, #wrapconfirmmessage, #wrapdownloadmessage {
@@ -936,7 +978,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     font-weight: bold;
     margin: 0px;
     cursor: pointer;
-    background-image:
+    /*background-image:*/
 }
 
 .compute-nodes-list ul:active {
@@ -1722,8 +1764,7 @@ input:not(.hide_validation):invalid {
 }
 
 .cbsl-logo{
-    width: 200px;
-    height: 200px;
-    margin-left: 40%;
+    width: auto;
     margin-top: 100px;
+    text-align: center;
 }
