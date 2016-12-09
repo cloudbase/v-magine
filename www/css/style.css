@@ -24,8 +24,8 @@
 }
 
 @font-face {
-  font-family: 'Ubuntu Mono Regular';
-  src: url('../fonts/UbuntuMono-R.ttf') format('truetype');
+    font-family: 'Ubuntu Mono Regular';
+    src: url('../fonts/UbuntuMono-R.ttf') format('truetype');
 }
 
 ul
@@ -55,7 +55,7 @@ label {
     width:100%;
     height:100%;
     float: left;
- }
+}
 
 .content-page h2, .content-page h4{
     color:#fff;
@@ -74,7 +74,7 @@ label {
 }
 
 .input-container {
-  position:relative;
+    position:relative;
 }
 
 /*------------------------------------page display---------------------------------------*/
@@ -120,6 +120,10 @@ label {
 #review{
     display: none;
 }
+#review .mini-widget {
+    display: block;
+    float: left;
+}
 
 #install-page{
     display: none;
@@ -132,7 +136,84 @@ label {
 .error-visible{
     display: inline !important;
 }
+.radio-buttons {
+    line-height: 2.5rem;
+}
+.mini-row .radio-buttons {
+    height: 60px;
+    padding-top: 2px;
+}
+.radio-buttons .radio-title {
+    color: #FFF;
+    font-size: 1.2rem;
+}
+.radio-buttons:after {
+    clear: both;
+    content: " ";
+    height: 0;
+    display: block;
+}
+.radio-buttons .radio label {
+    display: inline-block;
+    cursor: pointer;
+    position: relative;
+    padding-left: 25px;
+    margin-right: 15px;
+    font-size: 1.8rem;
+    line-height: 2rem;
+    margin-top: 8px;
+}
+.radio-buttons input[type=radio] {
+    display: none;
+}
+.radio-buttons label:before {
+    content: "";
+    display: inline-block;
+    width: 1.7rem;
+    height: 1.7rem;
+    margin-right: 10px;
+    position: absolute;
+    left: 0.2rem;
+    bottom: 0.3rem;
+    border-radius: 25px;
+    background-color: #FFF;
+    display: none;
+}
+.radio-buttons label:after {
+    content: "";
+    display: inline-block;
+    width: 17px;
+    height: 17px;
+    margin-right: 10px;
+    position: absolute;
+    left: 0;
+    bottom: 1px;
+    border-radius: 25px;
+    background-color: #FFF;
+}
+.radio-buttons .radio {
+    float: left;
+}
+.radio-buttons .radio label:before {
+    border-radius: 8px;
+}
+.radio-buttons input[type=radio]:checked + label:before {
+    display: block;
+    content: " ";
+    height: 1.3rem;
+    width: 1.3rem;
+    border-radius: 50%;
+    background-color: #007AFF;
+    z-index: 10;
+}
+.proxy-eye {
+    right: 10px;
+    margin: 0;
+}
+.disabled {
+    opacity: 0.5;
 
+}
 /*----------------------------------------------------------------------------------*/
 
 .progress_bar {
@@ -159,8 +240,8 @@ label {
     height: 30px;
     background-color: #4D415D;
     background-image: linear-gradient(135deg, rgba(255, 255, 255, .15) 25%, transparent 25%,
-                        transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
-                        transparent 75%, transparent);
+    transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%,
+    transparent 75%, transparent);
 
     -webkit-animation: animate-stripes 1s linear infinite;
 }
@@ -635,7 +716,7 @@ label {
 
 
 #back-review{
-     margin-left:29%;
+    margin-left:29%;
 }
 
 .back-2{
@@ -813,7 +894,7 @@ input{
     margin:5px 0 0 -5px;
 }
 
-.allocated-memory{
+.allocated-memory, .allocated-cpus{
     margin-top: 20px;
     line-height: 10px;
     font-size: 13px;
@@ -898,14 +979,14 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     border: none;
     left: 95%;
 
-/*    -webkit-box-shadow: inset 0px 1px 1px 0px rgba(255, 255, 255, 0.2), 0px 2px 4px 0px rgba(0,0,0,0.4);
-    -moz-box-shadow: inset 0px 1px 1px 0px rgba(255, 255, 255, 0.2), 0px 2px 4px 0px rgba(0,0,0,0.4);
-    box-shadow: inset 0px 1px 1px 0px rgba(255, 255, 255, 0.2), 0px 2px 4px 0px rgba(0,0,0,0.4);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#222931), color-stop(100%,#181D21));
+    /*    -webkit-box-shadow: inset 0px 1px 1px 0px rgba(255, 255, 255, 0.2), 0px 2px 4px 0px rgba(0,0,0,0.4);
+        -moz-box-shadow: inset 0px 1px 1px 0px rgba(255, 255, 255, 0.2), 0px 2px 4px 0px rgba(0,0,0,0.4);
+        box-shadow: inset 0px 1px 1px 0px rgba(255, 255, 255, 0.2), 0px 2px 4px 0px rgba(0,0,0,0.4);
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#222931), color-stop(100%,#181D21));
 
-    -webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
-    border-radius: 20px;*/
+        -webkit-border-radius: 20px;
+        -moz-border-radius: 20px;
+        border-radius: 20px;*/
     width: 10px;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
     filter: alpha(opacity=0);
@@ -941,7 +1022,7 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     background-color: #FFF;
     border: none;
     border-radius: 5px;
-    color: #4D415D bold;
+    color: #4D415D;
     height: 180px;
     width: 900px;
 }
@@ -974,7 +1055,6 @@ input[type="range"]:hover ~ #rangevalue,input[type="range"]:active ~ #rangevalue
     font-weight: bold;
     margin: 0px;
     cursor: pointer;
-    /*background-image:*/
 }
 
 .compute-nodes-list ul:active {
@@ -1231,13 +1311,14 @@ input:not(.hide_validation):invalid {
 
 
 .mini-widget{
-    width:33%;
+    width:25%;
     height:440px;
     /*background-color:red;*/
     display:inline-block;
     margin-top:40px;
     vertical-align: top;
 }
+
 
 .headline{
     color:#fff !important;
@@ -1267,7 +1348,7 @@ input:not(.hide_validation):invalid {
 
 #wrap-review h2{            /*blue text*/
     /*line-height: 2px;*/
-    color:#37A8DF;
+    color:#007AFF;
     margin-top: 0px !important;
     margin-bottom:20px;
     font-family: "Segoe UI SemiLight", Arial !important;
@@ -1361,12 +1442,12 @@ input:not(.hide_validation):invalid {
 }
 
 #install{
-     float:right;
-     margin-right:29%;
-     height: 45px;
-     color: #BD1E2D;
-     border: 1px solid #BD1E2D;
-     border-radius: 5px;
+    float:right;
+    margin-right:29%;
+    height: 45px;
+    color: #BD1E2D;
+    border: 1px solid #BD1E2D;
+    border-radius: 5px;
 }
 
 #install:hover {
@@ -1423,61 +1504,61 @@ input:not(.hide_validation):invalid {
 
 /** initial setup **/
 .nano {
-  position : relative;
-  width    : 100%;
-  height   : 100%;
-  overflow : hidden;
+    position : relative;
+    width    : 100%;
+    height   : 100%;
+    overflow : hidden;
 }
 .nano > .content-text {
-  position      : absolute;
-  overflow      : scroll;
-  overflow-x    : hidden;
-  margin-right  : 18px;
-  top           : 0;
-  right         : 0;
-  bottom        : 0;
-  left          : 0;
+    position      : absolute;
+    overflow      : scroll;
+    overflow-x    : hidden;
+    margin-right  : 18px;
+    top           : 0;
+    right         : 0;
+    bottom        : 0;
+    left          : 0;
 }
 .nano > .content-text:focus {
-  outline: none;
+    outline: none;
 }
 .nano > .content-text::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 .has-scrollbar > .content-text::-webkit-scrollbar {
-  display: block;
+    display: block;
 }
 
 .nano > .nano-pane {
-  background : rgba(0,0,0,.25);
-  position   : absolute;
-  width      : 10px;
-  right      : 0;
-  top        : 0;
-  bottom     : 0;
-  visibility : hidden\9; /* Target only IE7 and IE8 with this hack */
-  opacity    : .01;
-  -webkit-transition    : .2s;
-  -moz-transition       : .2s;
-  -o-transition         : .2s;
-  transition            : .2s;
-  -moz-border-radius    : 5px;
-  -webkit-border-radius : 5px;
-  border-radius         : 5px;
-  display: block;
+    background : rgba(0,0,0,.25);
+    position   : absolute;
+    width      : 10px;
+    right      : 0;
+    top        : 0;
+    bottom     : 0;
+    visibility : hidden\9; /* Target only IE7 and IE8 with this hack */
+    opacity    : .01;
+    -webkit-transition    : .2s;
+    -moz-transition       : .2s;
+    -o-transition         : .2s;
+    transition            : .2s;
+    -moz-border-radius    : 5px;
+    -webkit-border-radius : 5px;
+    border-radius         : 5px;
+    display: block;
 }
 .nano > .nano-pane > .nano-slider {
-  background: #444;
-  background: rgba(0,0,0,.5);
-  position              : relative;
-  margin                : 0 1px;
-  -moz-border-radius    : 3px;
-  -webkit-border-radius : 3px;
-  border-radius         : 3px;
+    background: #444;
+    background: rgba(0,0,0,.5);
+    position              : relative;
+    margin                : 0 1px;
+    -moz-border-radius    : 3px;
+    -webkit-border-radius : 3px;
+    border-radius         : 3px;
 }
 .nano:hover > .nano-pane, .nano-pane.active, .nano-pane.flashed {
-  visibility : visible\9; /* Target only IE7 and IE8 with this hack */
-  opacity    : 0.99;
+    visibility : visible\9; /* Target only IE7 and IE8 with this hack */
+    opacity    : 0.99;
 }
 
 .nano .nano-pane   { background: gray; }
@@ -1611,11 +1692,11 @@ input:not(.hide_validation):invalid {
 }
 
 #migrate:hover, #add-edit:hover{
-        color: #201134;
+    color: #201134;
 }
 
 #add-edit:focus{
-        color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 #add-edit:active{
@@ -1624,7 +1705,7 @@ input:not(.hide_validation):invalid {
 
 
 #migrate:focus{
-        color: #ffffff !important;
+    color: #ffffff !important;
 }
 
 #migrate:active{
@@ -1683,7 +1764,7 @@ input:not(.hide_validation):invalid {
     -webkit-animation-name:bounce_fountainG;
     -webkit-animation-duration:1.3s;
     -webkit-animation-iteration-count:infinite;
-    -webkit-animation-direction:linear;
+
     -webkit-transform:scale(.3);
     -webkit-border-radius:18px;
 }
@@ -1728,16 +1809,61 @@ input:not(.hide_validation):invalid {
     -webkit-animation-delay:1.43s;
 }
 
-@-webkit-keyframes bounce_fountainG{
-    0%{
-        -webkit-transform:scale(1);
-        background-color:#FFFFFF;
+@-webkit-keyframes bounce_fountainG {
+    0% {
+        -webkit-transform: scale(1);
+        background-color: #FFFFFF;
     }
 
-    100%{
-        -webkit-transform:scale(.3);
-        background-color:#00AEFF;
+    100% {
+        -webkit-transform: scale(.3);
+        background-color: #00AEFF;
     }
+}
+.mini-label{
+    width: 48% !important;
+    display: inline-block !important;
+}
+.mini-row:after {
+    content: " ";
+    display: block;
+    height: 0;
+    clear: both;
+}
+.mini-row .mini-label:nth-child(2n+1) {
+    float: left;
+}
+.mini-row .mini-label:nth-child(2n) {
+    float: right;
+}
+.mini-row .col:first-child {
+    width: 48%;
+    float: left;
+}
+.mini-row .col:nth-child(2) {
+    width: 48%;
+    float: right;
+}
+.mini-label.disabled {
+    opacity: 0.5;
+}
+
+#page-networking {
+    display: none;
+}
+#page-networking .widget:nth-child(2) {
+    float: right;
+    margin-top: 67px;
+}
+#right-mini-label{
+    float:right;
+}
+h2 .fa {
+    color: #007AFF;
+    margin-right: 4px;
+}
+.mini-label .icon-awesome{
+    margin-left: 82%;
 }
 
 .cbsl-logo{
