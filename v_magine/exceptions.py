@@ -2,6 +2,7 @@
 # All Rights Reserved.
 # Licensed under the AGPLv3, see LICENCE file for details.
 
+
 class BaseVMagineException(Exception):
     def __init__(self, message=None):
         super(BaseVMagineException, self).__init__(message)
@@ -28,6 +29,7 @@ class UserNotFoundException(BaseVMagineException):
 
 class AccessDeniedException(BaseVMagineException):
     pass
+
 
 class ConfigFileErrorException(BaseVMagineException):
     pass

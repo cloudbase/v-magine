@@ -303,12 +303,33 @@ class DeploymentActions(object):
     def check_platform_requirements(self):
         self._virt_driver.check_platform()
 
+    @staticmethod
+    def _get_primary_secondary_dns(name_servers):
+        dns1 = name_servers[0].strip() if len(name_servers) else None
+        dns2 = name_servers[1].strip() if len(name_servers) > 1 else None
+        return dns1, dns2
+
     def generate_mac_pxelinux_cfg(self, pxe_mac_address, mgmt_ext_mac_address,
-                                  inst_repo):
+                                  inst_repo, mgmt_ext_ip, mgmt_ext_netmask,
+                                  mgmt_ext_gateway, mgmt_ext_name_servers,
+                                  proxy_url, proxy_username, proxy_password):
+
+        proxy_url = utils.add_credentials_to_url(
+            proxy_url, proxy_username, proxy_password)
+
+        mgmt_ext_dns1, mgmt_ext_dns2 = self._get_primary_secondary_dns(
+            mgmt_ext_name_servers)
+
         self._pybootd_manager.generate_mac_pxelinux_cfg(
             pxe_mac_address,
             {'mgmt_ext_mac_address': mgmt_ext_mac_address,
-             'inst_repo': inst_repo})
+             'inst_repo': inst_repo,
+             "mgmt_ext_ip": mgmt_ext_ip,
+             "mgmt_ext_netmask": mgmt_ext_netmask,
+             "mgmt_ext_gateway": mgmt_ext_gateway,
+             "mgmt_ext_dns1": mgmt_ext_dns1,
+             "mgmt_ext_dns2": mgmt_ext_dns2,
+             "proxy_url": proxy_url})
 
     def start_pxe_service(self, listen_address, reservations, pxe_os_id):
         pxe_base_dir = utils.get_pxe_files_dir()
@@ -421,12 +442,20 @@ class DeploymentActions(object):
     def create_kickstart_image(self, ks_image_path, encrypted_password,
                                mgmt_ext_mac_address, mgmt_int_mac_address,
                                data_mac_address, ext_mac_address, inst_repo,
-                               ssh_pub_key_path):
+                               ssh_pub_key_path, mgmt_ext_ip, mgmt_ext_netmask,
+                               mgmt_ext_gateway, mgmt_ext_name_servers,
+                               proxy_url, proxy_username, proxy_password):
         def _format_udev_mac(mac):
             return mac.lower().replace('-', ':')
 
         with open(ssh_pub_key_path, 'rb') as f:
             ssh_pub_key = f.read()
+
+        proxy_url = utils.add_credentials_to_url(
+            proxy_url, proxy_username, proxy_password)
+
+        mgmt_ext_dns1, mgmt_ext_dns2 = self._get_primary_secondary_dns(
+            mgmt_ext_name_servers)
 
         kickstart.generate_kickstart_image(
             ks_image_path,
@@ -436,7 +465,13 @@ class DeploymentActions(object):
              "data_mac_address": _format_udev_mac(data_mac_address),
              "ext_mac_address": _format_udev_mac(ext_mac_address),
              "inst_repo": inst_repo,
-             "ssh_pub_key": ssh_pub_key})
+             "ssh_pub_key": ssh_pub_key,
+             "mgmt_ext_ip": mgmt_ext_ip,
+             "mgmt_ext_netmask": mgmt_ext_netmask,
+             "mgmt_ext_gateway": mgmt_ext_gateway,
+             "mgmt_ext_dns1": mgmt_ext_dns1,
+             "mgmt_ext_dns2": mgmt_ext_dns2,
+             "proxy_url": proxy_url})
 
     def create_vswitches(self, external_vswitch_name, internal_network_config):
         virt_driver = virt_factory.get_virt_driver()

@@ -24,8 +24,6 @@ OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
 OPENSTACK_CONTROLLER_VM_NAME = "openstack-controller"
 VMAGINE_DOWNLOAD_URL = "https://www.cloudbase.it/v-magine"
 
-OPENDNS_NAME_SERVERS = ['208.67.222.222', '208.67.220.220']
-
 
 class _VMConsoleThread(threading.Thread):
     def __init__(self, console_named_pipe, stdout_callback):
@@ -166,7 +164,10 @@ class Worker(object):
 
     def _deploy_openstack_vm(self, ext_vswitch_name,
                              openstack_vm_mem_mb, openstack_base_dir,
-                             admin_password, repo_url):
+                             admin_password, repo_url,
+                             mgmt_ext_ip, mgmt_ext_netmask,
+                             mgmt_ext_gateway, mgmt_ext_name_servers,
+                             proxy_url, proxy_username, proxy_password):
         vm_name = OPENSTACK_CONTROLLER_VM_NAME
         vm_admin_user = "root"
         vm_dir = os.path.join(openstack_base_dir, vm_name)
@@ -213,7 +214,9 @@ class Worker(object):
         self._dep_actions.create_kickstart_image(
             iso_path, encrypted_password, mgmt_ext_mac_address,
             mgmt_int_mac_address, data_mac_address, ext_mac_address,
-            repo_url, ssh_pub_key_path)
+            repo_url, ssh_pub_key_path, mgmt_ext_ip, mgmt_ext_netmask,
+            mgmt_ext_gateway, mgmt_ext_name_servers, proxy_url,
+            proxy_username, proxy_password)
 
         self._update_status('Creating the OpenStack controller VM...')
         self._dep_actions.create_openstack_vm(
@@ -231,9 +234,10 @@ class Worker(object):
             [vnic_ip[1:] for vnic_ip in vnic_ip_info], pxe_os_id)
 
         self._dep_actions.generate_mac_pxelinux_cfg(
-            pxe_mac_address,
-            mgmt_ext_mac_address.replace('-', ':'),
-            repo_url)
+            pxe_mac_address, mgmt_ext_mac_address.replace('-', ':'),
+            repo_url, mgmt_ext_ip, mgmt_ext_netmask, mgmt_ext_gateway,
+            mgmt_ext_name_servers, proxy_url, proxy_username,
+            proxy_password)
 
         self._update_status('PXE booting OpenStack controller VM...')
         self._dep_actions.start_openstack_vm()
@@ -415,6 +419,9 @@ class Worker(object):
 
             curr_user = self._dep_actions.get_current_user()
 
+            proxy_url = utils.get_proxy()
+            name_servers = utils.get_dns()
+
             config_dict = {
                 "default_openstack_base_dir":
                 self._get_default_openstack_base_dir(),
@@ -426,8 +433,11 @@ class Worker(object):
                 "default_fip_range_start": fip_range_start,
                 "default_fip_range_end": fip_range_end,
                 "default_fip_range_gateway": fip_gateway,
-                "default_fip_range_name_servers": OPENDNS_NAME_SERVERS,
-                "localhost": socket.gethostname()
+                "default_fip_range_name_servers": name_servers,
+                "default_proxy_url": proxy_url,
+                "default_mgmt_ext_dhcp": False,
+                "default_mgmt_ext_name_servers": name_servers,
+                "localhost": socket.gethostname(),
             }
 
             return config_dict
@@ -643,8 +653,25 @@ class Worker(object):
             openstack_vm_mem_mb = int(args.get("openstack_vm_mem_mb"))
             openstack_base_dir = args.get("openstack_base_dir")
             admin_password = args.get("admin_password")
+
+            if not args.get("mgmt_ext_dhcp"):
+                mgmt_ext_ip = args.get("mgmt_ext_ip")
+                mgmt_ext_netmask = args.get("mgmt_ext_netmask")
+                mgmt_ext_gateway = args.get("mgmt_ext_gateway")
+            else:
+                mgmt_ext_ip = None
+                mgmt_ext_netmask = None
+                mgmt_ext_gateway = None
+
+            mgmt_ext_name_servers = args.get("mgmt_ext_name_servers")
+
+            proxy_url = args.get("proxy_url")
+            proxy_username = args.get("proxy_username")
+            proxy_password = args.get("proxy_password")
+
             hyperv_host_username = args.get("hyperv_host_username")
             hyperv_host_password = args.get("hyperv_host_password")
+
             fip_range = args.get("fip_range")
             fip_range_start = args.get("fip_range_start")
             fip_range_end = args.get("fip_range_end")
@@ -660,7 +687,10 @@ class Worker(object):
 
             (mgmt_ip, ssh_user, ssh_key_path) = self._deploy_openstack_vm(
                 ext_vswitch_name, openstack_vm_mem_mb,
-                openstack_base_dir, admin_password, repo_url)
+                openstack_base_dir, admin_password, repo_url,
+                mgmt_ext_ip, mgmt_ext_netmask,
+                mgmt_ext_gateway, mgmt_ext_name_servers, proxy_url,
+                proxy_username, proxy_password)
 
             # Authenticate with the SSH key
             ssh_password = None

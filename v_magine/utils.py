@@ -10,6 +10,8 @@ import subprocess
 import tempfile
 import time
 
+from dns import resolver
+from six.moves.urllib import parse
 from six.moves.urllib import request
 
 LOG = logging
@@ -105,3 +107,22 @@ def get_random_mac_address():
            random.randint(0x00, 0xff),
            random.randint(0x00, 0xff)]
     return '-'.join(map(lambda x: "%02x" % x, mac))
+
+
+def add_credentials_to_url(url, username, password):
+    if not url or not username:
+        return url
+    s = parse.urlsplit(url)
+    netloc = "%s:%s@%s" % (
+        parse.quote(username), parse.quote(password or ''), s.hostname)
+    if s.port:
+        netloc += ":%d" % s.port
+    return parse.urlunsplit(s._replace(netloc=netloc))
+
+
+def get_dns():
+    return resolver.Resolver().nameservers
+
+
+def get_proxy():
+    return request.getproxies().get('http')

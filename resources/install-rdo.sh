@@ -215,8 +215,6 @@ function download_cirros_image() {
 }
 
 rdo_cleanup
-# Network manager is needed for mgmt-ext, not used by OpenStack
-#disable_network_manager
 
 ADMIN_PASSWORD=$1
 FIP_RANGE=$2
@@ -229,7 +227,6 @@ RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-mit
 DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/9.0.1/openstack-dashboard-cloudbase-theme-9.0.1-0.noarch.rpm
 CIRROS_URL=https://www.cloudbase.it/downloads/cirros-0.3.4-x86_64.vhdx.gz
 ANSWER_FILE=packstack-answers.txt
-MGMT_IFACE=mgmt-int
 DATA_IFACE=data
 EXT_IFACE=ext
 OVS_DATA_BRIDGE=br-data
@@ -240,8 +237,18 @@ NTP_HOSTS=0.pool.ntp.org,1.pool.ntp.org,2.pool.ntp.org,3.pool.ntp.org
 # TODO: check if we can use ssh-add
 SSH_KEY_PATH=~/.ssh/id_rsa
 MGMT_ZONE=management
+MGMT_EXT_IFACE=mgmt-ext
+MGMT_INT_IFACE=mgmt-int
 
-set_interface_static_ipv4_from_dhcp $MGMT_IFACE $MGMT_ZONE
+if [ $(grep 'BOOTPROTO="none"' /etc/sysconfig/network-scripts/ifcfg-$MGMT_EXT_IFACE) ]
+then
+    MGMT_IFACE=$MGMT_EXT_IFACE
+    disable_network_manager
+else
+    MGMT_IFACE=$MGMT_INT_IFACE
+fi
+
+set_interface_static_ipv4_from_dhcp $MGMT_INT_IFACE $MGMT_ZONE
 /usr/sbin/ifup $MGMT_IFACE
 config_ovs_network_adapter $DATA_IFACE
 /usr/sbin/ifup $DATA_IFACE
@@ -253,7 +260,16 @@ add_hostname_to_hosts $HOST_IP $(hostname)
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 exec_with_retry 5 0 /usr/bin/yum install -y ntpdate
-exec_with_retry 5 0 /sbin/ntpdate pool.ntp.org
+
+if [ $http_proxy ]
+then
+    # packstack fails when accessing Keystone otherwise
+    /usr/bin/sed -i '/^no_proxy=.*$/s/$/,'$HOST_IP'/' /etc/environment
+    export no_proxy=$no_proxy,$HOST_IP
+fi
+
+SKIP_NTP_CONFIG=""
+exec_with_retry 5 0 /sbin/ntpdate pool.ntp.org || SKIP_NTP_CONFIG=1 && >&2 echo "ntpdate failed, make sure the NTP server is available"
 
 exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-mitaka yum-utils
 # Disabling due to 404 errors on the repo url
@@ -305,7 +321,11 @@ openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_MECHANISM_DRIVERS
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_VLAN_RANGES physnet1:500:2000
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS physnet1:$OVS_DATA_BRIDGE
 #openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_OVS_BRIDGE_IFACES $OVS_DATA_BRIDGE:$DATA_IFACE
-openstack-config --set $ANSWER_FILE general CONFIG_NTP_SERVERS $NTP_HOSTS
+
+if [ ! $SKIP_NTP_CONFIG ]
+then
+    openstack-config --set $ANSWER_FILE general CONFIG_NTP_SERVERS $NTP_HOSTS
+fi
 
 openstack-config --set $ANSWER_FILE general CONFIG_SSH_KEY "$SSH_KEY_PATH.pub"
 
@@ -346,13 +366,13 @@ exec_with_retry 5 0 /bin/pip install "networking-hyperv>=2.0.0,<3.0.0"
 exec_with_retry 5 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
 rm "$CIRROS_TMP_FILE"
-remove_httpd_default_site
 
 export OS_USERNAME=admin
 export OS_PASSWORD="$ADMIN_PASSWORD"
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL="http://$HOST_IP:5000/v2.0"
 
+remove_httpd_default_site
 disable_nova_compute
 fix_cinder_chap_length
 fix_cinder_keystone_authtoken

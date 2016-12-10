@@ -13,5 +13,6 @@ ecdsa
 trollius
 fastestmirror
 jinja2
+dnspython
 #sip
 #PyQt5

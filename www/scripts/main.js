@@ -25,6 +25,14 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
     $scope.horizonUrl = null;
     $scope.downloadUrl = null;
     $scope.computeNodes = null;
+    $scope.proxyUrl = null;
+    $scope.proxyUsername = null;
+    $scope.proxyPassword = null;
+    $scope.mgmtExtDhcp = null;
+    $scope.mgmtExtIp = null;
+    $scope.mgmtExtNetmask = null;
+    $scope.mgmtExtGateway = null;
+    $scope.mgmtExtNameServers = [];
 }]);
 
 function handleError(msg) {
@@ -172,6 +180,14 @@ function getDeploymentConfigDict() {
     dict["fip_range_end"] = $scope.fipRangeEnd;
     dict["fip_gateway"] = $scope.fipRangeGateway;
     dict["fip_name_servers"] = $scope.fipRangeNameServers;
+    dict["proxy_url"] = $scope.proxyUrl;
+    dict["proxy_username"] = $scope.proxyUsername;
+    dict["proxy_password"] = $scope.proxyPassword;
+    dict["mgmt_ext_dhcp"] = $scope.mgmtExtDhcp;
+    dict["mgmt_ext_ip"] = $scope.mgmtExtIp;
+    dict["mgmt_ext_netmask"] = $scope.mgmtExtNetmask;
+    dict["mgmt_ext_gateway"] = $scope.mgmtExtGateway;
+    dict["mgmt_ext_name_servers"] = $scope.mgmtExtNameServers;
     return dict
 }
 
@@ -319,6 +335,9 @@ function configCompleted(configJson) {
     $scope.fipRangeEnd = defaultConfig.default_fip_range_end;
     $scope.fipRangeGateway = defaultConfig.default_fip_range_gateway;
     $scope.fipRangeNameServers = defaultConfig.default_fip_range_name_servers;
+    $scope.proxyUrl = defaultConfig.default_proxy_url;
+    $scope.mgmtExtDhcp = defaultConfig.default_mgmt_ext_dhcp;
+    $scope.mgmtExtNameServers = defaultConfig.default_mgmt_ext_name_servers;
     $scope.hypervHostName = defaultConfig.localhost;
 
     $scope.$apply();
