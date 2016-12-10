@@ -11,10 +11,6 @@ import sys
 import threading
 import trollius
 
-# For PyInstaller
-import pkg_resources  # noqa
-import xmlrpclib  # noqa
-
 from pybootd import daemons as pybootd_daemons
 from PyQt5 import QtCore
 from PyQt5 import QtGui
