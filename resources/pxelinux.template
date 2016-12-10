@@ -8,5 +8,5 @@ serial 0 115200
 
 label ks-net
   menu label ^Network install
-  kernel vmlinuz text console=tty0 console=ttyS0,115200n8 utf8 BOOTIF=<%mgmt_ext_mac_address%> consoleblank=0
-  append initrd=initrd.img ro inst.ks=cdrom:/ks.cfg inst.repo=<%inst_repo%> ksdevice=<%mgmt_ext_mac_address%> ramdisk_size=100000
+  kernel vmlinuz text console=tty0 console=ttyS0,115200n8 utf8 BOOTIF={{ mgmt_ext_mac_address }} consoleblank=0
+  append initrd=initrd.img ro inst.ks=cdrom:/ks.cfg inst.repo={{ inst_repo }} ksdevice={{ mgmt_ext_mac_address }} ramdisk_size=100000 {% if proxy_url %} proxy="{{ proxy_url }}" {% endif %} {% if mgmt_ext_ip %} ip={{ mgmt_ext_ip }} netmask={{ mgmt_ext_netmask }} gateway={{ mgmt_ext_gateway }} dns={{ mgmt_ext_dns1 }} {% endif %}

@@ -9,6 +9,7 @@ import os
 import subprocess
 import sys
 
+import jinja2
 from v_magine import utils
 from v_magine import windows
 
@@ -58,11 +59,11 @@ class PyBootdManager(object):
         mac_cfg_path = os.path.join(self._pxelinux_cfg_dir,
                                     "01-%s" % pxe_mac_address.lower())
 
+        env = jinja2.Environment(trim_blocks=True, lstrip_blocks=True)
         with open(self._get_pxelinux_cfg_path(), "rb") as f:
-            pxelinux_cfg = f.read()
+            template = env.from_string(f.read().decode())
 
-        for (key, value) in params.items():
-            pxelinux_cfg = pxelinux_cfg.replace("<%%%s%%>" % key, value)
+        pxelinux_cfg = template.render(params)
 
         with open(mac_cfg_path, "wb") as f:
             f.write(pxelinux_cfg)

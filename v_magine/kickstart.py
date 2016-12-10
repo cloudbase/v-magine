@@ -6,6 +6,8 @@ import logging
 import os
 import tempfile
 
+import jinja2
+
 from v_magine import utils
 from v_magine import diskimage
 
@@ -17,12 +19,13 @@ def _get_kickstart_template():
 
 
 def _generate_kickstart_file(params):
+    env = jinja2.Environment(trim_blocks=True, lstrip_blocks=True)
     with open(_get_kickstart_template(), "rb") as f:
-        ks = f.read()
+        template = env.from_string(f.read().decode())
 
-    LOG.debug("Kickstart params: %s" % params)
-    for (key, value) in params.items():
-        ks = ks.replace("<%%%s%%>" % key, value)
+    LOG.debug("Kickstart params: %s", params)
+    ks = template.render(params)
+    LOG.debug("Kickstart generated content:\n%s", ks)
 
     ks_file = os.path.join(tempfile.gettempdir(), 'ks.cfg')
     with open(ks_file, "wb") as f:

@@ -12,5 +12,6 @@ python-glanceclient
 ecdsa
 trollius
 fastestmirror
+jinja2
 #sip
 #PyQt5
