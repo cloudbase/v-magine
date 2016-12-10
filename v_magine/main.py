@@ -1,4 +1,4 @@
-﻿# Copyright 2014 Cloudbase Solutions Srl
+# Copyright 2014 Cloudbase Solutions Srl
 # All Rights Reserved.
 # Licensed under the AGPLv3, see LICENCE file for details.
 
