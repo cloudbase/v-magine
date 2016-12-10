@@ -360,16 +360,6 @@ class Worker(object):
         # Skip for now
         # rdo_installer.check_hyperv_compute_services(platform.node())
 
-    def _create_cirros_image(self, openstack_cred):
-        image_path = "cirros.vhdx.gz"
-        self._update_status('Downloading Cirros VHDX image...')
-        self._dep_actions.download_cirros_image(image_path)
-        self._update_status('Removing existing images...')
-        self._dep_actions.delete_existing_images(openstack_cred)
-        self._update_status('Uploading Cirros VHDX image in Glance...')
-        self._dep_actions.create_cirros_image(openstack_cred, image_path)
-        os.remove(image_path)
-
     def _get_default_openstack_base_dir(self):
         if sys.platform == 'win32':
             drive = os.environ['SYSTEMDRIVE']
@@ -689,10 +679,6 @@ class Worker(object):
                                                hyperv_host_username,
                                                hyperv_host_password)
             self._validate_deployment(rdo_installer)
-
-            openstack_cred = self._dep_actions.get_openstack_credentials(
-                mgmt_ip, admin_password)
-            self._create_cirros_image(openstack_cred)
 
             self._update_status('Your OpenStack deployment is ready!')
 

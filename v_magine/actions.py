@@ -56,9 +56,6 @@ HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V'
 FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
                   "HyperVNovaCompute_Mitaka_13_0_0.msi")
-CIRROS_VHDX_URL = ("https://raw.githubusercontent.com/cloudbase/"
-                   "ci-overcloud-init-scripts/master/scripts/devstack_vm/"
-                   "cirros-0.3.3-x86_64.vhdx.gz")
 FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
                               "FreeRDPWebConnect.msi")
 
@@ -165,29 +162,6 @@ class DeploymentActions(object):
     @utils.retry_on_error()
     def download_freerdp_webconnect_msi(self, target_path):
         utils.download_file(FREERDP_WEBCONNECT_MSI_URL, target_path)
-
-    @utils.retry_on_error()
-    def download_cirros_image(self, target_path):
-        utils.download_file(CIRROS_VHDX_URL, target_path)
-
-    def get_openstack_credentials(self, mgmt_int_ip, password):
-        auth_url = 'http://%s:5000/v2.0/' % mgmt_int_ip
-        return {'tenant_name': 'admin', 'username': 'admin',
-                'password': password, 'auth_url': auth_url}
-
-    @utils.retry_on_error()
-    def delete_existing_images(self, openstack_cred):
-        g = glance.GlanceClient()
-        g.login(**openstack_cred)
-        for image in g.get_images():
-            g.delete_image(image['id'])
-
-    @utils.retry_on_error()
-    def create_cirros_image(self, openstack_cred, gzipped_image_path):
-        g = glance.GlanceClient()
-        g.login(**openstack_cred)
-        with gzip.open(gzipped_image_path, 'rb') as f:
-            g.create_image('cirros', 'vhd', 'bare', f, 'hyperv', 'public')
 
     @staticmethod
     def _get_keystone_v2_url(auth_url):
