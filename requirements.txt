@@ -7,8 +7,6 @@ netifaces
 pybootd
 psutil
 oslo.utils
-python-keystoneclient
-python-glanceclient
 ecdsa
 trollius
 fastestmirror

@@ -2,7 +2,6 @@
 # All Rights Reserved.
 # Licensed under the AGPLv3, see LICENCE file for details.
 
-import gzip
 import json
 import logging
 import os
@@ -15,7 +14,6 @@ from oslo_utils import units
 
 from v_magine import config
 from v_magine import constants
-from v_magine import glance
 from v_magine import kickstart
 from v_magine import pybootdmgr
 from v_magine import security
