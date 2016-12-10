@@ -201,6 +201,19 @@ function get_total_memory_mb() {
     echo $(($(grep MemTotal /proc/meminfo | awk '{print $2}') / 1024))
 }
 
+function download_cirros_image() {
+    local CIRROS_URL=$1
+    local CIRROS_TMP_FILE=$2
+
+    echo "Downloading Cirros image: $CIRROS_URL"
+    exec_with_retry 5 0 wget -q "$CIRROS_URL" -O "$CIRROS_TMP_FILE"
+    if [ "$(file $CIRROS_TMP_FILE | grep gzip)" ]
+    then
+        mv "$CIRROS_TMP_FILE" "$CIRROS_TMP_FILE.gz"
+        gunzip "$CIRROS_TMP_FILE.gz"
+    fi
+}
+
 rdo_cleanup
 # Network manager is needed for mgmt-ext, not used by OpenStack
 #disable_network_manager
@@ -214,6 +227,7 @@ FIP_RANGE_NAME_SERVERS=${@:6}
 
 RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm
 DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/9.0.1/openstack-dashboard-cloudbase-theme-9.0.1-0.noarch.rpm
+CIRROS_URL=https://www.cloudbase.it/downloads/cirros-0.3.4-x86_64.vhdx.gz
 ANSWER_FILE=packstack-answers.txt
 MGMT_IFACE=mgmt-int
 DATA_IFACE=data
@@ -248,6 +262,9 @@ exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-mitaka yum-
 exec_with_retry 5 0 /usr/bin/yum update -y
 
 exec_with_retry 5 0 /usr/bin/yum install -y openstack-packstack openstack-utils
+
+CIRROS_TMP_FILE=$(/usr/bin/mktemp)
+download_cirros_image "$CIRROS_URL" "$CIRROS_TMP_FILE"
 
 generate_ssh_key $SSH_KEY_PATH
 
@@ -299,6 +316,9 @@ openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_DEMO_FLOATRANGE $FI
 
 openstack-config --set $ANSWER_FILE general CONFIG_NAGIOS_INSTALL n
 
+openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_IMAGE_URL "$CIRROS_TMP_FILE"
+openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_IMAGE_FORMAT vhd
+
 exec_with_retry 5 0 /usr/bin/yum install -y openvswitch
 /bin/systemctl start openvswitch.service
 
@@ -325,6 +345,7 @@ exec_with_retry 5 0 /bin/pip install "networking-hyperv>=2.0.0,<3.0.0"
 
 exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
+rm "$CIRROS_TMP_FILE"
 remove_httpd_default_site
 
 export OS_USERNAME=admin
