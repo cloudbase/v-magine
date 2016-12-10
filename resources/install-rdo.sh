@@ -343,7 +343,7 @@ exec_with_retry 5 0 /usr/bin/yum install -y python-pip python-cmd2 python-reques
 
 exec_with_retry 5 0 /bin/pip install "networking-hyperv>=2.0.0,<3.0.0"
 
-exec_with_retry 10 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
+exec_with_retry 5 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 
 rm "$CIRROS_TMP_FILE"
 remove_httpd_default_site
