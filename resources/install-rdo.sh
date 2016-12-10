@@ -167,6 +167,11 @@ function disable_network_manager() {
     /sbin/chkconfig network on
 }
 
+function create_nova_flavors() {
+    exec_with_retry 5 0 /usr/bin/nova flavor-create m1.nano 42 96 1 1
+    exec_with_retry 5 0 /usr/bin/nova flavor-create m1.micro 84 128 2 1
+}
+
 function enable_horizon_password_retrieve() {
     local LOCAL_SETTINGS_PATH="/usr/share/openstack-dashboard/openstack_dashboard/local/local_settings.py"
     echo "OPENSTACK_ENABLE_PASSWORD_RETRIEVE = True" >> $LOCAL_SETTINGS_PATH
@@ -332,6 +337,7 @@ fix_cinder_chap_length
 fix_cinder_keystone_authtoken
 configure_public_subnet
 configure_private_subnet
+create_nova_flavors
 enable_horizon_password_retrieve
 
 exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
