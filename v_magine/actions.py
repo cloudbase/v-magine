@@ -211,6 +211,7 @@ class DeploymentActions(object):
         return username
 
     def open_url(self, url):
+        LOG.debug("Opening url: %s", url)
         if not self._windows_utils.open_url(url):
             self._windows_utils.run_safe_process(
                 sys.executable, "openurl %s" % url)

@@ -380,6 +380,21 @@ class Controller(QtCore.QObject):
         LOG.debug("open_controller_ssh called")
         _run_async_task(self._worker.open_controller_ssh())
 
+    @QtCore.pyqtSlot()
+    def open_issues_url(self):
+        LOG.debug("open_issues_url called")
+        _run_async_task(self._worker.open_issues_url())
+
+    @QtCore.pyqtSlot()
+    def open_github_url(self):
+        LOG.debug("open_github_url called")
+        _run_async_task(self._worker.open_github_url())
+
+    @QtCore.pyqtSlot()
+    def open_questions_url(self):
+        LOG.debug("open_questions_url called")
+        _run_async_task(self._worker.open_questions_url())
+
 
 class MainWindow(QtWidgets.QMainWindow):
 

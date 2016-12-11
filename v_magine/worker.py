@@ -23,6 +23,9 @@ LOG = logging
 OPENSTACK_DEFAULT_BASE_DIR_WIN32 = "\\OpenStack"
 OPENSTACK_CONTROLLER_VM_NAME = "openstack-controller"
 VMAGINE_DOWNLOAD_URL = "https://www.cloudbase.it/v-magine"
+VMAGINE_GITHUB_URL = "https://github.com/cloudbase/v-magine"
+VMAGINE_ISSUES_URL = "https://github.com/cloudbase/v-magine/issues"
+VMAGINE_QUESTIONS_URL = "http://ask.cloudbase.it"
 
 
 class _VMConsoleThread(threading.Thread):
@@ -589,17 +592,31 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
-    def open_download_url(self):
+    def _open_url(self, url, status_msg=None):
         try:
-            self._start_progress_status('Opening download page...')
-            self._dep_actions.open_url(VMAGINE_DOWNLOAD_URL)
+            if not status_msg:
+                status_msg = 'Opening %s...' % url
+            self._start_progress_status(status_msg)
+            self._dep_actions.open_url(url)
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
             self._error_callback(ex)
         finally:
             self._stop_progress_status()
+
+    @trollius.coroutine
+    def open_download_url(self):
+        self._open_url(VMAGINE_DOWNLOAD_URL, 'Opening download page...')
+
+    def open_issues_url(self):
+        self._open_url(VMAGINE_ISSUES_URL)
+
+    def open_github_url(self):
+        self._open_url(VMAGINE_GITHUB_URL)
+
+    def open_questions_url(self):
+        self._open_url(VMAGINE_QUESTIONS_URL)
 
     @trollius.coroutine
     def open_controller_ssh(self):

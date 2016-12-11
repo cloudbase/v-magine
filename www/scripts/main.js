@@ -574,6 +574,21 @@ function initUi() {
 
     $("#agreement").load("eula.html");
 
+    $('#opengithuburlbutton1,#opengithuburlbutton2').click(function(){
+        controller.open_github_url();
+        return false;
+    });
+
+    $('#openissuesurlbutton').click(function(){
+        controller.open_issues_url();
+        return false;
+    });
+
+    $('#openquestionsurlbutton').click(function(){
+        controller.open_questions_url();
+        return false;
+    });
+
     $('#showdownloadbutton').click(function(){
         controller.open_download_url();
         return false;
