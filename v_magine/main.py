@@ -556,6 +556,7 @@ def _run_async_loop(loop):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == 'pybootd':
+        del sys.argv[1]
         pybootd_daemons.main()
     else:
         if len(sys.argv) == 3 and sys.argv[1] == 'openurl':
