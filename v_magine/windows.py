@@ -371,9 +371,9 @@ class WindowsUtils(object):
 
     def create_user_logon_session(self, username, password, domain='.'):
         token = wintypes.HANDLE()
-        ret_val = advapi32.LogonUserW(six.u(username),
-                                      six.u(domain),
-                                      six.u(password), 2, 0,
+        ret_val = advapi32.LogonUserW(six.text_type(username),
+                                      six.text_type(domain),
+                                      six.text_type(password), 2, 0,
                                       ctypes.byref(token))
         if not ret_val:
             raise LogonFailedException()
