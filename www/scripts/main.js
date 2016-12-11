@@ -603,9 +603,6 @@ function initUi() {
     initControllerMemSlider();
 
     $("#selectdistro").selectmenu();
-    $("#pxe-interface").selectmenu();
-    $("#bmc-type").selectmenu();
-    $("#bmc-type2").selectmenu();
     initRepoUrlSelect();
     initExtVSwitchSelect();
     initHostNicsSelect();
