@@ -238,7 +238,7 @@ class WindowsUtils(object):
 
     def check_os_version(self, major, minor):
         os_version_str = self._conn_cimv2.Win32_OperatingSystem()[0].Version
-        os_version = map(int, os_version_str.split("."))
+        os_version = list(map(int, os_version_str.split(".")))
         return os_version >= [major, minor]
 
     def firewall_create_rule(self, rule_name, local_ports, protocol,
@@ -352,14 +352,14 @@ class WindowsUtils(object):
     def get_sysnative_dir(self):
         return os.path.expandvars('%windir%\\sysnative')
 
-    def _get_system_dir(self, sysnative=True):
+    def get_system_dir(self, sysnative=True):
         if sysnative and self.check_sysnative_dir_exists():
             return self.get_sysnative_dir()
         else:
             return self.get_system32_dir()
 
     def execute_powershell(self, args="", sysnative=True):
-        base_dir = self._get_system_dir(sysnative)
+        base_dir = self.get_system_dir(sysnative)
         powershell_path = os.path.join(base_dir,
                                        'WindowsPowerShell\\v1.0\\'
                                        'powershell.exe')
@@ -371,9 +371,9 @@ class WindowsUtils(object):
 
     def create_user_logon_session(self, username, password, domain='.'):
         token = wintypes.HANDLE()
-        ret_val = advapi32.LogonUserW(unicode(username),
-                                      unicode(domain),
-                                      unicode(password), 2, 0,
+        ret_val = advapi32.LogonUserW(six.u(username),
+                                      six.u(domain),
+                                      six.u(password), 2, 0,
                                       ctypes.byref(token))
         if not ret_val:
             raise LogonFailedException()

@@ -4,9 +4,9 @@
 
 import logging
 import re
-import urllib2
 
 import fastestmirror
+from six.moves.urllib import request
 
 from v_magine import constants
 
@@ -23,9 +23,9 @@ def get_repo_mirrors(release=DEFAULT_CENTOS_RELEASE, arch="x86_64",
 
     mirrors = []
     try:
-        req = urllib2.Request(url, headers={'User-Agent':
+        req = request.Request(url, headers={'User-Agent':
                                             constants.PRODUCT_NAME})
-        mirrors = urllib2.urlopen(req).read().split("\n")[:-1]
+        mirrors = request.urlopen(req).read().decode().split("\n")[:-1]
     except Exception as ex:
         LOG.exception(ex)
         LOG.error("Failed to get list of CentOS mirrors")

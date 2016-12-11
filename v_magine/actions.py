@@ -8,9 +8,9 @@ import os
 import psutil
 import socket
 import sys
-import urllib2
 
 from oslo_utils import units
+from six.moves.urllib import request
 
 from v_magine import config
 from v_magine import constants
@@ -524,9 +524,9 @@ class DeploymentActions(object):
         try:
             url = UPDATE_CHECK_URL.format(
                 constants.PRODUCT_NAME, constants.VERSION)
-            req = urllib2.Request(
+            req = request.Request(
                 url, headers={'User-Agent': constants.PRODUCT_NAME})
-            return json.load(urllib2.urlopen(req))
+            return json.loads(request.urlopen(req).read().decode())
         except Exception as ex:
             LOG.exception(ex)
             raise Exception("Checking for product updates failed")

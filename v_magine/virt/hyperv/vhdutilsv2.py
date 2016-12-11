@@ -216,7 +216,7 @@ class VHDUtilsV2(vhdutils.VHDUtils):
                 vhd_info_dict[name] = value_text
             elif name in ["BlockSize", "LogicalSectorSize",
                           "PhysicalSectorSize", "MaxInternalSize"]:
-                vhd_info_dict[name] = long(value_text)
+                vhd_info_dict[name] = int(value_text)
             elif name in ["Type", "Format"]:
                 vhd_info_dict[name] = int(value_text)
 

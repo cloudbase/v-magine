@@ -65,13 +65,13 @@ class _VMConsoleThread(threading.Thread):
                     # TODO: Needs to be fixed in term.js
                     if not menu_done:
                         buf += data
-                        if '\x1b' not in buf:
+                        if b'\x1b' not in buf:
                             self._stdout_callback(data)
-                        idx = buf.find("\x1b[0m")
+                        idx = buf.find(b"\x1b[0m")
                         if idx >= 0:
-                            self._stdout_callback(buf[idx + len("\x1b[0m"):])
+                            self._stdout_callback(buf[idx + len(b"\x1b[0m"):])
                             menu_done = True
-                            buf = ""
+                            buf = b""
                             LOG.debug("Console: pxelinux menu done")
                     else:
                         self._stdout_callback(data)

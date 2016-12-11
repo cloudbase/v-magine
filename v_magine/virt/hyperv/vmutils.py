@@ -89,7 +89,7 @@ class VMUtils(object):
 
     def __init__(self, host='.'):
         self._enabled_states_map = dict((v, k) for k, v in
-                                        self._vm_power_states_map.iteritems())
+                                        self._vm_power_states_map.items())
         self._wmi_conn = None
         self._wmi_conn_cimv2 = None
         self._wmi_cimv2_namespace = '//%s/root/cimv2' % host
@@ -153,10 +153,10 @@ class VMUtils(object):
         si = summary_info[0]
         memory_usage = None
         if si.MemoryUsage is not None:
-            memory_usage = long(si.MemoryUsage)
+            memory_usage = int(si.MemoryUsage)
         up_time = None
         if si.UpTime is not None:
-            up_time = long(si.UpTime)
+            up_time = int(si.UpTime)
 
         # Nova requires a valid state to be returned. Hyper-V has more
         # states than Nova, typically intermediate ones and since there is
@@ -205,14 +205,14 @@ class VMUtils(object):
         mem_settings = vmsetting.associators(
             wmi_result_class=self._MEMORY_SETTING_DATA_CLASS)[0]
 
-        max_mem = long(memory_mb)
+        max_mem = int(memory_mb)
         mem_settings.Limit = max_mem
 
         if dynamic_memory_ratio > 1:
             mem_settings.DynamicMemoryEnabled = True
             # Must be a multiple of 2
             reserved_mem = min(
-                long(max_mem / dynamic_memory_ratio) >> 1 << 1,
+                int(max_mem / dynamic_memory_ratio) >> 1 << 1,
                 max_mem)
         else:
             mem_settings.DynamicMemoryEnabled = False
@@ -227,7 +227,7 @@ class VMUtils(object):
     def _set_vm_vcpus(self, vm, vmsetting, vcpus_num, limit_cpu_features):
         procsetting = vmsetting.associators(
             wmi_result_class=self._PROCESSOR_SETTING_DATA_CLASS)[0]
-        vcpus = long(vcpus_num)
+        vcpus = int(vcpus_num)
         procsetting.VirtualQuantity = vcpus
         procsetting.Reservation = vcpus
         procsetting.Limit = 100000  # static assignment to 100%

@@ -93,7 +93,7 @@ class Controller(QtCore.QObject):
         self.on_stderr_data_event.emit(data)
 
     def _error(self, ex):
-        self.on_error_event.emit(ex.message)
+        self.on_error_event.emit(str(ex))
 
     def _disable_deployment(self):
         self.on_deployment_disabled_event.emit()

@@ -29,7 +29,7 @@ def _generate_kickstart_file(params):
 
     ks_file = os.path.join(tempfile.gettempdir(), 'ks.cfg')
     with open(ks_file, "wb") as f:
-        f.write(ks)
+        f.write(ks.encode())
 
     return ks_file
 

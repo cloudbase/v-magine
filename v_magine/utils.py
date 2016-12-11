@@ -106,7 +106,7 @@ def get_random_mac_address():
            random.randint(0x00, 0xff),
            random.randint(0x00, 0xff),
            random.randint(0x00, 0xff)]
-    return '-'.join(map(lambda x: "%02x" % x, mac))
+    return '-'.join(list(map(lambda x: "%02x" % x, mac)))
 
 
 def add_credentials_to_url(url, username, password):

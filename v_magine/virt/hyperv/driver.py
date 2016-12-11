@@ -161,8 +161,7 @@ class HyperVDriver(base.BaseDriver):
             raise Exception("Please enable Hyper-V on this host before "
                             "installing OpenStack")
 
-        # TODO: check if we are on Python x64 and use System32 instead
-        system_path = os.path.join(os.environ['WINDIR'], "sysnative")
+        system_path = self._windows_utils.get_system_dir()
         vmms_path = os.path.join(system_path, "vmms.exe")
         vmms_version = self._windows_utils.get_file_version(vmms_path)
         LOG.debug("vmms.exe file version: %s" % str(vmms_version))

@@ -190,7 +190,7 @@ class VHDUtils(object):
             if name == "ParentPath":
                 vhd_info_dict[name] = value_text
             elif name in ["FileSize", "MaxInternalSize"]:
-                vhd_info_dict[name] = long(value_text)
+                vhd_info_dict[name] = int(value_text)
             elif name in ["InSavedState", "InUse"]:
                 vhd_info_dict[name] = bool(value_text)
             elif name == "Type":

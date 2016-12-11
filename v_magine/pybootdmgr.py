@@ -35,7 +35,7 @@ class PyBootdManager(object):
 
         pybootd_ini_path = utils.copy_to_temp_file(pybootd_ini_template_path)
 
-        with open(pybootd_ini_path, 'rb') as f:
+        with open(pybootd_ini_path, 'r') as f:
             cfg = iniparse.INIConfig(f)
 
         if not pool_count:
@@ -51,7 +51,7 @@ class PyBootdManager(object):
             cfg.mac[mac_address] = "enable"
 
         with open(pybootd_ini_path, 'wb') as f:
-            f.write(str(cfg))
+            f.write(str(cfg).encode())
 
         return pybootd_ini_path
 
@@ -66,7 +66,7 @@ class PyBootdManager(object):
         pxelinux_cfg = template.render(params)
 
         with open(mac_cfg_path, "wb") as f:
-            f.write(pxelinux_cfg)
+            f.write(pxelinux_cfg.encode())
 
     def start(self, listen_address, tftp_root_dir, pool_start, reservations,
               pool_count=None):
