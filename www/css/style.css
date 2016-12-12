@@ -1729,14 +1729,15 @@ input:not(.hide_validation):invalid {
 }
 
 @-webkit-keyframes bounce_fountainG{
-0%{
-    -webkit-transform:scale(1);
-    background-color:#FFFFFF;
-}
+    0%{
+        -webkit-transform:scale(1);
+        background-color:#FFFFFF;
+    }
 
-100%{
-    -webkit-transform:scale(.3);
-    background-color:#00AEFF;
+    100%{
+        -webkit-transform:scale(.3);
+        background-color:#00AEFF;
+    }
 }
 
 .cbsl-logo{
