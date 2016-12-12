@@ -110,7 +110,7 @@ class Controller(QtCore.QObject):
 
     def _check_for_updates(self):
         _run_async_task(
-            self._worker.check_for_updates(),
+            self._worker.check_for_updates,
             self._product_update_available)
 
     def _platform_requirements_checked(self, future):
@@ -128,7 +128,7 @@ class Controller(QtCore.QObject):
     def _check_platform_requirements(self):
         LOG.debug("Checking platform requirements")
         _run_async_task(
-            self._worker.check_platform_requirements(),
+            self._worker.check_platform_requirements,
             self._platform_requirements_checked)
 
     def _enable_retry_deployment(self, enable):
@@ -174,7 +174,7 @@ class Controller(QtCore.QObject):
     def show_deployment_details(self):
         LOG.debug("show_deployment_details called")
         _run_async_task(
-            self._worker.get_deployment_details(),
+            self._worker.get_deployment_details,
             self._get_deployment_details_completed)
         self.get_compute_nodes()
 
@@ -238,7 +238,7 @@ class Controller(QtCore.QObject):
 
         args = json.loads(str(json_args))
         _run_async_task(
-            self._worker.validate_host_user(
+            lambda: self._worker.validate_host_user(
                 args.get("hyperv_host_username"),
                 args.get("hyperv_host_password")),
             self._host_user_validated)
@@ -258,8 +258,8 @@ class Controller(QtCore.QObject):
         LOG.debug("get_config called")
 
         _run_async_tasks(
-            [(self._worker.get_config(), self._get_config_completed),
-             (self._worker.get_repo_urls(), self._get_repo_urls_completed)])
+            [(self._worker.get_config, self._get_config_completed),
+             (self._worker.get_repo_urls, self._get_repo_urls_completed)])
 
     def _get_compute_nodes_completed(self, future):
         compute_nodes = future.result()
@@ -270,7 +270,7 @@ class Controller(QtCore.QObject):
     def get_compute_nodes(self):
         LOG.debug("get_compute_nodes called")
         _run_async_task(
-            self._worker.get_compute_nodes(),
+            self._worker.get_compute_nodes,
             self._get_compute_nodes_completed)
 
     @QtCore.pyqtSlot(str, int, int)
@@ -292,7 +292,7 @@ class Controller(QtCore.QObject):
         self.on_install_started_event.emit()
         self._enable_retry_deployment(False)
         _run_async_task(
-            self._worker.deploy_openstack(json.loads(str(json_args))),
+            lambda: self._worker.deploy_openstack(json.loads(str(json_args))),
             self._install_done)
 
     @QtCore.pyqtSlot()
@@ -315,7 +315,7 @@ class Controller(QtCore.QObject):
             QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:
             _run_async_task(
-                self._worker.remove_openstack_deployment(),
+                self._worker.remove_openstack_deployment,
                 self._openstack_deployment_removed)
 
     def _get_ext_vswitches_completed(self, future):
@@ -327,7 +327,7 @@ class Controller(QtCore.QObject):
     def get_ext_vswitches(self):
         LOG.debug("get_ext_vswitches called")
         _run_async_task(
-            self._worker.get_ext_vswitches(),
+            self._worker.get_ext_vswitches,
             self._get_ext_vswitches_completed)
 
     def _get_available_host_nics_completed(self, future):
@@ -343,7 +343,7 @@ class Controller(QtCore.QObject):
             json.dumps([]))
 
         _run_async_task(
-            self._worker.get_available_host_nics(),
+            self._worker.get_available_host_nics,
             self._get_available_host_nics_completed)
 
     def _add_ext_vswitch_completed(self, future):
@@ -355,45 +355,46 @@ class Controller(QtCore.QObject):
         if vswitch_name:
             # Refresh VSwitch list
             _run_async_task(
-                self._worker.get_ext_vswitches(),
+                self._worker.get_ext_vswitches,
                 _get_ext_vswitches_completed_callback)
 
     @QtCore.pyqtSlot(str, str)
     def add_ext_vswitch(self, vswitch_name, nic_name):
         LOG.debug("add_ext_vswitch called")
         _run_async_task(
-            self._worker.add_ext_vswitch(str(vswitch_name), str(nic_name)),
+            lambda: self._worker.add_ext_vswitch(
+                str(vswitch_name), str(nic_name)),
             self._add_ext_vswitch_completed)
 
     @QtCore.pyqtSlot()
     def open_horizon_url(self):
         LOG.debug("open_horizon_url called")
-        _run_async_task(self._worker.open_horizon_url())
+        _run_async_task(self._worker.open_horizon_url)
 
     @QtCore.pyqtSlot()
     def open_download_url(self):
         LOG.debug("open_download_url called")
-        _run_async_task(self._worker.open_download_url())
+        _run_async_task(self._worker.open_download_url)
 
     @QtCore.pyqtSlot()
     def open_controller_ssh(self):
         LOG.debug("open_controller_ssh called")
-        _run_async_task(self._worker.open_controller_ssh())
+        _run_async_task(self._worker.open_controller_ssh)
 
     @QtCore.pyqtSlot()
     def open_issues_url(self):
         LOG.debug("open_issues_url called")
-        _run_async_task(self._worker.open_issues_url())
+        _run_async_task(self._worker.open_issues_url)
 
     @QtCore.pyqtSlot()
     def open_github_url(self):
         LOG.debug("open_github_url called")
-        _run_async_task(self._worker.open_github_url())
+        _run_async_task(self._worker.open_github_url)
 
     @QtCore.pyqtSlot()
     def open_questions_url(self):
         LOG.debug("open_questions_url called")
-        _run_async_task(self._worker.open_questions_url())
+        _run_async_task(self._worker.open_questions_url)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -538,11 +539,10 @@ def _run_async_task(coroutine, callback=None):
 def _run_async_tasks(tasks_info):
     tasks = []
     loop = trollius.get_event_loop()
-    for (coroutine, callback) in tasks_info:
-        task = trollius.async(coroutine)
+    for (func, callback) in tasks_info:
+        task = loop.run_in_executor(None, func)
         if callback:
             task.add_done_callback(callback)
-        loop.call_soon_threadsafe(task)
         tasks.append(task)
     return tasks
 

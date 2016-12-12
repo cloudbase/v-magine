@@ -8,7 +8,6 @@ import socket
 import threading
 import time
 import sys
-import trollius
 
 from v_magine import actions
 from v_magine import centos
@@ -160,6 +159,8 @@ class Worker(object):
             True, self._curr_step, self._max_steps, msg)
 
     def _start_progress_status(self, msg=''):
+        if msg:
+            LOG.debug(msg)
         self._progress_status_update_callback(True, 0, 0, msg)
 
     def _stop_progress_status(self, msg=''):
@@ -383,7 +384,6 @@ class Worker(object):
         fip_gateway = fip_subnet[:-1] + "1"
         return (fip_range, fip_range_start, fip_range_end, fip_gateway)
 
-    @trollius.coroutine
     def get_compute_nodes(self):
         try:
             self._start_progress_status('Retrieving compute nodes info...')
@@ -395,7 +395,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def get_config(self):
         try:
             LOG.debug("get_config called")
@@ -450,7 +449,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def get_repo_urls(self):
         try:
             LOG.debug("get_repo_urls called")
@@ -464,7 +462,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def check_platform_requirements(self):
         try:
             LOG.debug("check_platform_requirements called")
@@ -491,7 +488,6 @@ class Worker(object):
                 "Available: {:,} MB, "
                 "required {:,} MB".format(max_mem_mb, min_mem_mb))
 
-    @trollius.coroutine
     def get_ext_vswitches(self):
         try:
             LOG.debug("get_ext_vswitches called")
@@ -508,7 +504,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def get_available_host_nics(self):
         try:
             LOG.debug("get_available_host_nics called")
@@ -524,7 +519,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def add_ext_vswitch(self, vswitch_name, nic_name):
         try:
             LOG.debug("add_ext_vswitch called, vswitch_name: "
@@ -551,7 +545,6 @@ class Worker(object):
         return self._dep_actions.get_vm_ip_address(
             OPENSTACK_CONTROLLER_VM_NAME)
 
-    @trollius.coroutine
     def get_deployment_details(self):
         try:
             LOG.debug("get_deployment_details called")
@@ -578,7 +571,6 @@ class Worker(object):
         # TODO(alexpilotti): This changes between Ubuntu and RDO
         return "http://%s" % controller_ip
 
-    @trollius.coroutine
     def open_horizon_url(self):
         try:
             self._start_progress_status('Opening OpenStack web console...')
@@ -605,7 +597,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def open_download_url(self):
         self._open_url(VMAGINE_DOWNLOAD_URL, 'Opening download page...')
 
@@ -618,7 +609,6 @@ class Worker(object):
     def open_questions_url(self):
         self._open_url(VMAGINE_QUESTIONS_URL)
 
-    @trollius.coroutine
     def open_controller_ssh(self):
         try:
             self._start_progress_status('Opening OpenStack SSH console...')
@@ -631,7 +621,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def remove_openstack_deployment(self):
         try:
             LOG.debug("remove_openstack_deployment called")
@@ -642,8 +631,6 @@ class Worker(object):
             LOG.exception(ex)
             self._error_callback(ex)
 
-    # TODO: this is currently called by another thread. We shoudl find a way to
-    # use it as a coroutine
     def cancel_openstack_deployment(self):
         try:
             LOG.debug("cancel_openstack_deployment called")
@@ -655,7 +642,6 @@ class Worker(object):
             LOG.exception(ex)
             self._error_callback(ex)
 
-    @trollius.coroutine
     def deploy_openstack(self, args):
         try:
             self._start_progress_status('Deployment started')
@@ -748,7 +734,6 @@ class Worker(object):
             self._dep_actions.stop_pxe_service()
             self._is_install_done = True
 
-    @trollius.coroutine
     def validate_host_user(self, username, password):
         try:
             LOG.debug("validate_host_user called")
@@ -761,7 +746,6 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    @trollius.coroutine
     def check_for_updates(self):
         try:
             self._start_progress_status("Checking for product updates...")
