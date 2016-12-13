@@ -5,7 +5,6 @@
 import json
 import logging
 import os
-import psutil
 import socket
 import sys
 
@@ -42,6 +41,7 @@ FREERDP_WEBCONNECT_HTTPS_PORT = 4430
 OPENSTACK_MAX_VM_MEM_MB = 16 * 1024
 OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 6 * 1024
 OPENSTACK_VM_MIN_MEM_MB = int(2.5 * 1024)
+OPENSTACK_VM_RECOMMENDED_VCPU_COUNT = 4
 
 OPENSTACK_MIN_INSTANCES_MEM_MB = 256
 
@@ -283,6 +283,10 @@ class DeploymentActions(object):
                                         "nova_install.log")
         LOG.info("Nova compute installed")
 
+    @staticmethod
+    def get_openstack_vm_recommended_vcpu_count():
+        return OPENSTACK_VM_RECOMMENDED_VCPU_COUNT
+
     def get_openstack_vm_memory_mb(self, vm_name):
         mem_available = self._virt_driver.get_host_available_memory()
         LOG.info("Host available memory: %s" % mem_available)
@@ -369,8 +373,9 @@ class DeploymentActions(object):
 
         return vm_network_config
 
-    def create_openstack_vm(self, vm_name, vm_dir, max_mem_mb, vfd_path,
-                            iso_path, vm_network_config, console_named_pipe):
+    def create_openstack_vm(self, vm_name, vm_dir, vcpu_count, max_mem_mb,
+                            vfd_path, iso_path, vm_network_config,
+                            console_named_pipe):
         (min_mem_mb, max_mem_mb_auto,
          max_mem_mb_limit) = self.get_openstack_vm_memory_mb(vm_name)
 
@@ -380,8 +385,6 @@ class DeploymentActions(object):
             raise Exception("Not enough RAM available for OpenStack")
 
         vhd_max_size = OPENSTACK_VM_VHD_MAX_SIZE
-        # Set vCPU count equal to the hosts's core count
-        vcpu_count = len(psutil.cpu_percent(interval=0, percpu=True))
 
         self._virt_driver.create_vm(vm_name, vm_dir, vhd_max_size,
                                     max_mem_mb, min_mem_mb, vcpu_count,

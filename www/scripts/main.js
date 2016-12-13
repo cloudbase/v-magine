@@ -177,6 +177,7 @@ function getDeploymentConfigDict() {
     dict["ext_vswitch_name"] = $scope.extVSwitch;
     dict["centos_mirror"] = $scope.centosMirror;
     dict["openstack_vm_mem_mb"] = $scope.openStackVMMem;
+    dict["openstack_vm_vcpu_count"] = $scope.openStackVMCpu;
     dict["openstack_base_dir"] = $scope.openstackBaseDir;
     dict["admin_password"] = $scope.adminPassword;
     dict["hyperv_host_username"] = $scope.hypervHostUsername;
@@ -335,6 +336,10 @@ function configCompleted(configJson) {
     $scope.minOpenStackVMMem = defaultConfig.min_openstack_vm_mem_mb;
     $scope.openStackVMMem = defaultConfig.suggested_openstack_vm_mem_mb;
     $scope.suggestedOpenStackVMMem = $scope.openStackVMMem
+    $scope.maxOpenStackVMCpu = defaultConfig.max_openstack_vm_vcpu_count;
+    $scope.minOpenStackVMCpu = defaultConfig.min_openstack_vm_vcpu_count;
+    $scope.openStackVMCpu = defaultConfig.suggested_openstack_vm_vcpu_count;
+    $scope.suggestedOpenStackVMCpu = $scope.openStackVMCpu
     $scope.openstackBaseDir = defaultConfig.default_openstack_base_dir;
     $scope.hypervHostUsername = defaultConfig.default_hyperv_host_username;
     $scope.fipRange = defaultConfig.default_fip_range;
@@ -425,7 +430,7 @@ function initControllerVcpuSlider() {
         max: $scope.maxOpenStackVMCpu,
         slide: function(event, ui) {
             var value = ui.value.toString();
-            $("#openstackvmcpu").text(value + "MB");
+            $("#openstackvmcpu").text(value);
             // AngularJs is not performing two way databinding
             $scope.openStackVMCpu = value;
 
@@ -438,7 +443,7 @@ function initControllerVcpuSlider() {
     });
 
     $("#openstackvmcpu").val(
-      $("#openstackvmcpuslider").slider("value").toString() + "MB");
+      $("#openstackvmcpuslider").slider("value").toString());
 }
 
 function initControllerNetworkingOptions() {

@@ -5,6 +5,7 @@
 import functools
 import logging
 import os
+import psutil
 import random
 import subprocess
 import tempfile
@@ -126,3 +127,7 @@ def get_dns():
 
 def get_proxy():
     return request.getproxies().get('http')
+
+
+def get_cpu_count():
+    return len(psutil.cpu_percent(interval=0, percpu=True))

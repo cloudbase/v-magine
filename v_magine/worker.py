@@ -166,7 +166,7 @@ class Worker(object):
     def _stop_progress_status(self, msg=''):
         self._progress_status_update_callback(False, 0, 0, msg)
 
-    def _deploy_openstack_vm(self, ext_vswitch_name,
+    def _deploy_openstack_vm(self, ext_vswitch_name, openstack_vm_vcpu_count,
                              openstack_vm_mem_mb, openstack_base_dir,
                              admin_password, repo_url,
                              mgmt_ext_ip, mgmt_ext_netmask,
@@ -224,7 +224,8 @@ class Worker(object):
 
         self._update_status('Creating the OpenStack controller VM...')
         self._dep_actions.create_openstack_vm(
-            vm_name, vm_dir, openstack_vm_mem_mb, None, iso_path,
+            vm_name, vm_dir, openstack_vm_vcpu_count,
+            openstack_vm_mem_mb, None, iso_path,
             vm_network_config, console_named_pipe)
 
         vnic_ip_info = self._dep_actions.get_openstack_vm_ip_info(
@@ -414,6 +415,12 @@ class Worker(object):
             except Exception as ex:
                 LOG.exception(ex)
 
+            cpu_count = utils.get_cpu_count()
+
+            suggested_openstack_vm_vcpu_count = min(
+                cpu_count,
+                self._dep_actions.get_openstack_vm_recommended_vcpu_count())
+
             (fip_range,
              fip_range_start,
              fip_range_end,
@@ -430,6 +437,10 @@ class Worker(object):
                 "min_openstack_vm_mem_mb": min_mem_mb,
                 "suggested_openstack_vm_mem_mb": suggested_mem_mb,
                 "max_openstack_vm_mem_mb": max_mem_mb,
+                "min_openstack_vm_vcpu_count": 1,
+                "suggested_openstack_vm_vcpu_count":
+                    suggested_openstack_vm_vcpu_count,
+                "max_openstack_vm_vcpu_count": cpu_count,
                 "default_hyperv_host_username": curr_user,
                 "default_fip_range": fip_range,
                 "default_fip_range_start": fip_range_start,
@@ -650,6 +661,7 @@ class Worker(object):
             ext_vswitch_name = args.get("ext_vswitch_name")
             repo_url = args.get("centos_mirror")
             openstack_vm_mem_mb = int(args.get("openstack_vm_mem_mb"))
+            openstack_vm_vcpu_count = int(args.get("openstack_vm_vcpu_count"))
             openstack_base_dir = args.get("openstack_base_dir")
             admin_password = args.get("admin_password")
 
@@ -690,8 +702,9 @@ class Worker(object):
                                              self._stderr_callback)
 
             (mgmt_ip, ssh_user, ssh_key_path) = self._deploy_openstack_vm(
-                ext_vswitch_name, openstack_vm_mem_mb,
-                openstack_base_dir, admin_password, repo_url,
+                ext_vswitch_name, openstack_vm_vcpu_count,
+                openstack_vm_mem_mb, openstack_base_dir,
+                admin_password, repo_url,
                 mgmt_ext_ip, mgmt_ext_netmask,
                 mgmt_ext_gateway, mgmt_ext_name_servers, proxy_url,
                 proxy_username, proxy_password)
