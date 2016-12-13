@@ -29,6 +29,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
       $scope.horizonUrl = null;
       $scope.downloadUrl = null;
       $scope.computeNodes = null;
+      $scope.useProxy = false;
       $scope.proxyUrl = null;
       $scope.proxyUsername = null;
       $scope.proxyPassword = null;
@@ -185,6 +186,7 @@ function getDeploymentConfigDict() {
     dict["fip_range_end"] = $scope.fipRangeEnd;
     dict["fip_gateway"] = $scope.fipRangeGateway;
     dict["fip_name_servers"] = $scope.fipRangeNameServers;
+    dict["use_proxy"] = $scope.useProxy;
     dict["proxy_url"] = $scope.proxyUrl;
     dict["proxy_username"] = $scope.proxyUsername;
     dict["proxy_password"] = $scope.proxyPassword;
@@ -340,6 +342,7 @@ function configCompleted(configJson) {
     $scope.fipRangeEnd = defaultConfig.default_fip_range_end;
     $scope.fipRangeGateway = defaultConfig.default_fip_range_gateway;
     $scope.fipRangeNameServers = defaultConfig.default_fip_range_name_servers;
+    $scope.useProxy = defaultConfig.default_use_proxy;
     $scope.proxyUrl = defaultConfig.default_proxy_url;
     $scope.mgmtExtDhcp = defaultConfig.default_mgmt_ext_dhcp;
     $scope.mgmtExtNameServers = defaultConfig.default_mgmt_ext_name_servers;
