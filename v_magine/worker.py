@@ -584,21 +584,16 @@ class Worker(object):
         finally:
             self._stop_progress_status()
 
-    def _open_url(self, url, status_msg=None):
+    def _open_url(self, url):
         try:
-            if not status_msg:
-                status_msg = 'Opening %s...' % url
-            self._start_progress_status(status_msg)
             self._dep_actions.open_url(url)
         except Exception as ex:
             LOG.exception(ex)
             LOG.error(ex)
             self._error_callback(ex)
-        finally:
-            self._stop_progress_status()
 
     def open_download_url(self):
-        self._open_url(VMAGINE_DOWNLOAD_URL, 'Opening download page...')
+        self._open_url(VMAGINE_DOWNLOAD_URL)
 
     def open_issues_url(self):
         self._open_url(VMAGINE_ISSUES_URL)
