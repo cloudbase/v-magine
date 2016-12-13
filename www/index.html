@@ -102,13 +102,13 @@
 
                     <label>Host Admin username</label>
                     <input class="field has_tooltip hide_validation" type="text" id="hypervhostusername" ng-model="hypervHostUsername" required
-                     data-tooltip="Hyper-V host username with administrative rights, can be a domain or a local user" />
+                           data-tooltip="Hyper-V host username with administrative rights, can be a domain or a local user" />
                     <label>Host Admin password</label>
 
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(hypervhostpassword)" onmouseout="hidePassword(hypervhostpassword)"></i></div>
                         <input class="field has_tooltip hide_validation" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required
-                         autofocus data-tooltip="Please provide the password for the host admin username. Tip: make sure the password does not expire." />
+                               autofocus data-tooltip="Please provide the password for the host admin username. Tip: make sure the password does not expire." />
                     </div>
                 </div>
                 <div class="widget" id="right-widget">
@@ -116,13 +116,13 @@
                     <div class="input-container">
                         <div class="icon-awesome"><i class="fa fa-folder-open on-right"></i></div>
                         <input class="field has_tooltip" type="text" id="openstackbasedir" ng-model="openstackBaseDir" required
-                         data-tooltip="Local folder where OpenStack instances, images and logs will be located" />
+                               data-tooltip="Local folder where OpenStack instances, images and logs will be located" />
                     </div>
                     <label>External virtual switch</label>
                     <select id="extvswitch" ng-model="extVSwitch" ng-options="vswitch for vswitch in extVSwitches | orderBy" required>
                     </select>
                     <h6 id="createSwitch" style="padding-left:0px; padding-bottom:0px;" class="has_tooltip"
-                     data-tooltip="Create a new virtual switch. The switch is needed by the controller virtual machine for accessing external resources">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
+                        data-tooltip="Create a new virtual switch. The switch is needed by the controller virtual machine for accessing external resources">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
                 </div>
 
                 <div class="buttons" align="auto">
@@ -137,8 +137,8 @@
     <div class="content-page" id="page-2">
         <div class="top">
             <div class="header">
-                <h1>OpenStack Setup</h1>
-                <h3>Please provide the OpenStack controller and networking configuration</h3>
+                <h1>Controller Setup</h1>
+                <h3>CentOS controller general and networking configuration</h3>
             </div>
             <div class="v-magine-logo">
                 <img src="images/v-magine-logo.svg">
@@ -148,64 +148,121 @@
         <div class="content">
             <form action="#" name="controllerconfigform" id="controllerconfigform" class="field">
                 <div class="widget" id="controller">
-                    <h2><i class="fa fa-desktop on-left"></i>Controller</h2>
+                    <h2><i class="fa fa-desktop on-left"></i>Controller VM Setup</h2>
 
-                    <label>Linux distribution</label>
-                    <select id="selectdistro">
-                        <option>CentOS 7 + RDO</option>
-                        <option disabled>Ubuntu 14.04 LTS (Coming soon!)</option>
-                    </select>
-
-                    <label>Repository location</label>
+                    <label>Controller ISO URL</label>
                     <div class="input-container has_tooltip" data-tooltip="Url location of the Linux repository. The list contains the fastest mirrors in your area">
                         <select id="centosmirror" ng-model="centosMirror" ng-options="mirror for mirror in centosMirrors" required>
                         </select>
                     </div>
 
-
-                    <label>Controller and OpenStack services password</label>
-                    <div class="input-container">
-                        <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpassword)"
-                        onmouseout="hidePassword(adminpassword)"></i></div>
-                        <input class="field has_tooltip hide_validation" type="password" id="adminpassword" ng-model="adminPassword" required autofocus
-                         data-tooltip="Admin password for the controller VM and for the OpenStack deployment" />
+                    <div class="mini-row">
+                        <div class="mini-label">
+                            <label>Controller and OpenStack Password</label>
+                            <div class="input-container">
+                                <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpassword)"
+                                                             onmouseout="hidePassword(adminpassword)"></i></div>
+                                <input class="field has_tooltip hide_validation" type="password" id="adminpassword" ng-model="adminPassword" required autofocus
+                                       data-tooltip="Admin password for the controller VM and for the OpenStack deployment" />
+                            </div>
+                        </div>
+                        <div class="mini-label">
+                            <label>Repeat password</label>
+                            <div class="input-container">
+                                <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpasswordrepeat)"
+                                                             onmouseout="hidePassword(adminpasswordrepeat)"></i></div>
+                                <input class="field has_tooltip hide_validation" type="password" id="adminpasswordrepeat" required
+                                       data-tooltip="Please repeat the controller and OpenStack services password" />
+                            </div>
+                        </div>
                     </div>
 
-                    <label>Repeat password</label>
-                    <div class="input-container">
-                        <div class="icon-awesome"><i class="fa fa-eye on-right" onmouseover="showPassword(adminpasswordrepeat)"
-                        onmouseout="hidePassword(adminpasswordrepeat)"></i></div>
-                        <input class="field has_tooltip hide_validation" type="password" id="adminpasswordrepeat" required
-                         data-tooltip="Please repeat the controller and OpenStack services password" />
-                    </div>
 
                     <div class="allocated-memory has_tooltip"
-                     data-tooltip="Move the slider to choose the amount of memory assigned to the OpenStack controller virtual machine">
+                         data-tooltip="Move the slider to choose the amount of memory assigned to the OpenStack controller virtual machine">
                         <label>Allocated memory: <span id="openstackvmmem" ng-bind="openStackVMMem + 'MB'"></span></label>
-                        <div id="openstackvmmemslider"></div>
                         <div class="memory-suggestion">
                             Recommended memory: <span ng-bind="suggestedOpenStackVMMem + 'MB'"></span>
                         </div>
+                        <div id="openstackvmmemslider"></div>
+                    </div>
+
+                    <div class="allocated-cpus has_tooltip"
+                         data-tooltip="Move the slider to choose the amount of memory assigned to the OpenStack controller virtual machine">
+                        <label>VCPU: <span id="openstackvmcpu" ng-bind="openStackVMCpu"></span></label>
+                        <div class="memory-suggestion">
+                            Recommended VCPUs: <span ng-bind="suggestedOpenStackVMCpu"></span>
+                        </div>
+                        <div id="openstackvmcpuslider"></div>
                     </div>
                 </div>
                 <div class="widget" id="networking">
-                    <h2><i class="fa fa-wifi on-left"></i>Networking</h2>
+                    <h2><i class="fa fa-wifi on-left"></i> Controller Networking</h2>
+                    <div class="mini-row">
+                        <div class="col">
+                            <div class="radio-buttons">
+                                <div class="radio-title">IPv4</div>
+                                <div class="radio">
+                                    <input type="radio" id="option-dhcp" name="ip-type" ng-value="true" ng-model="mgmtExtDhcp"/>
+                                    <label for="option-dhcp">DHCP</label>
+                                </div>
+                                <div class="radio">
+                                    <input id="option-manual" type="radio" name="ip-type" checked ng-value="false" ng-model="mgmtExtDhcp"/>
+                                    <label for="option-manual">Manual</label>
+                                </div>
+                            </div>
+                            <div class="ip-type_group" ng-class="{disabled: mgmtExtDhcp}">
+                                <label>IPv4 Address</label>
+                                <input class="field has_tooltip ip-type" ng-disabled="mgmtExtDhcp" type="text" id="ipv4addr" required ng-model="mgmtExtIp"
+                                       data-tooltip="Tooltip" />
+                            </div>
+                            <div class="ip-type_group" ng-class="{disabled: mgmtExtDhcp}">
+                                <label>Gateway</label>
+                                <input class="field has_tooltip ip-type" ng-disabled="mgmtExtDhcp" type="text" id="net_gateway" required ng-model="mgmtExtGateway"
+                                       data-tooltip="Tooltip" />
+                            </div>
+                            <div class="ip-type_group" ng-class="{disabled: mgmtExtDhcp}">
+                                <label>DNS Servers</label>
+                                <input class="field has_tooltip ip-type" ng-disabled="mgmtExtDhcp" type="text" id="dns-servers" required ng-model="mgmtExtNameServers" ng-list
+                                       data-tooltip="Tooltip" />
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="radio-buttons">
+                                <div class="radio-title">Use Proxy?</div>
+                                <div class="radio">
+                                    <input id='option-proxy-yes' type="radio" checked name="proxy-server" ng-value="true" ng-model="useProxy" />
+                                    <label for="option-proxy-yes">Yes</label>
+                                </div>
+                                <div class="radio">
+                                    <input id="option-proxy-no" type="radio" name="proxy-server" ng-value="false" ng-model="useProxy" />
+                                    <label for="option-proxy-no">No</label>
+                                </div>
+                            </div>
 
-                    <label>Floating IP subnet</label>
-                    <input class="field has_tooltip" type="text" id="subnet" ng-model="fipRange" required
-                     data-tooltip="This is the public IP range assigned to OpenStack instances. Make sure it does not conflict with existing IPs on your network" />
-                    <label>Floating IP range start</label>
-                    <input class="field has_tooltip" type="text" name="fiprangestart" id="fiprangestart" ng-model="fipRangeStart" required
-                     data-tooltip="First IP address in the floating IP subnet" />
-                    <label>Floating IP range end</label>
-                    <input class="field has_tooltip" type="text" name="fiprangeend" id="fiprangeend" ng-model="fipRangeEnd" required
-                     data-tooltip="Last IP address in the floating IP subnet" />
-                    <label>Floating IP gateway</label>
-                    <input class="field has_tooltip" type="text" id="gateway" ng-model="fipRangeGateway"
-                     data-tooltip="Existing external gateway in the floating IP subnet" />
-                    <label>DNS servers</label>
-                    <input class="field has_tooltip" type="text" id="nameservers" ng-model="fipRangeNameServers" ng-list
-                     data-tooltip="Existing external DNS server(s) to be assigned to the OpenStack instances. Separate multiple servers with a comma" />
+                            <div class="proxy-server_group" ng-class="{disabled: !useProxy}">
+                                <label>Server</label>
+                                <input class="field has_tooltip proxy-server" ng-disabled="!useProxy" type="text" id="proxy-server" required ng-model="proxyUrl"
+                                       data-tooltip="Tooltip" />
+                            </div>
+
+                            <div class="proxy-server_group" ng-class="{disabled: !useProxy}">
+                                <label>Proxy Username</label>
+                                <input class="field has_tooltip proxy-server" ng-disabled="!useProxy" type="text" value="" id="proxy-username" ng-model="proxyUsername"
+                                       data-tooltip="Tooltip" />
+                            </div>
+                            <div class="proxy-server_group" ng-class="{disabled: !useProxy}">
+                                <label>Proxy Password</label>
+                                <div class="input-container">
+                                    <div class="icon-awesome proxy-eye"><i class="fa fa-eye" onmouseover="showPassword(proxyPassword)"
+                                                                           onmouseout="hidePassword(proxyPassword)"></i></div>
+                                    <input class="field has_tooltip proxy-server" ng-disabled="!useProxy" type="text" value="" id="proxy-password" ng-model="proxyPassword"
+                                           data-tooltip="Tooltip" />
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
 
                 <div class="buttons" align="auto">
@@ -218,6 +275,54 @@
         </div>
 
     </div>
+    <div class="content-page" id="page-networking">
+        <div class="top">
+            <div class="header">
+                <h1>Openstack Networking</h1>
+                <h3>Configure OpenStack Floating IP (FIP) ranges</h3>
+            </div>
+            <div class="v-magine-logo">
+                <img src="images/v-magine-logo.svg">
+            </div>
+        </div>
+        <div class='content'>
+            <form action="#" class="field">
+                <div class="widget" id="openstack-networking">
+                    <h2><i class="fa fa-globe on-left"></i>Floating IP Setup</h2>
+
+                    <label>Floating IPv4 subnet</label>
+                    <input class="field has_tooltip" type="text" id="subnet" ng-model="fipRange" required
+                           data-tooltip="This is the public IP range assigned to OpenStack instances. Make sure it does not conflict with existing IPs on your network" />
+
+                    <label>Floating IP gateway</label>
+                    <input class="field has_tooltip" type="text" id="gateway" ng-model="fipRangeGateway"
+                           data-tooltip="Existing external gateway in the floating IP subnet" />
+                </div>
+                <div class="widget">
+                    <div class="mini-row">
+                        <div class="mini-label">
+                            <label>Floating IP range start</label>
+                            <input class="field has_tooltip" type="text" name="fiprangestart" id="fiprangestart" ng-model="fipRangeStart" required
+                                   data-tooltip="First IP address in the floating IP subnet" />
+                        </div>
+                        <div class="mini-label">
+                            <label>Floating IP range end</label>
+                            <input class="field has_tooltip" type="text" name="fiprangeend" id="fiprangeend" ng-model="fipRangeEnd" required
+                                   data-tooltip="Last IP address in the floating IP subnet" />
+                        </div>
+                    </div>
+                    <label>DNS servers</label>
+                    <input class="field has_tooltip" type="text" id="nameservers" ng-model="fipRangeNameServers" ng-list
+                           data-tooltip="Existing external DNS server(s) to be assigned to the OpenStack instances. Separate multiple servers with a comma" />
+                </div>
+                <div class="buttons" align="auto">
+                    <button type="button" formaction="" class="inputButton large back" name="controllerconfigeula" id="controllerconfigeula">Back</button>
+                    <button type="submit" formaction="" class="inputButton large next" name="controllerconfignext" id="controllerconfignext">Next<i style="color:#ffffff;" class="icon-arrow-right-3 on-right"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <!--
     <div class="content-page" id="page-3">
@@ -268,48 +373,48 @@
     </div>
     -->
 
-<!--
-    <div class="content-page" id="page-4">
-        <div id="wrap-4">
-            <h2 onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0;"><i class="fa fa-arrow-circle-left on-left" style="color: #0099CC"></i>Add a compute node</h2>
-            <div class="hypervisor">
-                <h6>Hypervisor Type</h6>
+    <!--
+        <div class="content-page" id="page-4">
+            <div id="wrap-4">
+                <h2 onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0;"><i class="fa fa-arrow-circle-left on-left" style="color: #0099CC"></i>Add a compute node</h2>
+                <div class="hypervisor">
+                    <h6>Hypervisor Type</h6>
 
-                <li><button id="current" onclick="showOne(1)">Hyper-V</button></li>
-                <li><button disabled onclick="showOne(2)">KVM</button></li>
-                <li><button disabled onclick="showOne(3)">XEN</button></li>
-                <li><button disabled onclick="showOne(4)">ESXI</button></li>
+                    <li><button id="current" onclick="showOne(1)">Hyper-V</button></li>
+                    <li><button disabled onclick="showOne(2)">KVM</button></li>
+                    <li><button disabled onclick="showOne(3)">XEN</button></li>
+                    <li><button disabled onclick="showOne(4)">ESXI</button></li>
+
+                </div>
+
+                <div class="hyperv" id="1">
+                    <form action="#" name="configform" class="small-field" id="configform">
+                        <div class="widget compute-leftside">
+                            <label>Hostname/ IP address</label>
+                            <input class="small-field" type="text" value="" id="hostname" ng-model="Hostname" placeholder="node1.example.com"/>
+                            <label>Username</label>
+                            <input class="small-field" type="text" value="" id="username" ng-model="Username" placeholder="EXAMPLE\Administrator"/>
+                            <label>Password</label>
+                            <input class="small-field" type="password" placeholder="Password" name="adminpassword" id="adminPassword" ng-model="adminPassword" required>
+                            <label>External virtual switch</label>
+                            <select>
+                                <option value="1">external</option>
+                                <option value="2" disabled="disabled"></option>
+                                <option value="3" disabled="disabled"></option>
+                            </select>
+                            <h6 id="createSwitch2" onclick="document.getElementById('page-3 active').style.opacity= '0.4'; document.getElementById('page-4-createSwitch').id = 'page-4-createSwitch active'; document.getElementById('page-4-createSwitch active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4-createSwitch active').style.width= '380px'; showOne(1); document.getElementById('page-4-createSwitch active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
+                        </div>
+
+                        <div class="icon-buttons" align="auto">
+                            <button type="submit" formaction="" id="submit-configform" class="inputButton-icon large" name="nextbtn"  onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0px 30px 0px 0px;"><h2><i class="fa fa-check-circle on-left" style="color:#0099CC"></i>Ok</h2></button>
+                            <button type="submit" formaction="" class="inputButton-icon large" name="nextbtn"  onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0px 30px 0px 0px;"><h2><i class="fa fa-times-circle on-left" style="color:#0099CC"></i>Cancel</h2></button>
+                        </div>
+                    </form>
+                </div>
 
             </div>
-
-            <div class="hyperv" id="1">
-                <form action="#" name="configform" class="small-field" id="configform">
-                    <div class="widget compute-leftside">
-                        <label>Hostname/ IP address</label>
-                        <input class="small-field" type="text" value="" id="hostname" ng-model="Hostname" placeholder="node1.example.com"/>
-                        <label>Username</label>
-                        <input class="small-field" type="text" value="" id="username" ng-model="Username" placeholder="EXAMPLE\Administrator"/>
-                        <label>Password</label>
-                        <input class="small-field" type="password" placeholder="Password" name="adminpassword" id="adminPassword" ng-model="adminPassword" required>
-                        <label>External virtual switch</label>
-                        <select>
-                            <option value="1">external</option>
-                            <option value="2" disabled="disabled"></option>
-                            <option value="3" disabled="disabled"></option>
-                        </select>
-                        <h6 id="createSwitch2" onclick="document.getElementById('page-3 active').style.opacity= '0.4'; document.getElementById('page-4-createSwitch').id = 'page-4-createSwitch active'; document.getElementById('page-4-createSwitch active').style.margin= '-768px 0 0 660px'; document.getElementById('page-4-createSwitch active').style.width= '380px'; showOne(1); document.getElementById('page-4-createSwitch active').style.position= 'relative';" style="padding-left:0px; padding-bottom:0px;">CREATE A NEW VIRTUAL SWITCH<i class="fa fa-arrow-circle-right on-right" style="color: #0099CC"></i></h6>
-                    </div>
-
-                    <div class="icon-buttons" align="auto">
-                        <button type="submit" formaction="" id="submit-configform" class="inputButton-icon large" name="nextbtn"  onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0px 30px 0px 0px;"><h2><i class="fa fa-check-circle on-left" style="color:#0099CC"></i>Ok</h2></button>
-                        <button type="submit" formaction="" class="inputButton-icon large" name="nextbtn"  onclick="document.getElementById('page-4 active').id = 'page-4';document.getElementById('page-3 active').style.opacity= '1'; document.getElementById('page-3 active').style.backgroundColor= '#201134'; return false" style="padding:0px 30px 0px 0px;"><h2><i class="fa fa-times-circle on-left" style="color:#0099CC"></i>Cancel</h2></button>
-                    </div>
-                </form>
-            </div>
-
         </div>
-    </div>
--->
+    -->
 
     <div class="content-page dialogbackground" id="createswitch">
         <div class="content-page" id="createswitchdialog">
@@ -322,7 +427,7 @@
                     </select>
                     <label>External virtual switch name</label>
                     <input class="small-field" type="text" id="vswitchname" ng-model="newExtVSwitch" required
-                     data-tooltip="Name of the new external virtual switch" />
+                           data-tooltip="Name of the new external virtual switch" />
                 </div>
                 <div id="blocker">
                 </div>
@@ -351,11 +456,11 @@
 
                 <div class="icon-buttons" align="auto">
                     <button type="submit" id="createswitchdialogok" formaction="" class="inputButton-icon large" name="createswitchdialogok" style="padding:0px 20px 0px 0px;">
-                    <h2 id="createswitchdialogokwrap"><i class="fa fa-check-circle on-left" style="color:#0099CC" id="createswitchdialogokicon"></i>Create</h2></button>
+                        <h2 id="createswitchdialogokwrap"><i class="fa fa-check-circle on-left" style="color:#0099CC" id="createswitchdialogokicon"></i>Create</h2></button>
 
 
                     <button type="submit" formaction="" class="inputButton-icon large" id="createswitchdialogcancel" name="createswitchdialogcancel"
-                     style="padding:0px 20px 0px 0px;"><h2 id="createswitchdialogcancelwrap"><i class="fa fa-times-circle on-left" style="color:#0099CC" id="createswitchdialogcancelicon"></i>Cancel</h2></button>
+                            style="padding:0px 20px 0px 0px;"><h2 id="createswitchdialogcancelwrap"><i class="fa fa-times-circle on-left" style="color:#0099CC" id="createswitchdialogcancelicon"></i>Cancel</h2></button>
                 </div>
             </form>
         </div>
@@ -396,17 +501,32 @@
                     <h4>Repository location</h4>
                     <h2 ng-bind="centosMirror.substr(0,30) + '...'"></h2>
 
-                    <h4>Allocated memory</h4>
+                    <h4>Allocated vCPUs</h4>
+                    <h2 ng-bind="openStackVMCpu"></h2>
+
+                    <h4>Allocated vRAM</h4>
                     <h2 ng-bind="openStackVMMem + 'MB'"></h2>
                 </div>
-            <!--    <div class="AD">
-                    <h2 class="headline"><i class="fa fa-lock on-left"></i>Active Directory</h2>
-                    <h4>Active Directory Identity</h4>
-                    <h2>No</h2>
-                </div> -->
+                <!--    <div class="AD">
+                        <h2 class="headline"><i class="fa fa-lock on-left"></i>Active Directory</h2>
+                        <h4>Active Directory Identity</h4>
+                        <h2>No</h2>
+                    </div> -->
+            </div>
+            <div class="mini-widget">
+                <h2 class="headline">&nbsp;</h2>
+
+                <h4>IPV4</h4>
+                <h2 ng-if="mgmtExtDhcp">DHCP</h2>
+                <h2 ng-if="!mgmtExtDhcp" ng-bind="mgmtExtIp"></h2>
+
+                <h4>Proxy Server</h4>
+                <h2 ng-if="useProxy" ng-bind="proxyUrl"></h2>
+                <h2 ng-if="!useProxy">none</h2>
+
             </div>
             <div class="mini-widget" id="networking-details">
-                <h2 class="headline"><i class="fa fa-wifi on-left"></i>Networking</h2>
+                <h2 class="headline"><i class="fa fa-wifi on-left"></i>Floating IP</h2>
                 <h4>Floating IP subnet</h4>
                 <h2 ng-bind="fipRange"></h2>
 
@@ -423,25 +543,25 @@
                 <h2 ng-repeat="fipRangeNameServer in fipRangeNameServers">{{fipRangeNameServer}}</h2>
             </div>
 
-                <!-- <div class="mini-widget" id="nodes-details">
-                    <h2 class="headline"><i class="fa fa-cubes on-left"></i>Nodes</h2>
-                    <div class="mini-registered-nodes">
-                        <div>
-                            <div class="mini-compute-nodes-header">
-                                <ul>
-                                    <li>Hostname</li>
-                                    <li>Type</li>
-                                </ul>
-                            </div>
-                            <div class="mini-compute-nodes-list">
-                                <ul>
-                                    <li>localhost</li>
-                                    <li>Hyper-V</li>
-                                </ul>
-                            </div>
+            <!-- <div class="mini-widget" id="nodes-details">
+                <h2 class="headline"><i class="fa fa-cubes on-left"></i>Nodes</h2>
+                <div class="mini-registered-nodes">
+                    <div>
+                        <div class="mini-compute-nodes-header">
+                            <ul>
+                                <li>Hostname</li>
+                                <li>Type</li>
+                            </ul>
+                        </div>
+                        <div class="mini-compute-nodes-list">
+                            <ul>
+                                <li>localhost</li>
+                                <li>Hyper-V</li>
+                            </ul>
                         </div>
                     </div>
-                </div> -->
+                </div>
+            </div> -->
 
             <div class="buttons" align="auto">
                 <button type="button" formaction="" class="inputButton large back" name="configbutton" id="configbutton">Back</button>
