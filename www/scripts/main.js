@@ -109,6 +109,10 @@ function showControllerConfig() {
     $(".progress_bar_text").css('display','inline-block');
 }
 
+function showOpenStackNetworkingConfig() {
+    showPage("#page-openstack-networking");
+}
+
 function showHostConfig() {
     showPage("#host-setup");
 }
@@ -538,16 +542,28 @@ function initUi() {
     });
 
     $("#controllerconfignext").click(function(){
-        if((validateControllerConfigForm()) && (validateIP())) {
-            controller.show_host_config();
+        if(validateConfigForm("#controllerconfigform")) {
+            controller.show_openstack_networking_config();
         }
         $("#adminpassword").removeClass("hide_validation");
         $("#adminpasswordrepeat").removeClass("hide_validation");
         return false;
     });
 
-    $("#hostconfigback").click(function(){
+    $("#openstacknetworkingconfignext").click(function(){
+        if(validateConfigForm("#openstacknetworkingconfigform") && validateIP()) {
+            controller.show_host_config();
+        }
+        return false;
+    });
+
+    $("#openstacknetworkingconfigback").click(function(){
         controller.show_controller_config();
+        return false;
+    });
+
+    $("#hostconfigback").click(function(){
+        controller.show_openstack_networking_config();
         return false;
     });
 
@@ -699,13 +715,13 @@ function validations() {
 
 }
 
-function validateControllerConfigForm() {
-    if(!$("#controllerconfigform")[0].checkValidity()) {
+function validateConfigForm(id) {
+    if(!$(id)[0].checkValidity()) {
         showMessage("OpenStack configuration",
           "Please provide all the required configuration values");
         return false;
     } else {
-        var $scope = angular.element("#controllerconfigform").scope();
+        var $scope = angular.element(id).scope();
         $scope.$apply();
     }
     return true;
@@ -819,6 +835,8 @@ function ApplicationIsReady() {
         controller.on_show_eula_event.connect(showEula);
         controller.on_show_controller_config_event.connect(
           showControllerConfig);
+        controller.on_show_openstack_networking_config_event.connect(
+          showOpenStackNetworkingConfig);
         controller.on_show_host_config_event.connect(showHostConfig);
         controller.on_show_deployment_details_event.connect(
           showDeploymentDetails);

@@ -38,6 +38,7 @@ class Controller(QtCore.QObject):
     on_install_started_event = QtCore.pyqtSignal()
     on_review_config_event = QtCore.pyqtSignal()
     on_show_controller_config_event = QtCore.pyqtSignal()
+    on_show_openstack_networking_config_event = QtCore.pyqtSignal()
     on_show_host_config_event = QtCore.pyqtSignal()
     on_show_welcome_event = QtCore.pyqtSignal()
     on_show_eula_event = QtCore.pyqtSignal()
@@ -181,6 +182,10 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def show_controller_config(self):
         self.on_show_controller_config_event.emit()
+
+    @QtCore.pyqtSlot()
+    def show_openstack_networking_config(self):
+        self.on_show_openstack_networking_config_event.emit()
 
     @QtCore.pyqtSlot()
     def show_host_config(self):

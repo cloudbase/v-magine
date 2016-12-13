@@ -201,7 +201,7 @@
                     <div class="mini-row">
                         <div class="col">
                             <div class="radio-buttons">
-                                <div class="radio-title">IPv4</div>
+                                <div class="radio-title">IP Configuration</div>
                                 <div class="radio">
                                     <input type="radio" id="option-dhcp" name="ip-type" ng-value="true" ng-model="mgmtExtDhcp"/>
                                     <label for="option-dhcp">DHCP</label>
@@ -212,7 +212,7 @@
                                 </div>
                             </div>
                             <div class="ip-type_group" ng-class="{disabled: mgmtExtDhcp}">
-                                <label>IPv4 Address</label>
+                                <label>IP Address</label>
                                 <input class="field has_tooltip ip-type" ng-disabled="mgmtExtDhcp" type="text" id="ipv4addr" required ng-model="mgmtExtIp"
                                        data-tooltip="Tooltip" />
                             </div>
@@ -241,7 +241,7 @@
                             </div>
 
                             <div class="proxy-server_group" ng-class="{disabled: !useProxy}">
-                                <label>Server</label>
+                                <label>Proxy Url</label>
                                 <input class="field has_tooltip proxy-server" ng-disabled="!useProxy" type="text" id="proxy-server" required ng-model="proxyUrl"
                                        data-tooltip="Tooltip" />
                             </div>
@@ -275,7 +275,7 @@
         </div>
 
     </div>
-    <div class="content-page" id="page-networking">
+    <div class="content-page" id="page-openstack-networking">
         <div class="top">
             <div class="header">
                 <h1>Openstack Networking</h1>
@@ -286,7 +286,7 @@
             </div>
         </div>
         <div class='content'>
-            <form action="#" class="field">
+            <form action="#" name="openstacknetworkingconfigform" id="openstacknetworkingconfigform" class="field">
                 <div class="widget" id="openstack-networking">
                     <h2><i class="fa fa-globe on-left"></i>Floating IP Setup</h2>
 
@@ -316,8 +316,8 @@
                            data-tooltip="Existing external DNS server(s) to be assigned to the OpenStack instances. Separate multiple servers with a comma" />
                 </div>
                 <div class="buttons" align="auto">
-                    <button type="button" formaction="" class="inputButton large back" name="controllerconfigeula" id="controllerconfigeula">Back</button>
-                    <button type="submit" formaction="" class="inputButton large next" name="controllerconfignext" id="controllerconfignext">Next<i style="color:#ffffff;" class="icon-arrow-right-3 on-right"></i></button>
+                    <button type="button" formaction="" class="inputButton large back" name="openstacknetworkingconfigback" id="openstacknetworkingconfigback">Back</button>
+                    <button type="submit" formaction="" class="inputButton large next" name="openstacknetworkingconfignext" id="openstacknetworkingconfignext">Next<i style="color:#ffffff;" class="icon-arrow-right-3 on-right"></i></button>
                 </div>
             </form>
         </div>
@@ -516,7 +516,7 @@
             <div class="mini-widget">
                 <h2 class="headline">&nbsp;</h2>
 
-                <h4>IPV4</h4>
+                <h4>IP Configuration</h4>
                 <h2 ng-if="mgmtExtDhcp">DHCP</h2>
                 <h2 ng-if="!mgmtExtDhcp" ng-bind="mgmtExtIp"></h2>
 

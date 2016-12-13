@@ -1848,10 +1848,10 @@ input:not(.hide_validation):invalid {
     opacity: 0.5;
 }
 
-#page-networking {
+#page-openstack-networking {
     display: none;
 }
-#page-networking .widget:nth-child(2) {
+#page-openstack-networking .widget:nth-child(2) {
     float: right;
     margin-top: 67px;
 }
