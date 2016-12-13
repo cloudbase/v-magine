@@ -1,39 +1,45 @@
 angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
-    ['$scope', function($scope) {
-    $scope.extVSwitches = [];
-    $scope.extVSwitch = null;
-    $scope.newExtVSwitch = null;
-    $scope.hostNics = [];
-    $scope.hostNic = null;
-    $scope.adminPassword = null;
-    $scope.centosMirror = null;
-    $scope.centosMirrors = null;
-    $scope.maxOpenStackVMMem = 0;
-    $scope.minOpenStackVMMem = 0;
-    $scope.suggestedOpenStackVMMem = 0;
-    $scope.openStackVMMem = 0;
-    $scope.fipRange = null;
-    $scope.fipRangeStart = null;
-    $scope.fipRangeEnd = null;
-    $scope.fipRangeGateway = null;
-    $scope.fipRangeNameServers = [];
-    $scope.openstackBaseDir = null;
-    $scope.hypervHostUsername = null;
-    $scope.hypervHostPassword = null;
-    $scope.hypervHostName = null;
-    $scope.controllerIp = null;
-    $scope.horizonUrl = null;
-    $scope.downloadUrl = null;
-    $scope.computeNodes = null;
-    $scope.proxyUrl = null;
-    $scope.proxyUsername = null;
-    $scope.proxyPassword = null;
-    $scope.mgmtExtDhcp = null;
-    $scope.mgmtExtIp = null;
-    $scope.mgmtExtNetmask = null;
-    $scope.mgmtExtGateway = null;
-    $scope.mgmtExtNameServers = [];
-}]);
+  ['$scope', function($scope) {
+      $scope.extVSwitches = [];
+      $scope.extVSwitch = null;
+      $scope.newExtVSwitch = null;
+      $scope.hostNics = [];
+      $scope.hostNic = null;
+      $scope.adminPassword = null;
+      $scope.centosMirror = null;
+      $scope.centosMirrors = null;
+      $scope.maxOpenStackVMMem = 0;
+      $scope.minOpenStackVMMem = 0;
+      $scope.suggestedOpenStackVMMem = 0;
+      $scope.openStackVMMem = 0;
+      $scope.maxOpenStackVMCpu = 0;
+      $scope.minOpenStackVMCpu = 0;
+      $scope.suggestedOpenStackVMCpu = 0;
+      $scope.openStackVMCpu = 0;
+      $scope.fipRange = null;
+      $scope.fipRangeStart = null;
+      $scope.fipRangeEnd = null;
+      $scope.fipRangeGateway = null;
+      $scope.fipRangeNameServers = [];
+      $scope.openstackBaseDir = null;
+      $scope.hypervHostUsername = null;
+      $scope.hypervHostPassword = null;
+      $scope.hypervHostName = null;
+      $scope.controllerIp = null;
+      $scope.horizonUrl = null;
+      $scope.downloadUrl = null;
+      $scope.computeNodes = null;
+      $scope.useProxy = false;
+      $scope.proxyUrl = null;
+      $scope.proxyUsername = null;
+      $scope.proxyPassword = null;
+      $scope.mgmtExtDhcp = true;
+      $scope.mgmtExtIp = null;
+      $scope.mgmtExtNetmask = null;
+      $scope.mgmtExtGateway = null;
+      $scope.mgmtExtNameServers = [];
+      $scope.useProxy = true;
+  }]);
 
 function handleError(msg) {
     showMessage('Error', msg);
@@ -180,6 +186,7 @@ function getDeploymentConfigDict() {
     dict["fip_range_end"] = $scope.fipRangeEnd;
     dict["fip_gateway"] = $scope.fipRangeGateway;
     dict["fip_name_servers"] = $scope.fipRangeNameServers;
+    dict["use_proxy"] = $scope.useProxy;
     dict["proxy_url"] = $scope.proxyUrl;
     dict["proxy_username"] = $scope.proxyUsername;
     dict["proxy_password"] = $scope.proxyPassword;
@@ -253,10 +260,10 @@ function addExtVSwitch() {
         if($("#addextvswitchdialogform")[0].checkValidity()) {
             enableAddExtVSwitchDialogControls(false);
             controller.add_ext_vswitch($scope.newExtVSwitch,
-                                       $scope.hostNic.name);
+              $scope.hostNic.name);
         } else {
             showMessage("OpenStack configuration",
-                        "Please provide all the required configuration values");
+              "Please provide all the required configuration values");
         }
     }
     catch(ex)
@@ -279,9 +286,9 @@ function addExtVSwitchCompleted(vswitch_name) {
 
 function productUpdateAvailable(currentVersion, newVersion, updateRequired, updateUrl) {
     updateMessage = 'An updated version of this product is available at "' +
-                    updateUrl + '" ';
+      updateUrl + '" ';
     updateMessage += 'It is recommended to close this application and ' +
-                     'download the updated version before continuing. ';
+      'download the updated version before continuing. ';
     updateMessage += 'Current version: ' + currentVersion + '. ';
     updateMessage += 'New available version: ' + newVersion;
 
@@ -335,6 +342,7 @@ function configCompleted(configJson) {
     $scope.fipRangeEnd = defaultConfig.default_fip_range_end;
     $scope.fipRangeGateway = defaultConfig.default_fip_range_gateway;
     $scope.fipRangeNameServers = defaultConfig.default_fip_range_name_servers;
+    $scope.useProxy = defaultConfig.default_use_proxy;
     $scope.proxyUrl = defaultConfig.default_proxy_url;
     $scope.mgmtExtDhcp = defaultConfig.default_mgmt_ext_dhcp;
     $scope.mgmtExtNameServers = defaultConfig.default_mgmt_ext_name_servers;
@@ -343,6 +351,7 @@ function configCompleted(configJson) {
     $scope.$apply();
 
     initControllerMemSlider();
+    initControllerVcpuSlider();
 }
 
 function getRepoUrlsCompleted(repoUrlJson) {
@@ -403,7 +412,37 @@ function initControllerMemSlider() {
     });
 
     $("#openstackvmmem").val(
-        $("#openstackvmmemslider").slider("value").toString() + "MB");
+      $("#openstackvmmemslider").slider("value").toString() + "MB");
+}
+
+function initControllerVcpuSlider() {
+
+    var $scope = angular.element("#maindiv").scope();
+    $("#openstackvmcpuslider").slider({
+        range: "min",
+        value: $scope.openStackVMCpu,
+        min: $scope.minOpenStackVMCpu,
+        max: $scope.maxOpenStackVMCpu,
+        slide: function(event, ui) {
+            var value = ui.value.toString();
+            $("#openstackvmcpu").text(value + "MB");
+            // AngularJs is not performing two way databinding
+            $scope.openStackVMCpu = value;
+
+            var color = '#37A8DF';
+            if (value < $scope.suggestedOpenStackVMCpu) {
+                color = '#BC1D2C';
+            }
+            $('.ui-slider-range-min').css('background-color', color);
+        }
+    });
+
+    $("#openstackvmcpu").val(
+      $("#openstackvmcpuslider").slider("value").toString() + "MB");
+}
+
+function initControllerNetworkingOptions() {
+    $scope.useProxy = "yes";
 }
 
 function initHostNicsSelect() {
@@ -510,7 +549,7 @@ function initUi() {
     $("#hostconfignext").click(function(){
         if(validateHostConfigForm()) {
             controller.review_config(
-                JSON.stringify(getDeploymentConfigDict()));
+              JSON.stringify(getDeploymentConfigDict()));
         }
         $("#hypervhostusername").removeClass("hide_validation");
         $("#hypervhostpassword").removeClass("hide_validation");
@@ -616,6 +655,7 @@ function initUi() {
 
     setPasswordValidation();
     initControllerMemSlider();
+    initControllerVcpuSlider();
 
     $("#selectdistro").selectmenu();
     initRepoUrlSelect();
@@ -657,7 +697,7 @@ function validations() {
 function validateControllerConfigForm() {
     if(!$("#controllerconfigform")[0].checkValidity()) {
         showMessage("OpenStack configuration",
-                    "Please provide all the required configuration values");
+          "Please provide all the required configuration values");
         return false;
     } else {
         var $scope = angular.element("#controllerconfigform").scope();
@@ -686,7 +726,7 @@ function validateIP() {
         $("#subnet").focus();
         $("#subnet").addClass("is_invalid");
         showMessage("OpenStack configuration",
-                    "Please enter a valid prefix length");
+          "Please enter a valid prefix length");
         return false;
     }
 
@@ -697,7 +737,7 @@ function validateIP() {
         $("#subnet").focus();
         $("#subnet").addClass("is_invalid");
         showMessage("OpenStack configuration",
-                    "Please enter a valid floating IP subnet");
+          "Please enter a valid floating IP subnet");
         return false;
     }
 
@@ -707,7 +747,7 @@ function validateIP() {
         $("#fiprangestart").focus();
         $("#fiprangestart").addClass("is_invalid");
         showMessage("OpenStack configuration",
-                    "Please enter a valid IP");
+          "Please enter a valid IP");
         return false;
     }
 
@@ -717,7 +757,7 @@ function validateIP() {
         $("#fiprangeend").focus();
         $("#fiprangeend").addClass("is_invalid");
         showMessage("OpenStack configuration",
-                    "Please enter a valid IP");
+          "Please enter a valid IP");
         return false;
     }
 
@@ -727,7 +767,7 @@ function validateIP() {
         $("#gateway").focus();
         $("#gateway").addClass("is_invalid");
         showMessage("OpenStack configuration",
-                    "Please enter a valid gateway");
+          "Please enter a valid gateway");
         return false;
     }
 
@@ -741,7 +781,7 @@ function validateIP() {
         $("#fiprangeend").focus();
         $("#fiprangeend").addClass("is_invalid");
         showMessage("OpenStack configuration",
-                    "Floating IP range end is smaller than range start ");
+          "Floating IP range end is smaller than range start ");
         return false;
     }
 
@@ -751,7 +791,7 @@ function validateIP() {
 function validateHostConfigForm() {
     if(!$("#hostconfigform")[0].checkValidity()) {
         showMessage("OpenStack configuration",
-                    "Please provide all the required configuration values");
+          "Please provide all the required configuration values");
         return false;
     } else {
         var $scope = angular.element("#hostconfigform").scope();
@@ -773,12 +813,12 @@ function ApplicationIsReady() {
         controller.on_show_welcome_event.connect(showWelcome);
         controller.on_show_eula_event.connect(showEula);
         controller.on_show_controller_config_event.connect(
-            showControllerConfig);
+          showControllerConfig);
         controller.on_show_host_config_event.connect(showHostConfig);
         controller.on_show_deployment_details_event.connect(
-            showDeploymentDetails);
+          showDeploymentDetails);
         controller.on_get_compute_nodes_completed_event.connect(
-            updateComputeNodesView);
+          updateComputeNodesView);
         controller.on_review_config_event.connect(reviewConfig);
         controller.on_stdout_data_event.connect(gotStdOutData);
         controller.on_stderr_data_event.connect(gotStdErrData);
@@ -786,26 +826,26 @@ function ApplicationIsReady() {
         controller.on_install_done_event.connect(installDone);
         controller.on_install_started_event.connect(installStarted);
         controller.on_get_ext_vswitches_completed_event.connect(
-            getExtVSwitchesCompleted);
+          getExtVSwitchesCompleted);
         controller.on_get_available_host_nics_completed_event.connect(
-            getAvailableHostNicsCompleted);
+          getAvailableHostNicsCompleted);
         controller.on_add_ext_vswitch_completed_event.connect(
-            addExtVSwitchCompleted);
+          addExtVSwitchCompleted);
         controller.on_show_progress_status_event.connect(
-            showProgressStatus);
+          showProgressStatus);
         controller.on_enable_retry_deployment_event.connect(
-            enableRetryDeployment);
+          enableRetryDeployment);
         controller.on_get_config_completed_event.connect(
-            configCompleted);
+          configCompleted);
         controller.on_deployment_disabled_event.connect(
-            disableDeployment);
+          disableDeployment);
         controller.on_product_update_available_event.connect(
-            productUpdateAvailable);
+          productUpdateAvailable);
         controller.on_get_repo_urls_completed_event.connect(
-            getRepoUrlsCompleted);
+          getRepoUrlsCompleted);
 
         setDefaultConfigValues();
-     }
+    }
     catch(ex)
     {
         handleError(ex);

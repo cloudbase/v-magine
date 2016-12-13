@@ -436,6 +436,7 @@ class Worker(object):
                 "default_fip_range_end": fip_range_end,
                 "default_fip_range_gateway": fip_gateway,
                 "default_fip_range_name_servers": name_servers,
+                "default_use_proxy": proxy_url is not None,
                 "default_proxy_url": proxy_url,
                 "default_mgmt_ext_dhcp": False,
                 "default_mgmt_ext_name_servers": name_servers,
@@ -663,9 +664,14 @@ class Worker(object):
 
             mgmt_ext_name_servers = args.get("mgmt_ext_name_servers")
 
-            proxy_url = args.get("proxy_url")
-            proxy_username = args.get("proxy_username")
-            proxy_password = args.get("proxy_password")
+            if args.get("use_proxy"):
+                proxy_url = args.get("proxy_url")
+                proxy_username = args.get("proxy_username")
+                proxy_password = args.get("proxy_password")
+            else:
+                proxy_url = None
+                proxy_username = None
+                proxy_password = None
 
             hyperv_host_username = args.get("hyperv_host_username")
             hyperv_host_password = args.get("hyperv_host_password")
