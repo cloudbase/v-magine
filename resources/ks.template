@@ -67,7 +67,7 @@ UDEV_NET_RULES=/etc/udev/rules.d/60-net.rules
 /usr/bin/rm -f  /etc/sysconfig/network-scripts/ifcfg-eth*
 
 {% if mgmt_ext_ip %}
-config_network_adapter mgmt-ext {{ mgmt_ext_mac_address }} "yes" "none" "{{ mgmt_ext_ip }}" "{{ mgmt_ext_netmask }}" "{{ mgmt_ext_gateway }}" "{{ mgmt_ext_dns1 }}" "{{ mgmt_ext_dns2 }}"
+config_network_adapter mgmt-ext {{ mgmt_ext_mac_address }} "yes" "none" "{{ mgmt_ext_ip }}" "{{ mgmt_ext_netmask }}" "{{ mgmt_ext_gateway }}" "{{ mgmt_ext_dns1 }}" "{{ mgmt_ext_dns2 or '' }}"
 {% else %}
 config_network_adapter mgmt-ext {{ mgmt_ext_mac_address }} "yes"
 {% endif %}
