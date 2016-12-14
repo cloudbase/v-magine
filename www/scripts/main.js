@@ -422,11 +422,13 @@ function initControllerMemSlider() {
             // AngularJs is not performing two way databinding
             $scope.openStackVMMem = value;
 
-            var color = '#37A8DF';
+            $('#openstackvmmemslider .ui-slider-range').removeClass('red');
+            var color = '#007AFF';
             if (value < $scope.suggestedOpenStackVMMem) {
                 color = '#BC1D2C';
+                $('#openstackvmmemslider .ui-slider-range').addClass('red');
             }
-            $('.ui-slider-range-min').css('background-color', color);
+            $('#openstackvmmemslider .ui-slider-range-min').css('background-color', color);
         }
     });
 
@@ -448,11 +450,14 @@ function initControllerVcpuSlider() {
             // AngularJs is not performing two way databinding
             $scope.openStackVMCpu = value;
 
-            var color = '#37A8DF';
+            $('#openstackvmcpuslider .ui-slider-range').removeClass('red');
+            var color = '#007AFF';
             if (value < $scope.suggestedOpenStackVMCpu) {
                 color = '#BC1D2C';
+                $('#openstackvmcpuslider .ui-slider-range').addClass('red');
             }
-            $('.ui-slider-range-min').css('background-color', color);
+            $('#openstackvmcpuslider .ui-slider-range-min').css('background-color', color);
+
         }
     });
 
@@ -507,6 +512,10 @@ function initExtVSwitchSelect() {
     });
 }
 
+function replaceDropdownIcon() {
+    $('.ui-selectmenu-button').append('<i class="fa fa-sort" aria-hidden="true"></i>');
+}
+
 function initUi() {
 
     $("#deploy").click(function(){
@@ -556,6 +565,7 @@ function initUi() {
             controller.validate_controller_config(
                 JSON.stringify(getDeploymentConfigDict()))
         }
+        $("#controllerconfigform .hide_validation").removeClass("hide_validation");
         return false;
     });
 
@@ -693,6 +703,8 @@ function initUi() {
     initHostNicsSelect();
 
     setupTerm();
+
+    replaceDropdownIcon();
 }
 
 function validations() {
