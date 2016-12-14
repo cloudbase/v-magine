@@ -40,6 +40,7 @@ class Controller(QtCore.QObject):
     on_host_config_validated_event = QtCore.pyqtSignal()
     on_show_controller_config_event = QtCore.pyqtSignal()
     on_controller_config_validated_event = QtCore.pyqtSignal()
+    on_openstack_networking_config_validated_event = QtCore.pyqtSignal()
     on_show_openstack_networking_config_event = QtCore.pyqtSignal()
     on_show_host_config_event = QtCore.pyqtSignal()
     on_show_welcome_event = QtCore.pyqtSignal()
@@ -277,6 +278,26 @@ class Controller(QtCore.QObject):
                 args.get("proxy_password")
                 ),
             _host_controller_config_validated)
+
+    @QtCore.pyqtSlot(str)
+    def validate_openstack_networking_config(self, json_args):
+        LOG.debug("validate_openstack_networking_config called")
+        args = json.loads(str(json_args))
+
+        def _openstack_networking_config_validated(future):
+            user_ok = future.result()
+            if user_ok:
+                self.on_openstack_networking_config_validated_event.emit()
+
+        _run_async_task(
+            lambda: self._worker.validate_openstack_networking_config(
+                args.get("fip_range"),
+                args.get("fip_range_start"),
+                args.get("fip_range_end"),
+                args.get("fip_gateway"),
+                args.get("fip_name_servers")
+                ),
+            _openstack_networking_config_validated)
 
     def _get_repo_urls_completed(self, future):
         repo_url, repo_urls = future.result()

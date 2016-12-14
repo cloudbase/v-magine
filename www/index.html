@@ -295,28 +295,28 @@
                     <h2><i class="fa fa-globe on-left"></i>Floating IP Setup</h2>
 
                     <label>Floating IPv4 subnet / netmask bits (CIDR)</label>
-                    <input class="field has_tooltip" type="text" id="subnet" ng-model="fipRange" required
+                    <input class="field has_tooltip hide_validation" type="text" id="subnet" ng-model="fipRange" required
                            data-tooltip="This is the public IP range assigned to OpenStack instances. Make sure it does not conflict with existing IPs on your network" />
 
                     <label>Floating IP gateway</label>
-                    <input class="field has_tooltip" type="text" id="gateway" ng-model="fipRangeGateway"
+                    <input class="field has_tooltip hide_validation" type="text" id="gateway" ng-model="fipRangeGateway"
                            data-tooltip="Existing external gateway in the floating IP subnet" />
                 </div>
                 <div class="widget">
                     <div class="mini-row">
                         <div class="mini-label">
                             <label>Floating IP range start</label>
-                            <input class="field has_tooltip" type="text" name="fiprangestart" id="fiprangestart" ng-model="fipRangeStart" required
+                            <input class="field has_tooltip hide_validation" type="text" name="fiprangestart" id="fiprangestart" ng-model="fipRangeStart" required
                                    data-tooltip="First IP address in the floating IP subnet" />
                         </div>
                         <div class="mini-label">
                             <label>Floating IP range end</label>
-                            <input class="field has_tooltip" type="text" name="fiprangeend" id="fiprangeend" ng-model="fipRangeEnd" required
+                            <input class="field has_tooltip hide_validation" type="text" name="fiprangeend" id="fiprangeend" ng-model="fipRangeEnd" required
                                    data-tooltip="Last IP address in the floating IP subnet" />
                         </div>
                     </div>
                     <label>DNS servers</label>
-                    <input class="field has_tooltip" type="text" id="nameservers" ng-model="fipRangeNameServers" ng-list
+                    <input class="field has_tooltip hide_validation" type="text" id="nameservers" ng-model="fipRangeNameServers" ng-list
                            data-tooltip="Existing external DNS server(s) to be assigned to the OpenStack instances. Separate multiple servers with a comma" />
                 </div>
                 <div class="buttons" align="auto">

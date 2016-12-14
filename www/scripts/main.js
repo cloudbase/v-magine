@@ -115,6 +115,10 @@ function controllerConfigValidated() {
     $("#adminpasswordrepeat").removeClass("hide_validation");
 }
 
+function openStackNetworkingConfigValidated() {
+    controller.show_host_config();
+}
+
 function showOpenStackNetworkingConfig() {
     showPage("#page-openstack-networking");
 }
@@ -570,9 +574,11 @@ function initUi() {
     });
 
     $("#openstacknetworkingconfignext").click(function(){
-        if(validateConfigForm("#openstacknetworkingconfigform") && validateIP()) {
-            controller.show_host_config();
+        if(validateConfigForm("#openstacknetworkingconfigform")) {
+            controller.validate_openstack_networking_config(
+                JSON.stringify(getDeploymentConfigDict()));
         }
+        $("#openstacknetworkingconfigform .hide_validation").removeClass("hide_validation");
         return false;
     });
 
@@ -748,88 +754,6 @@ function validateConfigForm(id) {
     return true;
 }
 
-function validateIP() {
-    var subnet_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/([0-3]?[0-9]?)$/;
-    var ip_format = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    var subnet = $("#subnet").val();
-    var ip_start = $("#fiprangestart").val();
-    var ip_end = $("#fiprangeend").val();
-    var gateway = $("#gateway").val();
-    var prefix = subnet.split('/').slice(1);
-    var prefix_length = 0;
-
-    if ((prefix >= 8) && (prefix <=15)) {
-        prefix_length = 1;
-    } else if ((prefix >= 16) && (prefix <=23)) {
-        prefix_length = 2;
-    } else if ((prefix >= 24) && (prefix <=32)) {
-        prefix_length = 3;
-    } else {
-        $("#subnet").focus();
-        $("#subnet").addClass("is_invalid");
-        showMessage("OpenStack configuration",
-          "Please enter a valid prefix length");
-        return false;
-    }
-
-    var part = subnet.split('.').slice(0,prefix_length);
-    var range = part.join('.');
-
-    if(!subnet.match(subnet_format)) {
-        $("#subnet").focus();
-        $("#subnet").addClass("is_invalid");
-        showMessage("OpenStack configuration",
-          "Please enter a valid floating IP subnet");
-        return false;
-    }
-
-    part = ip_start.split('.').slice(0,prefix_length);
-    var iprange = part.join('.');
-    if(!(ip_start.match(ip_format)) || (range != iprange)) {
-        $("#fiprangestart").focus();
-        $("#fiprangestart").addClass("is_invalid");
-        showMessage("OpenStack configuration",
-          "Please enter a valid IP");
-        return false;
-    }
-
-    part = ip_end.split('.').slice(0,prefix_length);
-    iprange = part.join('.');
-    if(!(ip_end.match(ip_format)) || (range != iprange)) {
-        $("#fiprangeend").focus();
-        $("#fiprangeend").addClass("is_invalid");
-        showMessage("OpenStack configuration",
-          "Please enter a valid IP");
-        return false;
-    }
-
-    part = gateway.split('.').slice(0,prefix_length);
-    iprange = part.join('.');
-    if(!(gateway.match(ip_format)) || (range != iprange)) {
-        $("#gateway").focus();
-        $("#gateway").addClass("is_invalid");
-        showMessage("OpenStack configuration",
-          "Please enter a valid gateway");
-        return false;
-    }
-
-    var part2 = ip_start.split('.').slice(prefix_length,prefix_length+1);
-    var ip_start_compare = part2.join('.');
-
-    part2 = ip_end.split('.').slice(prefix_length,prefix_length+1);
-    var ip_end_compare = part2.join('.');
-
-    if (ip_start_compare > ip_end_compare) {
-        $("#fiprangeend").focus();
-        $("#fiprangeend").addClass("is_invalid");
-        showMessage("OpenStack configuration",
-          "Floating IP range end is smaller than range start ");
-        return false;
-    }
-
-    return true;
-}
-
 function validateHostConfigForm() {
     if(!$("#hostconfigform")[0].checkValidity()) {
         showMessage("OpenStack configuration",
@@ -858,6 +782,8 @@ function ApplicationIsReady() {
           showControllerConfig);
         controller.on_controller_config_validated_event.connect(
             controllerConfigValidated);
+        controller.on_openstack_networking_config_validated_event.connect(
+            openStackNetworkingConfigValidated);
         controller.on_show_openstack_networking_config_event.connect(
           showOpenStackNetworkingConfig);
         controller.on_show_host_config_event.connect(showHostConfig);
