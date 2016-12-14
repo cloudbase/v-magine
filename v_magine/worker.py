@@ -769,7 +769,7 @@ class Worker(object):
     def _validate_single_ip_address(ip_address, error_msg):
         try:
             ip = netaddr.IPAddress(ip_address)
-            if ip.is_netmask():
+            if ip.is_netmask() or str(ip) != ip_address:
                 raise exceptions.InvalidIPAddressException()
             return ip
         except Exception:
@@ -801,7 +801,8 @@ class Worker(object):
                 ip_range = netaddr.IPNetwork(fip_range)
                 if (ip_range.ip != ip_range.network or
                         ip_range.size == 1 or
-                        ip_range.ip == ip_range.netmask):
+                        ip_range.ip == ip_range.netmask or
+                        str(ip_range.cidr) != fip_range):
                     raise exceptions.InvalidIPAddressException()
             except Exception:
                 raise exceptions.InvalidIPAddressException(
@@ -858,8 +859,12 @@ class Worker(object):
             if not mgmt_ext_dhcp:
                 LOG.debug("mgmt_ext_ip: %s", mgmt_ext_ip)
                 try:
-                    ip = netaddr.IPNetwork(mgmt_ext_ip)
-                    if ip.ip == ip.network or ip.size == 1:
+                    ip_address = mgmt_ext_ip.split("/")[0]
+                    ip = self._validate_single_ip_address(ip_address, "")
+                    ip_net = netaddr.IPNetwork(mgmt_ext_ip)
+                    net_bits = ip_net.netmask.netmask_bits()
+                    if (ip == ip_net.network or
+                            "%s/%d" % (ip, net_bits) != mgmt_ext_ip):
                         raise exceptions.InvalidIPAddressException()
                 except Exception:
                     raise exceptions.InvalidIPAddressException(
