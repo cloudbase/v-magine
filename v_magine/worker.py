@@ -9,6 +9,9 @@ import threading
 import time
 import sys
 
+import netaddr
+import validators
+
 from v_magine import actions
 from v_magine import centos
 from v_magine import constants
@@ -666,15 +669,19 @@ class Worker(object):
             admin_password = args.get("admin_password")
 
             if not args.get("mgmt_ext_dhcp"):
-                mgmt_ext_ip = args.get("mgmt_ext_ip")
-                mgmt_ext_netmask = args.get("mgmt_ext_netmask")
-                mgmt_ext_gateway = args.get("mgmt_ext_gateway")
+                mgmt_ext_cidr = args.get("mgmt_ext_ip")
+                mgmt_ext_gateway = str(netaddr.IPAddress(
+                    args.get("mgmt_ext_gateway")))
+
+                ip = netaddr.IPNetwork(mgmt_ext_cidr)
+                mgmt_ext_ip = str(ip.ip)
+                mgmt_ext_netmask = str(ip.netmask)
+                mgmt_ext_name_servers = args.get("mgmt_ext_name_servers")
             else:
                 mgmt_ext_ip = None
                 mgmt_ext_netmask = None
                 mgmt_ext_gateway = None
-
-            mgmt_ext_name_servers = args.get("mgmt_ext_name_servers")
+                mgmt_ext_name_servers = None
 
             if args.get("use_proxy"):
                 proxy_url = args.get("proxy_url")
@@ -688,10 +695,13 @@ class Worker(object):
             hyperv_host_username = args.get("hyperv_host_username")
             hyperv_host_password = args.get("hyperv_host_password")
 
-            fip_range = args.get("fip_range")
-            fip_range_start = args.get("fip_range_start")
-            fip_range_end = args.get("fip_range_end")
-            fip_gateway = args.get("fip_gateway")
+            fip_range = str(netaddr.IPNetwork(args.get("fip_range")).cidr)
+            fip_range_start = str(netaddr.IPAddress(
+                args.get("fip_range_start")))
+            fip_range_end = str(netaddr.IPAddress(
+                args.get("fip_range_end")))
+            fip_gateway = str(netaddr.IPAddress(
+                args.get("fip_gateway")))
             fip_name_servers = args.get("fip_name_servers")
 
             self._curr_step = 0
@@ -748,9 +758,9 @@ class Worker(object):
             self._dep_actions.stop_pxe_service()
             self._is_install_done = True
 
-    def validate_host_user(self, username, password):
+    def validate_host_config(self, username, password):
         try:
-            LOG.debug("validate_host_user called")
+            LOG.debug("validate_host_config called")
             self._start_progress_status("Validating Hyper-V host user...")
             self._dep_actions.validate_host_user(username, password)
             return True
@@ -759,6 +769,69 @@ class Worker(object):
             self._error_callback(ex)
         finally:
             self._stop_progress_status()
+
+    def validate_controller_config(self, mgmt_ext_dhcp, mgmt_ext_ip,
+                                   mgmt_ext_gateway, mgmt_ext_name_servers,
+                                   use_proxy, proxy_url, proxy_username,
+                                   proxy_password):
+        try:
+            LOG.debug("validate_controller_config called")
+            if not mgmt_ext_dhcp:
+                LOG.debug("mgmt_ext_ip: %s", mgmt_ext_ip)
+                try:
+                    ip = netaddr.IPNetwork(mgmt_ext_ip)
+                    if ip.ip == ip.network or ip.size == 1:
+                        raise exceptions.InvalidIPAddressException()
+                except Exception:
+                    raise exceptions.InvalidIPAddressException(
+                        "Invalid IP address: %s. The address needs to be "
+                        "in CIDR notation, e.g. 192.168.0.1/24" % mgmt_ext_ip)
+
+                LOG.debug("mgmt_ext_gateway: %s", mgmt_ext_gateway)
+                try:
+                    ip = netaddr.IPAddress(mgmt_ext_gateway)
+                    if ip.is_netmask():
+                        raise exceptions.InvalidIPAddressException()
+                except Exception:
+                    raise exceptions.InvalidIPAddressException(
+                        "Invalid gateway IP address: %s" %
+                        mgmt_ext_gateway)
+
+                LOG.debug("mgmt_ext_name_servers: %s", mgmt_ext_name_servers)
+
+                if not mgmt_ext_name_servers:
+                    raise exceptions.BaseVMagineException(
+                        "At least one name server is required")
+
+                if len(mgmt_ext_name_servers) > 2:
+                    raise exceptions.BaseVMagineException(
+                        "At most two name servers can be specified")
+
+                for name_server in mgmt_ext_name_servers:
+                    if not validators.domain(name_server):
+                        try:
+                            ip = netaddr.IPAddress(name_server)
+                            if ip.is_netmask():
+                                raise exceptions.InvalidIPAddressException()
+                        except Exception:
+                            raise exceptions.InvalidIPAddressException(
+                                "Invalid name server: %s" % name_server)
+
+            if use_proxy:
+                LOG.debug("proxy_url: %s", proxy_url)
+                if not validators.url(proxy_url):
+                    raise exceptions.InvalidUrlException(
+                        "Invalid proxy URL: %s" % proxy_url)
+
+                if proxy_password and not proxy_username:
+                    raise exceptions.BaseVMagineException(
+                        "A proxy username must be specified if a password "
+                        "is provided")
+
+            return True
+        except Exception as ex:
+            LOG.exception(ex)
+            self._error_callback(ex)
 
     def check_for_updates(self):
         try:

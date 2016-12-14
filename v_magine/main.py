@@ -36,8 +36,10 @@ class Controller(QtCore.QObject):
     on_get_available_host_nics_completed_event = QtCore.pyqtSignal(str)
     on_add_ext_vswitch_completed_event = QtCore.pyqtSignal(str)
     on_install_started_event = QtCore.pyqtSignal()
-    on_review_config_event = QtCore.pyqtSignal()
+    on_show_review_config_event = QtCore.pyqtSignal()
+    on_host_config_validated_event = QtCore.pyqtSignal()
     on_show_controller_config_event = QtCore.pyqtSignal()
+    on_controller_config_validated_event = QtCore.pyqtSignal()
     on_show_openstack_networking_config_event = QtCore.pyqtSignal()
     on_show_host_config_event = QtCore.pyqtSignal()
     on_show_welcome_event = QtCore.pyqtSignal()
@@ -230,23 +232,51 @@ class Controller(QtCore.QObject):
     @QtCore.pyqtSlot()
     def reconfig_deployment(self):
         LOG.debug("reconfig_deployment called")
-        self.on_review_config_event.emit()
+        self.on_show_review_config_event.emit()
 
-    def _host_user_validated(self, future):
-        user_ok = future.result()
-        if user_ok:
-            self.on_review_config_event.emit()
+    @QtCore.pyqtSlot()
+    def show_review_config(self):
+        LOG.debug("review_config called")
+        self.on_show_review_config_event.emit()
 
     @QtCore.pyqtSlot(str)
-    def review_config(self, json_args):
-        LOG.debug("review_config called")
+    def validate_host_config(self, json_args):
+        LOG.debug("validate_host_config called")
+
+        def _host_config_validated(future):
+            user_ok = future.result()
+            if user_ok:
+                self.on_host_config_validated_event.emit()
 
         args = json.loads(str(json_args))
         _run_async_task(
-            lambda: self._worker.validate_host_user(
+            lambda: self._worker.validate_host_config(
                 args.get("hyperv_host_username"),
                 args.get("hyperv_host_password")),
-            self._host_user_validated)
+            _host_config_validated)
+
+    @QtCore.pyqtSlot(str)
+    def validate_controller_config(self, json_args):
+        LOG.debug("validate_controller_config called")
+        args = json.loads(str(json_args))
+
+        def _host_controller_config_validated(future):
+            user_ok = future.result()
+            if user_ok:
+                self.on_controller_config_validated_event.emit()
+
+        _run_async_task(
+            lambda: self._worker.validate_controller_config(
+                args.get("mgmt_ext_dhcp"),
+                args.get("mgmt_ext_ip"),
+                args.get("mgmt_ext_gateway"),
+                args.get("mgmt_ext_name_servers"),
+                args.get("use_proxy"),
+                args.get("proxy_url"),
+                args.get("proxy_username"),
+                args.get("proxy_password")
+                ),
+            _host_controller_config_validated)
 
     def _get_repo_urls_completed(self, future):
         repo_url, repo_urls = future.result()

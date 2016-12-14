@@ -109,6 +109,12 @@ function showControllerConfig() {
     $(".progress_bar_text").css('display','inline-block');
 }
 
+function controllerConfigValidated() {
+    controller.show_openstack_networking_config();
+    $("#adminpassword").removeClass("hide_validation");
+    $("#adminpasswordrepeat").removeClass("hide_validation");
+}
+
 function showOpenStackNetworkingConfig() {
     showPage("#page-openstack-networking");
 }
@@ -117,7 +123,11 @@ function showHostConfig() {
     showPage("#host-setup");
 }
 
-function reviewConfig() {
+function hostConfigValidated() {
+    controller.show_review_config();
+}
+
+function showReviewConfig() {
     showPage("#review");
 }
 
@@ -543,10 +553,9 @@ function initUi() {
 
     $("#controllerconfignext").click(function(){
         if(validateConfigForm("#controllerconfigform")) {
-            controller.show_openstack_networking_config();
+            controller.validate_controller_config(
+                JSON.stringify(getDeploymentConfigDict()))
         }
-        $("#adminpassword").removeClass("hide_validation");
-        $("#adminpasswordrepeat").removeClass("hide_validation");
         return false;
     });
 
@@ -569,7 +578,7 @@ function initUi() {
 
     $("#hostconfignext").click(function(){
         if(validateHostConfigForm()) {
-            controller.review_config(
+            controller.validate_host_config(
               JSON.stringify(getDeploymentConfigDict()));
         }
         $("#hypervhostusername").removeClass("hide_validation");
@@ -835,14 +844,17 @@ function ApplicationIsReady() {
         controller.on_show_eula_event.connect(showEula);
         controller.on_show_controller_config_event.connect(
           showControllerConfig);
+        controller.on_controller_config_validated_event.connect(
+            controllerConfigValidated);
         controller.on_show_openstack_networking_config_event.connect(
           showOpenStackNetworkingConfig);
         controller.on_show_host_config_event.connect(showHostConfig);
+        controller.on_show_review_config_event.connect(showReviewConfig);
         controller.on_show_deployment_details_event.connect(
           showDeploymentDetails);
         controller.on_get_compute_nodes_completed_event.connect(
           updateComputeNodesView);
-        controller.on_review_config_event.connect(reviewConfig);
+        controller.on_host_config_validated_event.connect(hostConfigValidated);
         controller.on_stdout_data_event.connect(gotStdOutData);
         controller.on_stderr_data_event.connect(gotStdErrData);
         controller.on_error_event.connect(handleError);

@@ -308,6 +308,8 @@ class DeploymentActions(object):
 
     @staticmethod
     def _get_primary_secondary_dns(name_servers):
+        if not name_servers:
+            return None, None
         dns1 = name_servers[0].strip() if len(name_servers) else None
         dns2 = name_servers[1].strip() if len(name_servers) > 1 else None
         return dns1, dns2

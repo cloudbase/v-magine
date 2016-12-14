@@ -33,3 +33,11 @@ class AccessDeniedException(BaseVMagineException):
 
 class ConfigFileErrorException(BaseVMagineException):
     pass
+
+
+class InvalidIPAddressException(BaseVMagineException):
+    pass
+
+
+class InvalidUrlException(BaseVMagineException):
+    pass

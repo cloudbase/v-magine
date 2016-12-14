@@ -12,5 +12,7 @@ trollius
 fastestmirror
 jinja2
 dnspython
+netaddr
+validators
 #sip
 #PyQt5
