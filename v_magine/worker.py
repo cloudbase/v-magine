@@ -28,6 +28,7 @@ VMAGINE_DOWNLOAD_URL = "https://www.cloudbase.it/v-magine"
 VMAGINE_GITHUB_URL = "https://github.com/cloudbase/v-magine"
 VMAGINE_ISSUES_URL = "https://github.com/cloudbase/v-magine/issues"
 VMAGINE_QUESTIONS_URL = "http://ask.cloudbase.it"
+CORIOLIS_URL = "https://cloudbase.it/coriolis"
 
 
 class _VMConsoleThread(threading.Thread):
@@ -609,6 +610,9 @@ class Worker(object):
 
     def open_questions_url(self):
         self._open_url(VMAGINE_QUESTIONS_URL)
+
+    def open_coriolis_url(self):
+        self._open_url(CORIOLIS_URL)
 
     def open_controller_ssh(self):
         try:

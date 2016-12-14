@@ -627,7 +627,7 @@ function initUi() {
     });
 
     $("#add-edit, #migrate").click(function(){
-        showMessage("Coming soon!", "This feature will be available in a forthcoming update!");
+        controller.open_coriolis_url();
         return false;
     });
 

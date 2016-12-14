@@ -452,6 +452,11 @@ class Controller(QtCore.QObject):
         LOG.debug("open_questions_url called")
         _run_async_task(self._worker.open_questions_url)
 
+    @QtCore.pyqtSlot()
+    def open_coriolis_url(self):
+        LOG.debug("open_coriolis_url called")
+        _run_async_task(self._worker.open_coriolis_url)
+
 
 class MainWindow(QtWidgets.QMainWindow):
 
