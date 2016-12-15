@@ -787,7 +787,7 @@ class Worker(object):
                 "At most two name servers can be specified")
 
         for name_server in name_servers:
-            if not validators.domain(name_server):
+            if not utils.is_valid_hostname(name_server):
                 Worker._validate_single_ip_address(
                     name_server, "Invalid name server: %s")
 

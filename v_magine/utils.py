@@ -7,6 +7,7 @@ import logging
 import os
 import psutil
 import random
+import re
 import subprocess
 import tempfile
 import time
@@ -131,3 +132,13 @@ def get_proxy():
 
 def get_cpu_count():
     return len(psutil.cpu_percent(interval=0, percpu=True))
+
+
+def is_valid_hostname(hostname):
+    if len(hostname) > 253:
+        return False
+    if hostname[-1] == ".":
+        # Strips one dot from the right, if present
+        hostname = hostname[:-1]
+    allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+    return all(allowed.match(x) for x in hostname.split("."))
