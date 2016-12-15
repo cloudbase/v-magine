@@ -218,17 +218,17 @@
                             <div class="ip-type_group" ng-class="{disabled: mgmtExtDhcp}">
                                 <label>IP address / netmask bits (CIDR)</label>
                                 <input class="field has_tooltip ip-type hide_validation" ng-disabled="mgmtExtDhcp" type="text" id="ipv4addr" required ng-model="mgmtExtIp"
-                                       data-tooltip="Management interface IP in address/netmask CIDR notation" />
+                                       data-tooltip="Management interface IP in address/netmask CIDR notation" placeholder="192.168.0.1/24" />
                             </div>
                             <div class="ip-type_group" ng-class="{disabled: mgmtExtDhcp}">
                                 <label>Gateway</label>
                                 <input class="field has_tooltip ip-type hide_validation" ng-disabled="mgmtExtDhcp" type="text" id="net_gateway" required ng-model="mgmtExtGateway"
-                                       data-tooltip="Management interface gateway IP address" />
+                                       data-tooltip="Management interface gateway IP address" placeholder="192.168.0.254" />
                             </div>
                             <div class="ip-type_group" ng-class="{disabled: mgmtExtDhcp}">
                                 <label>DNS servers</label>
                                 <input class="field has_tooltip ip-type hide_validation" ng-disabled="mgmtExtDhcp" type="text" id="dns-servers" required ng-model="mgmtExtNameServers" ng-list
-                                       data-tooltip="DNS servers to be assigned to the management interface" />
+                                       data-tooltip="DNS servers to be assigned to the management interface" placeholder="208.67.222.222" />
                             </div>
                         </div>
                         <div class="col">
@@ -247,7 +247,7 @@
                             <div class="proxy-server_group" ng-class="{disabled: !useProxy}">
                                 <label>Proxy URL</label>
                                 <input class="field has_tooltip hide_validation" ng-disabled="!useProxy" type="text" id="proxy-server" required ng-model="proxyUrl"
-                                       data-tooltip="Proxy server URL" />
+                                       data-tooltip="Proxy server URL" placeholder="http://proxy.local:8080" />
                             </div>
 
                             <div class="proxy-server_group" ng-class="{disabled: !useProxy}">
@@ -296,28 +296,28 @@
 
                     <label>Floating IPv4 subnet / netmask bits (CIDR)</label>
                     <input class="field has_tooltip hide_validation" type="text" id="subnet" ng-model="fipRange" required
-                           data-tooltip="This is the public IP range assigned to OpenStack instances. Make sure it does not conflict with existing IPs on your network" />
+                           data-tooltip="This is the public IP range assigned to OpenStack instances. Make sure it does not conflict with existing IPs on your network" placeholder="192.168.0.0/24" />
 
                     <label>Floating IP gateway</label>
                     <input class="field has_tooltip hide_validation" type="text" id="gateway" ng-model="fipRangeGateway"
-                           data-tooltip="Existing external gateway in the floating IP subnet" />
+                           data-tooltip="Existing external gateway in the floating IP subnet" placeholder="192.168.0.254" />
                 </div>
                 <div class="widget">
                     <div class="mini-row">
                         <div class="mini-label">
                             <label>Floating IP range start</label>
                             <input class="field has_tooltip hide_validation" type="text" name="fiprangestart" id="fiprangestart" ng-model="fipRangeStart" required
-                                   data-tooltip="First IP address in the floating IP subnet" />
+                                   data-tooltip="First IP address in the floating IP subnet" placeholder="192.168.0.100" />
                         </div>
                         <div class="mini-label">
                             <label>Floating IP range end</label>
                             <input class="field has_tooltip hide_validation" type="text" name="fiprangeend" id="fiprangeend" ng-model="fipRangeEnd" required
-                                   data-tooltip="Last IP address in the floating IP subnet" />
+                                   data-tooltip="Last IP address in the floating IP subnet" placeholder="192.168.0.200" />
                         </div>
                     </div>
                     <label>DNS servers</label>
                     <input class="field has_tooltip hide_validation" type="text" id="nameservers" ng-model="fipRangeNameServers" ng-list
-                           data-tooltip="Existing external DNS server(s) to be assigned to the OpenStack instances. Separate multiple servers with a comma" />
+                           data-tooltip="Existing external DNS server(s) to be assigned to the OpenStack instances. Separate multiple servers with a comma" placeholder="208.67.222.222, 208.67.220.220" />
                 </div>
                 <div class="buttons" align="auto">
                     <button type="button" formaction="" class="inputButton large back" name="openstacknetworkingconfigback" id="openstacknetworkingconfigback">Back</button>
