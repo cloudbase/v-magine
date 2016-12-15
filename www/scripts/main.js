@@ -626,11 +626,15 @@ function initUi() {
         return false;
     });
 
-    $("#add-edit, #migrate").click(function(){
-        controller.open_coriolis_url();
+    $("#add-edit").click(function(){
+        showMessage("Coming soon!", "This feature will be available in a forthcoming update!");
         return false;
     });
 
+    $("#migrate").click(function(){
+        controller.open_coriolis_url();
+        return false;
+    });
 
     $("#configbutton").click(function(){
         controller.show_host_config()
