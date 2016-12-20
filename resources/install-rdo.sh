@@ -223,7 +223,8 @@ FIP_RANGE_END=$4
 FIP_RANGE_GATEWAY=$5
 FIP_RANGE_NAME_SERVERS=${@:6}
 
-RDO_RELEASE_RPM_URL=https://repos.fedorapeople.org/repos/openstack/openstack-mitaka/rdo-release-mitaka-5.noarch.rpm
+RDO_RELEASE="mitaka"
+RDO_RELEASE_RPM_URL=https://rdoproject.org/repos/rdo-release.rpm
 DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/9.0.1/openstack-dashboard-cloudbase-theme-9.0.1-0.noarch.rpm
 CIRROS_URL=https://www.cloudbase.it/downloads/cirros-0.3.4-x86_64.vhdx.gz
 ANSWER_FILE=packstack-answers.txt
@@ -271,7 +272,7 @@ fi
 SKIP_NTP_CONFIG=""
 exec_with_retry 5 0 /sbin/ntpdate pool.ntp.org || SKIP_NTP_CONFIG=1 && >&2 echo "ntpdate failed, make sure the NTP server is available"
 
-exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-mitaka yum-utils
+exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-$RDO_RELEASE yum-utils
 # Disabling due to 404 errors on the repo url
 /usr/bin/yum-config-manager --disable centos-ceph-jewel
 
