@@ -653,17 +653,17 @@ function initUi() {
 
     $("#agreement").load("eula.html");
 
-    $('#opengithuburlbutton1,#opengithuburlbutton2').click(function(){
+    $('#opengithuburlbutton1,#opengithuburlbutton2, .opengithuburlbutton').click(function(){
         controller.open_github_url();
         return false;
     });
 
-    $('#openissuesurlbutton').click(function(){
+    $('.openissuesurlbutton').click(function(){
         controller.open_issues_url();
         return false;
     });
 
-    $('#openquestionsurlbutton').click(function(){
+    $('.openquestionsurlbutton').click(function(){
         controller.open_questions_url();
         return false;
     });
@@ -673,7 +673,7 @@ function initUi() {
         return false;
     });
 
-    $('#showhorizonbutton').click(function(){
+    $('#showhorizonbutton, #showhorizonbutton2').click(function(){
         controller.open_horizon_url();
         return false;
     });
