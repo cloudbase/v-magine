@@ -53,7 +53,7 @@ HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V'
 FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
-                  "HyperVNovaCompute_Mitaka_13_0_0.msi")
+                  "HyperVNovaCompute_Newton_14_0_1.msi")
 FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
                               "FreeRDPWebConnect.msi")
 
@@ -181,11 +181,11 @@ class DeploymentActions(object):
         properties["OPENSTACK_AUTH_URL"] = self._get_keystone_v2_url(
             nova_config["neutron"]["auth_url"])
         properties["OPENSTACK_TENANT_NAME"] = nova_config[
-            "keystone_authtoken"]["admin_tenant_name"]
+            "keystone_authtoken"]["project_name"]
         properties["OPENSTACK_USERNAME"] = nova_config["keystone_authtoken"][
-            "admin_user"]
+            "username"]
         properties["OPENSTACK_PASSWORD"] = nova_config["keystone_authtoken"][
-            "admin_password"]
+            "password"]
 
         properties["HYPERV_HOST_USERNAME"] = hyperv_host_username
         properties["HYPERV_HOST_PASSWORD"] = hyperv_host_password
@@ -229,11 +229,10 @@ class DeploymentActions(object):
         properties = {}
         properties["RPCBACKEND"] = "RabbitMQ"
 
-        rabbit_hosts = nova_config["oslo_messaging_rabbit"]["rabbit_hosts"]
-        (rabbit_host, rabbit_port) = rabbit_hosts.split(",")[0].split(':')
-
-        properties["RPCBACKENDHOST"] = rabbit_host
-        properties["RPCBACKENDPORT"] = rabbit_port
+        properties["RPCBACKENDHOST"] = nova_config["oslo_messaging_rabbit"][
+            "rabbit_host"]
+        properties["RPCBACKENDPORT"] = nova_config["oslo_messaging_rabbit"][
+            "rabbit_port"]
 
         glance_hosts = nova_config["glance"]["api_servers"]
         (glance_host, glance_port) = glance_hosts.split(",")[0].split(':')

@@ -109,7 +109,8 @@ class RDOInstaller(object):
 
         config_names = {"oslo_messaging_rabbit":
                         [
-                            "rabbit_hosts",
+                            "rabbit_host",
+                            "rabbit_port",
                             "rabbit_userid",
                             "rabbit_password"
                         ],
@@ -129,9 +130,9 @@ class RDOInstaller(object):
                         ],
                         "keystone_authtoken":
                         [
-                            "admin_tenant_name",
-                            "admin_user",
-                            "admin_password"
+                            "project_name",
+                            "username",
+                            "password"
                         ]}
 
         config = {}
