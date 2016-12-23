@@ -167,6 +167,14 @@ function disable_network_manager() {
     /sbin/chkconfig network on
 }
 
+function fix_extension_drivers_port_security() {
+    if [ ! $(openstack-config --get /etc/neutron/plugins/ml2/ml2_conf.ini ml2 extension_drivers 2> /dev/null | grep port_security) ]
+    then
+        openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 extension_drivers port_security
+        /bin/systemctl restart neutron-server.service
+    fi
+}
+
 function create_nova_flavors() {
     exec_with_retry 5 0 /usr/bin/nova flavor-create m1.nano 42 96 1 1
     exec_with_retry 5 0 /usr/bin/nova flavor-create m1.micro 84 128 2 1
@@ -375,6 +383,7 @@ export OS_AUTH_URL="http://$HOST_IP:5000/v2.0"
 
 remove_httpd_default_site
 disable_nova_compute
+fix_extension_drivers_port_security
 fix_cinder_chap_length
 fix_cinder_keystone_authtoken
 configure_public_subnet
