@@ -402,4 +402,7 @@ exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
 /usr/sbin/iptables -I INPUT -p tcp --dport 8776 -j ACCEPT
 /usr/sbin/service iptables save
 
+# This is needed due to a bug in LIS with kernel-3.10.0-514.10.2.el7
+exec_with_retry 5 0 /usr/bin/yum install -y kernel-3.10.0-514.6.2.el7
+
 echo "Done!"
