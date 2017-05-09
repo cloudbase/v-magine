@@ -5,9 +5,9 @@ lang en_US.UTF-8
 keyboard --vckeymap=us --xlayouts='us'
 
 {% if mgmt_ext_ip %}
-network --device eth0 --bootproto static --activate --hostname rdo.cloudbase --ip {{ mgmt_ext_ip }} --netmask {{ mgmt_ext_netmask }} --gateway {{ mgmt_ext_gateway }} --nameserver {{ mgmt_ext_dns1 }}
+network --device eth0 --bootproto static --activate --hostname kolla.cloudbase --ip {{ mgmt_ext_ip }} --netmask {{ mgmt_ext_netmask }} --gateway {{ mgmt_ext_gateway }} --nameserver {{ mgmt_ext_dns1 }}
 {% else %}
-network --device eth0 --bootproto dhcp --ipv6=auto --activate --hostname rdo.cloudbase
+network --device eth0 --bootproto dhcp --ipv6=auto --activate --hostname kolla.cloudbase
 {% endif %}
 text
 
@@ -59,19 +59,19 @@ EOF
 
 UDEV_NET_RULES=/etc/udev/rules.d/60-net.rules
 
-/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{ mgmt_ext_mac_address }}", ATTR{type}=="1", KERNEL=="eth*", NAME="mgmt-ext"' > $UDEV_NET_RULES
-/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{ mgmt_int_mac_address }}", ATTR{type}=="1", KERNEL=="eth*", NAME="mgmt-int"' >> $UDEV_NET_RULES
+/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{ mgmt_ext_mac_address }}", ATTR{type}=="1", KERNEL=="eth*", NAME="mgmt_ext"' > $UDEV_NET_RULES
+/usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{ mgmt_int_mac_address }}", ATTR{type}=="1", KERNEL=="eth*", NAME="mgmt_int"' >> $UDEV_NET_RULES
 /usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{ data_mac_address }}", ATTR{type}=="1", KERNEL=="eth*", NAME="data"' >> $UDEV_NET_RULES
 /usr/bin/echo 'SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="{{ ext_mac_address }}", ATTR{type}=="1", KERNEL=="eth*", NAME="ext"' >> $UDEV_NET_RULES
 
 /usr/bin/rm -f  /etc/sysconfig/network-scripts/ifcfg-eth*
 
 {% if mgmt_ext_ip %}
-config_network_adapter mgmt-ext {{ mgmt_ext_mac_address }} "yes" "none" "{{ mgmt_ext_ip }}" "{{ mgmt_ext_netmask }}" "{{ mgmt_ext_gateway }}" "{{ mgmt_ext_dns1 }}" "{{ mgmt_ext_dns2 or '' }}"
+config_network_adapter mgmt_ext {{ mgmt_ext_mac_address }} "yes" "none" "{{ mgmt_ext_ip }}" "{{ mgmt_ext_netmask }}" "{{ mgmt_ext_gateway }}" "{{ mgmt_ext_dns1 }}" "{{ mgmt_ext_dns2 or '' }}"
 {% else %}
-config_network_adapter mgmt-ext {{ mgmt_ext_mac_address }} "yes"
+config_network_adapter mgmt_ext {{ mgmt_ext_mac_address }} "yes"
 {% endif %}
-config_network_adapter mgmt-int {{ mgmt_int_mac_address }} "yes"
+config_network_adapter mgmt_int {{ mgmt_int_mac_address }} "yes"
 config_network_adapter data {{ data_mac_address }} "no"
 config_network_adapter ext {{ ext_mac_address }} "no"
 
@@ -79,7 +79,7 @@ config_network_adapter ext {{ ext_mac_address }} "no"
 echo 'http_proxy="{{ proxy_url }}"' >> /etc/environment
 echo 'https_proxy="{{ proxy_url }}"' >> /etc/environment
 echo 'ftp_proxy="{{ proxy_url }}"' >> /etc/environment
-echo 'no_proxy=rdo.cloudbase,localhost,127.0.0.1' >> /etc/environment
+echo 'no_proxy=kolla.cloudbase,localhost,127.0.0.1' >> /etc/environment
 {% endif %}
 
 SSH_DIR=/root/.ssh

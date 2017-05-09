@@ -24,6 +24,7 @@ angular.module('stackInABoxApp', []).controller('StackInABoxCtrl',
       $scope.openstackBaseDir = null;
       $scope.hypervHostUsername = null;
       $scope.hypervHostPassword = null;
+      $scope.hypervHostIp = null;
       $scope.hypervHostName = null;
       $scope.controllerIp = null;
       $scope.horizonUrl = null;
@@ -200,6 +201,7 @@ function getDeploymentConfigDict() {
     dict["admin_password"] = $scope.adminPassword;
     dict["hyperv_host_username"] = $scope.hypervHostUsername;
     dict["hyperv_host_password"] = $scope.hypervHostPassword;
+    dict["hyperv_host_ip"] = $scope.hypervHostIp;
     dict["fip_range"] = $scope.fipRange;
     dict["fip_range_start"] = $scope.fipRangeStart;
     dict["fip_range_end"] = $scope.fipRangeEnd;
@@ -360,6 +362,7 @@ function configCompleted(configJson) {
     $scope.suggestedOpenStackVMCpu = $scope.openStackVMCpu
     $scope.openstackBaseDir = defaultConfig.default_openstack_base_dir;
     $scope.hypervHostUsername = defaultConfig.default_hyperv_host_username;
+    $scope.hypervHostIp = defaultConfig.default_hyperv_host_ip;
     $scope.fipRange = defaultConfig.default_fip_range;
     $scope.fipRangeStart = defaultConfig.default_fip_range_start;
     $scope.fipRangeEnd = defaultConfig.default_fip_range_end;
@@ -599,6 +602,7 @@ function initUi() {
         }
         $("#hypervhostusername").removeClass("hide_validation");
         $("#hypervhostpassword").removeClass("hide_validation");
+        $("#hypervhostip").removeClass("hide_validation");
         return false;
     });
 

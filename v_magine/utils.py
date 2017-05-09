@@ -11,6 +11,7 @@ import re
 import subprocess
 import tempfile
 import time
+import base64
 
 from dns import resolver
 from six.moves.urllib import parse
@@ -18,8 +19,21 @@ from six.moves.urllib import request
 
 LOG = logging
 
+def _parse_powershell_cmd(cmd):
+    if isinstance(cmd, list) or isinstance(cmd, tuple):
+        cmd = " ".join(cmd)
 
-def execute_process(args, shell=False):
+    # We're using encoded commands so that we don't need
+    # escaping.
+    b64_cmd = base64.b64encode(cmd.encode('utf_16_le'))
+    parsed_cmd = ('powershell.exe', '-NonInteractive',
+                  '-EncodedCommand', b64_cmd)
+    return parsed_cmd
+
+def execute_process(args, shell=False, powershell=False):
+    if powershell:
+        args = _parse_powershell_cmd(args)
+
     si = subprocess.STARTUPINFO()
     si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     p = subprocess.Popen(args,
@@ -31,7 +45,6 @@ def execute_process(args, shell=False):
     if p.returncode:
         raise Exception("Command failed: %s" % err)
     return (out, err)
-
 
 def download_file(url, target_path, report_hook=None):
     class URLopenerWithException(request.FancyURLopener):
