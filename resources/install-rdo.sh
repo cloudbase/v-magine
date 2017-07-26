@@ -222,6 +222,23 @@ function download_cirros_image() {
     fi
 }
 
+function apply_cloudbase_theme() {
+    cat >>/etc/openstack-dashboard/local_settings <<'EOL'
+# Cloudbase Theme Settings
+AVAILABLE_THEMES = [
+      (
+          'cloudbase','Cloudbase','themes/cloudbase'
+      ),
+  ]
+# End of Cloudbase Theme Settings
+EOL
+    
+    sed -i '6s/.*/@import \"\/horizon\/lib\/roboto_fontface\/css\/roboto\/sass\/roboto-fontface.scss\";/' \
+    /usr/share/openstack-dashboard/openstack_dashboard/themes/cloudbase/static/bootstrap/_styles.scss
+    
+    systemctl restart httpd
+}
+
 rdo_cleanup
 
 ADMIN_PASSWORD=$1
@@ -231,7 +248,7 @@ FIP_RANGE_END=$4
 FIP_RANGE_GATEWAY=$5
 FIP_RANGE_NAME_SERVERS=${@:6}
 
-RDO_RELEASE="newton"
+RDO_RELEASE="ocata"
 RDO_RELEASE_RPM_URL=https://rdoproject.org/repos/rdo-release.rpm
 DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/10.0.0/openstack-dashboard-cloudbase-theme-10.0.0-0.noarch.rpm
 CIRROS_URL=https://www.cloudbase.it/downloads/cirros-0.3.4-x86_64.vhdx.gz
@@ -282,7 +299,7 @@ exec_with_retry 5 0 /sbin/ntpdate pool.ntp.org || SKIP_NTP_CONFIG=1 && >&2 echo 
 
 exec_with_retry 5 0 /usr/bin/yum install -y centos-release-openstack-$RDO_RELEASE yum-utils
 # Disabling due to 404 errors on the repo url
-/usr/bin/yum-config-manager --disable centos-ceph-jewel
+#/usr/bin/yum-config-manager --disable centos-ceph-jewel
 
 exec_with_retry 5 0 /usr/bin/yum update -y
 
@@ -318,13 +335,14 @@ openstack-config --set $ANSWER_FILE general CONFIG_MONGODB_HOST $HOST_IP
 
 openstack-config --set $ANSWER_FILE general CONFIG_USE_EPEL n
 openstack-config --set $ANSWER_FILE general CONFIG_HEAT_INSTALL y
+openstack-config --set $ANSWER_FILE general CONFIG_MAGNUM_INSTALL y
 
 openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST n
 
 openstack-config --set $ANSWER_FILE general CONFIG_CEILOMETER_INSTALL n
 
 openstack-config --set $ANSWER_FILE general CONFIG_NOVA_NETWORK_PUBIF $EXT_IFACE
-openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_TYPE_DRIVERS vlan
+openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_TYPE_DRIVERS vlan,flat
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_TENANT_NETWORK_TYPES vlan
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_MECHANISM_DRIVERS openvswitch,hyperv
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_VLAN_RANGES physnet1:500:2000
@@ -368,12 +386,17 @@ fi
 /usr/bin/ovs-vsctl add-br $OVS_EXT_BRIDGE
 /usr/bin/ovs-vsctl add-port $OVS_EXT_BRIDGE $EXT_IFACE
 
+exec_with_retry 5 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
+
 # Install common Python modules to avoid conflicts in Packstack
 exec_with_retry 5 0 /usr/bin/yum install -y python-pip python-cmd2 python-requests python-netifaces
 
-exec_with_retry 5 0 /bin/pip install "networking-hyperv>=2.0.0,<3.0.0"
+exec_with_retry 5 0 /bin/pip install "networking-hyperv==4.0.0" 2> /dev/null
+exec_with_retry 5 0 systemctl restart neutron-server.service
 
-exec_with_retry 5 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
+# enable host discovery for cells
+openstack-config --set /etc/nova/nova.conf scheduler discover_hosts_in_cells_interval 60
+exec_with_retry 5 0 systemctl restart openstack-nova-api.service
 
 rm "$CIRROS_TMP_FILE"
 
@@ -393,6 +416,7 @@ create_nova_flavors
 enable_horizon_password_retrieve
 
 exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
+apply_cloudbase_theme
 
 # TODO: limit access to: -i $MGMT_IFACE
 /usr/sbin/iptables -I INPUT -p tcp --dport 3260 -j ACCEPT
@@ -403,3 +427,4 @@ exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
 /usr/sbin/service iptables save
 
 echo "Done!"
+

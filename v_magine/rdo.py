@@ -107,12 +107,16 @@ class RDOInstaller(object):
     def get_nova_config(self):
         config_file = "/etc/nova/nova.conf"
 
-        config_names = {"oslo_messaging_rabbit":
+        config_names = {"DEFAULT":
                         [
-                            "rabbit_host",
-                            "rabbit_port",
-                            "rabbit_userid",
-                            "rabbit_password"
+                            "transport_url"
+                        ],
+                        "placement":
+                        [
+                            "auth_url",
+                            "password",
+                            "project_name",
+                            "username"
                         ],
                         "neutron":
                         [
