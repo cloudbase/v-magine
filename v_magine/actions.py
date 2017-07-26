@@ -53,7 +53,7 @@ HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V'
 FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
-                  "HyperVNovaCompute_Newton_14_0_1.msi")
+                  "HyperVNovaCompute_Ocata_15_0_0.msi")
 FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
                               "FreeRDPWebConnect.msi")
 
@@ -229,13 +229,24 @@ class DeploymentActions(object):
         properties = {}
         properties["RPCBACKEND"] = "RabbitMQ"
 
-        properties["RPCBACKENDHOST"] = nova_config["oslo_messaging_rabbit"][
-            "rabbit_host"]
-        properties["RPCBACKENDPORT"] = nova_config["oslo_messaging_rabbit"][
-            "rabbit_port"]
+
+        #rabbit_host = nova_config["glance"][
+        #    "api_servers"]
+        #properties["RPCBACKENDHOST"] = rabbit_host.split(":")[0]
+
+        properties["PLACEMENTAUTHURL"] = nova_config["placement"][
+            "auth_url"]
+        properties["PLACEMENTPASSWORD"] = nova_config["placement"][
+            "password"]
+        properties["PLACEMENTPROJECTNAME"] = nova_config["placement"][
+            "project_name"]
+        properties["PLACEMENTUSERNAME"] = nova_config["placement"][
+            "username"]
 
         glance_hosts = nova_config["glance"]["api_servers"]
         (glance_host, glance_port) = glance_hosts.split(",")[0].split(':')
+
+        properties["RPCBACKENDHOST"] = glance_host
 
         properties["GLANCEHOST"] = glance_host
         properties["GLANCEPORT"] = glance_port
