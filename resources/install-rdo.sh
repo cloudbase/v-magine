@@ -222,6 +222,15 @@ function download_cirros_image() {
     fi
 }
 
+function download_centos_kernel_image() {
+    local CENTOS_KERNEL_RPM_URL=$1
+    local CENTOS_KERNEL_TMP_FILE=$2
+
+    echo "Downloading CentOS Kernel RPM: $CENTOS_KERNEL_RPM_URL"
+    exec_with_retry 5 0 wget -q "$CENTOS_KERNEL_RPM_URL" -O "$CENTOS_KERNEL_TMP_FILE"
+    exec_with_retry 5 0 rpm -ivh --oldpackage "$CENTOS_KERNEL_TMP_FILE" > /dev/null
+}
+
 rdo_cleanup
 
 ADMIN_PASSWORD=$1
@@ -235,6 +244,7 @@ RDO_RELEASE="newton"
 RDO_RELEASE_RPM_URL=https://rdoproject.org/repos/rdo-release.rpm
 DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/10.0.0/openstack-dashboard-cloudbase-theme-10.0.0-0.noarch.rpm
 CIRROS_URL=https://www.cloudbase.it/downloads/cirros-0.3.4-x86_64.vhdx.gz
+CENTOS_KERNEL_RPM_URL=http://vault.centos.org/7.3.1611/updates/x86_64/Packages/kernel-3.10.0-514.6.2.el7.x86_64.rpm
 ANSWER_FILE=packstack-answers.txt
 DATA_IFACE=data
 EXT_IFACE=ext
@@ -403,6 +413,7 @@ exec_with_retry 10 0 rpm -Uvh $DASHBOARD_THEME_URL > /dev/null
 /usr/sbin/service iptables save
 
 # This is needed due to a bug in LIS with kernel-3.10.0-514.10.2.el7
-exec_with_retry 5 0 /usr/bin/yum install -y kernel-3.10.0-514.6.2.el7
+CENTOS_KERNEL_TMP_FILE=$(/usr/bin/mktemp)
+download_centos_kernel_image "$CENTOS_KERNEL_RPM_URL" "$CENTOS_KERNEL_TMP_FILE"
 
 echo "Done!"
