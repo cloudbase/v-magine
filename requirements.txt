@@ -1,7 +1,7 @@
 six
 paramiko
 pywin32
-wmi
+pymi
 iniparse
 netifaces
 pybootd
