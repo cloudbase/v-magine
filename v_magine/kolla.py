@@ -13,7 +13,7 @@ from v_magine import utils
 LOG = logging
 
 
-class RDOInstaller(object):
+class KollaInstaller(object):
 
     def __init__(self, stdout_callback, stderr_callback):
         self._stdout_callback = stdout_callback
@@ -75,7 +75,11 @@ class RDOInstaller(object):
 
     def update_os(self):
         LOG.info("Updating OS")
-        self._exec_shell_cmd_check_exit_status('yum update -y')
+        centos_utils = "centos-utils.sh"
+        self._copy_resource_file(centos_utils)
+        return self._exec_shell_cmd_check_exit_status('. /root/%(centos_utils)s && '
+                                                      'install_latest_kernel' %
+                                                      {"centos_utils": centos_utils})
         LOG.info("OS updated")
 
     def reboot(self):
@@ -89,8 +93,8 @@ class RDOInstaller(object):
         return self._exec_cmd(". /root/%(centos_utils)s && %(cmd)s" %
                               {"centos_utils": centos_utils, "cmd": cmd})
 
-    def check_new_kernel(self):
-        return self._exec_utils_function("check_new_kernel")
+    #def check_new_kernel(self):
+    #    return self._exec_utils_function("check_new_kernel")
 
     def _get_config_value(self, config_file, section, name):
         stdin, stdout, stderr = self._ssh.exec_command(
@@ -104,44 +108,6 @@ class RDOInstaller(object):
 
         return stdout.read()[:-1]
 
-    def get_nova_config(self):
-        config_file = "/etc/nova/nova.conf"
-
-        config_names = {"oslo_messaging_rabbit":
-                        [
-                            "rabbit_host",
-                            "rabbit_port",
-                            "rabbit_userid",
-                            "rabbit_password"
-                        ],
-                        "neutron":
-                        [
-                            "url",
-                            "auth_url",
-                            "project_name",
-                            "user_domain_name",
-                            "project_domain_name",
-                            "username",
-                            "password"
-                        ],
-                        "glance":
-                        [
-                            "api_servers"
-                        ],
-                        "keystone_authtoken":
-                        [
-                            "project_name",
-                            "username",
-                            "password"
-                        ]}
-
-        config = {}
-        for (section, names) in config_names.items():
-            config[section] = {}
-            for name in names:
-                config[section][name] = self._get_config_value(
-                    config_file, section, name)
-        return config
 
     @utils.retry_on_error()
     def _copy_resource_file(self, file_name):
@@ -155,39 +121,46 @@ class RDOInstaller(object):
     @utils.retry_on_error(sleep_seconds=5)
     def check_hyperv_compute_services(self, host_name):
         if (self._exec_utils_function(
-                "source ~/keystonerc_admin && check_nova_service_up %s" %
+                "source /etc/kolla/admin-openrc.sh && check_nova_service_up %s" %
                 host_name) != 0):
             raise Exception("The Hyper-V nova-compute service is not enabled "
-                            "in RDO")
+                            "in Kolla")
         if (self._exec_utils_function(
-                "source ~/keystonerc_admin && check_neutron_agent_up %s" %
+                "source /etc/kolla/admin-openrc.sh && check_neutron_agent_up %s" %
                 host_name) != 0):
-            raise Exception("The Hyper-V neutron agent is not enabled in RDO")
+            raise Exception("The Hyper-V neutron agent is not enabled in Kolla")
 
     @staticmethod
     def _shell_escape(s):
         return s.replace("\\", "\\\\").replace("'", "\\'")
 
-    def install_rdo(self, rdo_admin_password, fip_range, fip_range_start,
-                    fip_range_end, fip_gateway, fip_name_servers):
-        install_script = 'install-rdo.sh'
+    def install_kolla(self, kolla_admin_password, fip_range, fip_range_start,
+                    fip_range_end, fip_gateway, hyperv_host_username, hyperv_host_password,
+                    windows_host_ip, fip_name_servers):
+        install_script = 'install-kolla.sh'
         self._copy_resource_file(install_script)
 
-        LOG.info("Installing RDO")
+        LOG.info("Installing Kolla")
         self._exec_shell_cmd_check_exit_status(
             '/bin/chmod u+x /root/%(install_script)s && '
             '/root/%(install_script)s '
-            '$\'%(rdo_admin_password)s\' '
+            '$\'%(kolla_admin_password)s\' '
             '\"%(fip_range)s\" \"%(fip_range_start)s\" \"%(fip_range_end)s\" '
-            '\"%(fip_gateway)s\" %(fip_name_servers)s' %
+            '\"%(fip_gateway)s\" ' 
+            '\"%(hyperv_host_username)s\" \"%(hyperv_host_password)s\" '
+            '\"%(windows_host_ip)s\" '
+            '\"%(fip_name_servers)s\"' %
             {'install_script': install_script,
-             'rdo_admin_password': self._shell_escape(rdo_admin_password),
+             'kolla_admin_password': self._shell_escape(kolla_admin_password),
              'fip_range': fip_range,
              'fip_range_start': fip_range_start,
              'fip_range_end': fip_range_end,
              'fip_gateway': fip_gateway if fip_gateway is not None else '',
+             'hyperv_host_username': hyperv_host_username,
+             'hyperv_host_password': hyperv_host_password,
+             'windows_host_ip': windows_host_ip,
              'fip_name_servers': " ".join(fip_name_servers)})
-        LOG.info("RDO installed")
+        LOG.info("Kolla installed")
 
     def install_lis(self):
         lis_archive = "LIS.tar.gz"

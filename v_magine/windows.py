@@ -236,6 +236,25 @@ class WindowsUtils(object):
         # line as a string
         utils.execute_process(" ".join(args))
 
+    def activate_iscsi_initiator(self):
+        utils.execute_process(["Start-Service", "MSiSCSI"], powershell=True)
+        utils.execute_process(["Set-Service", "MSiSCSI", "-startuptype", "automatic"], powershell=True)
+
+        LOG.debug("iSCSI initiator activated")
+
+    def enable_ansible_on_host(self):
+        script = os.path.join(utils.get_resources_dir(), "ConfigureRemotingForAnsible.ps1")
+        utils.execute_process(script, powershell=True)
+
+        LOG.debug("Remote for Ansible configured")
+
+    def restart_nova_neutron(self):
+        utils.execute_process(["Restart-Service", "nova-compute"], powershell=True)
+        utils.execute_process(["Restart-Service", "neutron-hyperv-agent"], powershell=True)
+
+        LOG.debug("OpenStack Hyper-V services restarted")
+
+
     def check_os_version(self, major, minor):
         os_version_str = self._conn_cimv2.Win32_OperatingSystem()[0].Version
         os_version = list(map(int, os_version_str.split(".")))

@@ -1,7 +1,7 @@
 # -*- mode: python -*-
 a = Analysis(['.\\v_magine\\main.py'],
              pathex=['.'],
-             hiddenimports=["sip", "PyQt5.Qt", "PyQt5.QtCore", "PyQt5.QtGui", "PyQt5.QtWidgets", "PyQt5.QtWebKitWidgets", "PyQt5.QtPrintSupport",  "pybootd", "socket"],
+             hiddenimports=["mi", "sip", "PyQt5.Qt", "PyQt5.QtCore", "PyQt5.QtGui", "PyQt5.QtWidgets", "PyQt5.QtWebKitWidgets", "PyQt5.QtPrintSupport",  "pybootd", "socket"],
              hookspath=None,
              runtime_hooks=None)
 pyz = PYZ(a.pure)

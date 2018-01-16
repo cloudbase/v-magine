@@ -110,6 +110,11 @@
                         <input class="field has_tooltip hide_validation" type="password" id="hypervhostpassword" ng-model="hypervHostPassword" required
                                autofocus data-tooltip="Please provide the password for the host admin username. Tip: make sure the password does not expire." />
                     </div>
+
+                    <label>HyperV host IP address</label>
+                    <input class="field has_tooltip hide_validation" type="text" id="hypervhostip" ng-model="hypervHostIp" required
+                           data-tooltip="HyperV host IP address" placeholder="192.168.1.20"/>
+
                 </div>
                 <div class="widget" id="right-widget">
                     <label>Install location</label>
@@ -496,6 +501,10 @@
 
                 <h4>External vSwitch</h4>
                 <h2 ng-bind="extVSwitch"></h2>
+
+                <h4>Windows host IP</h4>
+                <h2 ng-bind="hypervHostIp"></h2>
+
             </div>
             <div class="mini-widget" id="controller-details">
                 <div class="controller">
