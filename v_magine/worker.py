@@ -318,10 +318,6 @@ class Worker(object):
             if rdo_installer.check_new_kernel():
                 reboot_and_reconnect()
 
-            self._update_status('Installing Hyper-V LIS components...')
-            rdo_installer.install_lis()
-            reboot_and_reconnect()
-
             self._update_status("Retrieving OpenStack configuration...")
             nova_config = rdo_installer.get_nova_config()
 

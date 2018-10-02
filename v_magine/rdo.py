@@ -192,15 +192,3 @@ class RDOInstaller(object):
              'fip_gateway': fip_gateway if fip_gateway is not None else '',
              'fip_name_servers': " ".join(fip_name_servers)})
         LOG.info("RDO installed")
-
-    def install_lis(self):
-        lis_archive = "LIS.tar.gz"
-
-        LOG.info("Installing LIS")
-        self._copy_resource_file(lis_archive)
-        self._exec_shell_cmd_check_exit_status(
-            'LIS_DIR=$(mktemp -d) && pushd $LIS_DIR && '
-            'tar zxvf /root/%(lis_archive)s && ./install.sh && '
-            'popd && rm -rf $LIS_DIR' %
-            {'lis_archive': lis_archive})
-        LOG.info("LIS installed")
