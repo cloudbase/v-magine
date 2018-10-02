@@ -229,11 +229,6 @@ class DeploymentActions(object):
         properties = {}
         properties["RPCBACKEND"] = "RabbitMQ"
 
-
-        #rabbit_host = nova_config["glance"][
-        #    "api_servers"]
-        #properties["RPCBACKENDHOST"] = rabbit_host.split(":")[0]
-
         properties["PLACEMENTAUTHURL"] = nova_config["placement"][
             "auth_url"]
         properties["PLACEMENTPASSWORD"] = nova_config["placement"][
