@@ -12,7 +12,7 @@ from v_magine import constants
 
 LOG = logging
 
-DEFAULT_CENTOS_RELEASE = "7.4.1708"
+DEFAULT_CENTOS_RELEASE = "7.5.1804"
 DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/%s/os/x86_64"
 
 
