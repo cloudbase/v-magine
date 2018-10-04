@@ -156,7 +156,8 @@ function configure_public_subnet() {
 
 function disable_nova_compute() {
     # Disable nova-compute on this host
-    exec_with_retry 5 0 /usr/bin/nova service-disable $(hostname) nova-compute
+    local SERVICE_ID=$(exec_with_retry 5 0 /usr/bin/nova service-list --host $(hostname) --binary nova-compute | awk 'NR==4{print $2}')
+    exec_with_retry 5 0 /usr/bin/nova service-disable $SERVICE_ID
     /bin/systemctl disable openstack-nova-compute.service
 }
 
@@ -232,10 +233,10 @@ AVAILABLE_THEMES = [
   ]
 # End of Cloudbase Theme Settings
 EOL
-    
+
     sed -i '6s/.*/@import \"\/horizon\/lib\/roboto_fontface\/css\/roboto\/sass\/roboto-fontface.scss\";/' \
     /usr/share/openstack-dashboard/openstack_dashboard/themes/cloudbase/static/bootstrap/_styles.scss
-    
+
     systemctl restart httpd
 }
 
@@ -248,9 +249,9 @@ FIP_RANGE_END=$4
 FIP_RANGE_GATEWAY=$5
 FIP_RANGE_NAME_SERVERS=${@:6}
 
-RDO_RELEASE="ocata"
+RDO_RELEASE="queens"
 RDO_RELEASE_RPM_URL=https://rdoproject.org/repos/rdo-release.rpm
-DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/10.0.0/openstack-dashboard-cloudbase-theme-10.0.0-0.noarch.rpm
+DASHBOARD_THEME_URL=https://github.com/cloudbase/openstack-dashboard-cloudbase-theme/releases/download/12.0.0/openstack-dashboard-cloudbase-theme-12.0.0-0.noarch.rpm
 CIRROS_URL=https://www.cloudbase.it/downloads/cirros-0.3.4-x86_64.vhdx.gz
 ANSWER_FILE=packstack-answers.txt
 DATA_IFACE=data
@@ -336,6 +337,7 @@ openstack-config --set $ANSWER_FILE general CONFIG_MONGODB_HOST $HOST_IP
 openstack-config --set $ANSWER_FILE general CONFIG_USE_EPEL n
 openstack-config --set $ANSWER_FILE general CONFIG_HEAT_INSTALL y
 openstack-config --set $ANSWER_FILE general CONFIG_MAGNUM_INSTALL y
+openstack-config --set $ANSWER_FILE general CONFIG_LBAAS_INSTALL y
 
 openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_TEMPEST n
 
@@ -344,7 +346,7 @@ openstack-config --set $ANSWER_FILE general CONFIG_CEILOMETER_INSTALL n
 openstack-config --set $ANSWER_FILE general CONFIG_NOVA_NETWORK_PUBIF $EXT_IFACE
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_TYPE_DRIVERS vlan,flat
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_TENANT_NETWORK_TYPES vlan
-openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_MECHANISM_DRIVERS openvswitch,hyperv
+openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_MECHANISM_DRIVERS openvswitch
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_ML2_VLAN_RANGES physnet1:500:2000
 openstack-config --set $ANSWER_FILE general CONFIG_NEUTRON_OVS_BRIDGE_MAPPINGS physnet1:$OVS_DATA_BRIDGE
 openstack-config --set $ANSWER_FILE general CONFIG_PROVISION_OVS_BRIDGE n
@@ -391,7 +393,8 @@ exec_with_retry 5 0 /usr/bin/packstack --answer-file=$ANSWER_FILE
 # Install common Python modules to avoid conflicts in Packstack
 exec_with_retry 5 0 /usr/bin/yum install -y python-pip python-cmd2 python-requests python-netifaces
 
-exec_with_retry 5 0 /bin/pip install "networking-hyperv==4.0.0" 2> /dev/null
+exec_with_retry 5 0 /bin/pip install "networking-hyperv>=6.0.0,<7.0.0" 2> /dev/null
+openstack-config --set /etc/neutron/plugins/ml2/ml2_conf.ini ml2 mechanism_drivers "openvswitch,hyperv"
 exec_with_retry 5 0 systemctl restart neutron-server.service
 
 # enable host discovery for cells
@@ -402,8 +405,11 @@ rm "$CIRROS_TMP_FILE"
 
 export OS_USERNAME=admin
 export OS_PASSWORD="$ADMIN_PASSWORD"
-export OS_TENANT_NAME=admin
-export OS_AUTH_URL="http://$HOST_IP:5000/v2.0"
+export OS_AUTH_URL="http://$HOST_IP:5000/v3"
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_IDENTITY_API_VERSION=3
 
 remove_httpd_default_site
 disable_nova_compute

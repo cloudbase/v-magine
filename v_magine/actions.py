@@ -39,7 +39,7 @@ FREERDP_WEBCONNECT_HTTP_PORT = 8000
 FREERDP_WEBCONNECT_HTTPS_PORT = 4430
 
 OPENSTACK_MAX_VM_MEM_MB = 16 * 1024
-OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 6 * 1024
+OPENSTACK_MAX_VM_RECOMMENDED_MEM_MB = 8 * 1024
 OPENSTACK_VM_MIN_MEM_MB = int(2.5 * 1024)
 OPENSTACK_VM_RECOMMENDED_VCPU_COUNT = 4
 
@@ -53,7 +53,7 @@ HYPERV_MSI_VENDOR = "Cloudbase Solutions Srl"
 HYPERV_MSI_CAPTION_PREFIX = 'OpenStack Hyper-V'
 FREERDP_WEBCONNECT_CAPTION_PREFIX = "FreeRDP-WebConnect"
 HYPERV_MSI_URL = ("https://www.cloudbase.it/downloads/"
-                  "HyperVNovaCompute_Ocata_15_0_0.msi")
+                  "HyperVNovaCompute_Queens_17_0_0.msi")
 FREERDP_WEBCONNECT_MSI_URL = ("https://www.cloudbase.it/downloads/"
                               "FreeRDPWebConnect.msi")
 
@@ -161,10 +161,6 @@ class DeploymentActions(object):
     def download_freerdp_webconnect_msi(self, target_path):
         utils.download_file(FREERDP_WEBCONNECT_MSI_URL, target_path)
 
-    @staticmethod
-    def _get_keystone_v2_url(auth_url):
-        return auth_url[:-2] + "v2.0" if auth_url.endswith("v3") else auth_url
-
     def install_freerdp_webconnect(self, msi_path, nova_config,
                                    hyperv_host_username,
                                    hyperv_host_password):
@@ -178,14 +174,17 @@ class DeploymentActions(object):
         properties["HTTPS_PORT"] = FREERDP_WEBCONNECT_HTTPS_PORT
         properties["ENABLE_FIREWALL_RULES"] = "1"
 
-        properties["OPENSTACK_AUTH_URL"] = self._get_keystone_v2_url(
-            nova_config["neutron"]["auth_url"])
+        properties["OPENSTACK_AUTH_URL"] = nova_config["neutron"]["auth_url"]
         properties["OPENSTACK_TENANT_NAME"] = nova_config[
             "keystone_authtoken"]["project_name"]
         properties["OPENSTACK_USERNAME"] = nova_config["keystone_authtoken"][
             "username"]
         properties["OPENSTACK_PASSWORD"] = nova_config["keystone_authtoken"][
             "password"]
+        properties["OPENSTACK_PROJECT_DOMAIN_NAME"] = nova_config[
+            "keystone_authtoken"]["project_domain_name"]
+        properties["OPENSTACK_USER_DOMAIN_NAME"] = nova_config[
+            "keystone_authtoken"]["user_domain_name"]
 
         properties["HYPERV_HOST_USERNAME"] = hyperv_host_username
         properties["HYPERV_HOST_PASSWORD"] = hyperv_host_password
@@ -227,7 +226,6 @@ class DeploymentActions(object):
                     "iSCSISWInitiator", "FreeRDP"]
 
         properties = {}
-        properties["RPCBACKEND"] = "RabbitMQ"
 
         properties["PLACEMENTAUTHURL"] = nova_config["placement"][
             "auth_url"]
@@ -237,14 +235,13 @@ class DeploymentActions(object):
             "project_name"]
         properties["PLACEMENTUSERNAME"] = nova_config["placement"][
             "username"]
+        properties["PLACEMENTDOMAINNAME"] = nova_config["placement"][
+            "project_domain_name"]
+        properties["PLACEMENTUSERDOMAINNAME"] = nova_config["placement"][
+            "user_domain_name"]
 
-        glance_hosts = nova_config["glance"]["api_servers"]
-        (glance_host, glance_port) = glance_hosts.split(",")[0].split(':')
-
-        properties["RPCBACKENDHOST"] = glance_host
-
-        properties["GLANCEHOST"] = glance_host
-        properties["GLANCEPORT"] = glance_port
+        properties["RPCTRANSPORTURL"] =  nova_config["DEFAULT"]["transport_url"]
+        properties["GLANCEURL"] = nova_config["glance"]["api_servers"]
 
         properties["INSTANCESPATH"] = instances_path
         properties["LOGDIR"] = openstack_log_dir
@@ -274,6 +271,10 @@ class DeploymentActions(object):
             "password"]
         properties["NEUTRONADMINAUTHURL"] = nova_config["neutron"][
             "auth_url"]
+        properties["NEUTRONDOMAINNAME"] = nova_config["neutron"][
+            "project_domain_name"]
+        properties["NEUTRONUSERDOMAINNAME"] = nova_config["neutron"][
+            "user_domain_name"]
 
         if hyperv_host_username:
             properties["NOVACOMPUTESERVICEUSER"] = self._check_username(

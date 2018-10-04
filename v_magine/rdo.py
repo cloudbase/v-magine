@@ -114,9 +114,11 @@ class RDOInstaller(object):
                         "placement":
                         [
                             "auth_url",
-                            "password",
                             "project_name",
-                            "username"
+                            "user_domain_name",
+                            "project_domain_name",
+                            "username",
+                            "password",
                         ],
                         "neutron":
                         [
@@ -135,6 +137,8 @@ class RDOInstaller(object):
                         "keystone_authtoken":
                         [
                             "project_name",
+                            "user_domain_name",
+                            "project_domain_name",
                             "username",
                             "password"
                         ]}
