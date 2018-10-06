@@ -9,15 +9,32 @@ import fastestmirror
 from six.moves.urllib import request
 
 from v_magine import constants
+from v_magine import exceptions
+from v_magine import utils
 
 LOG = logging
 
 DEFAULT_CENTOS_RELEASE = "7.5.1804"
-DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/%s/os/x86_64"
+DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/%s/os/%s"
+CENTOS_VAULT_RELEASE_URL = "http://vault.centos.org/%s/os/%s"
 
 
 def get_repo_mirrors(release=DEFAULT_CENTOS_RELEASE, arch="x86_64",
                      max_mirrors=8, sort_by_speed=True):
+    default_mirror = DEFAULT_CENTOS_MIRROR % (release, arch)
+    vault_release_url = CENTOS_VAULT_RELEASE_URL % (release, arch)
+
+    # After a new CentOS release, previous ones are not available in the
+    # mirrors any more and the only way to retrieve them is via the vault
+    if not utils.check_url_exists(default_mirror):
+        LOG.warn("Mirrors not available for release %s, using CentOS vault",
+                 release)
+        if utils.check_url_exists(vault_release_url):
+            return [vault_release_url]
+        else:
+            raise exceptions.InvalidUrlException(
+                "CentOS mirrors not found for release %s " % release)
+
     url_base = "http://mirrorlist.centos.org/?release={0}&arch={1}&repo=os"
     url = url_base.format(release.split('.')[0], arch)
 
@@ -47,7 +64,6 @@ def get_repo_mirrors(release=DEFAULT_CENTOS_RELEASE, arch="x86_64",
         mirrors = mirrors[:max_mirrors - 1]
 
     # Always add the default mirror
-    default_mirror = DEFAULT_CENTOS_MIRROR % release
     if default_mirror not in mirrors:
         mirrors.append(default_mirror)
 

@@ -13,6 +13,7 @@ import tempfile
 import time
 
 from dns import resolver
+import requests
 from six.moves.urllib import parse
 from six.moves.urllib import request
 
@@ -142,3 +143,11 @@ def is_valid_hostname(hostname):
         hostname = hostname[:-1]
     allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
     return all(allowed.match(x) for x in hostname.split("."))
+
+
+def check_url_exists(url):
+    response = requests.head(url, allow_redirects=True)
+    if response.status_code == requests.codes.ok:
+        return True
+    if response.status_code != requests.codes.not_found:
+        response.raise_for_status()
