@@ -240,7 +240,7 @@ class DeploymentActions(object):
         properties["PLACEMENTUSERDOMAINNAME"] = nova_config["placement"][
             "user_domain_name"]
 
-        properties["RPCTRANSPORTURL"] =  nova_config["DEFAULT"]["transport_url"]
+        properties["RPCTRANSPORTURL"] = nova_config["DEFAULT"]["transport_url"]
         properties["GLANCEURL"] = nova_config["glance"]["api_servers"]
 
         properties["INSTANCESPATH"] = instances_path
