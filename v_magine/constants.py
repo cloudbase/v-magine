@@ -3,4 +3,4 @@
 # Licensed under the AGPLv3, see LICENCE file for details.
 
 PRODUCT_NAME = "v-magine"
-VERSION = "2018.1.0.0"
+VERSION = "2018.1.0.1"
