@@ -3,11 +3,11 @@ Param(
 )
 $ErrorActionPreference = "Stop"
 
-$ENV:PATH += ";C:\Python27-v-magine;C:\Python27-v-magine\Scripts;"
+$ENV:PATH = "C:\Python27-v-magine;C:\Python27-v-magine\Scripts;" + $ENV:PATH
+$ENV:PATH = "C:\Qt\Qt5.4.0\5.4\msvc2013\bin;" + $ENV:PATH
 $ENV:PATH += ";${ENV:ProgramFiles}\7-Zip"
 $ENV:PATH += ";${ENV:ProgramFiles}\Git\bin"
 $ENV:PATH += ";${ENV:ProgramFiles(x86)}\Windows Kits\8.1\bin\x64"
-$ENV:PATH += ";C:\Qt\Qt5.4.0\5.4\msvc2013\bin"
 
 # $version = $(& git.exe name-rev --name-only --tags HEAD)
 # $zipPath = "v-magine_$($version -replace "\.","_").zip"
