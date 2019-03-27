@@ -161,13 +161,6 @@ function disable_nova_compute() {
     /bin/systemctl disable openstack-nova-compute.service
 }
 
-function disable_network_manager() {
-    /bin/systemctl stop NetworkManager.service
-    /bin/systemctl disable NetworkManager.service
-    /sbin/service network start
-    /sbin/chkconfig network on
-}
-
 function fix_extension_drivers_port_security() {
     if [ ! $(openstack-config --get /etc/neutron/plugins/ml2/ml2_conf.ini ml2 extension_drivers 2> /dev/null | grep port_security) ]
     then
@@ -270,7 +263,6 @@ MGMT_INT_IFACE=mgmt-int
 if [ $(grep 'BOOTPROTO="none"' /etc/sysconfig/network-scripts/ifcfg-$MGMT_EXT_IFACE) ]
 then
     MGMT_IFACE=$MGMT_EXT_IFACE
-    disable_network_manager
 else
     MGMT_IFACE=$MGMT_INT_IFACE
 fi
