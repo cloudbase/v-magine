@@ -635,55 +635,65 @@
     <div class="content-page" id="control-panel">
 
         <div class="top">
-            <h1>Control Panel</h1>
+            <div class="header">
+                <h1>Control Panel</h1>
+                <h3 style="clear: both;">Review or redeploy v-magine</h3>
+            </div>
             <div class="v-magine-logo">
                 <img src="images/v-magine-logo.svg">
             </div>
         </div>
+        <div class="content">
+            <div id="wrap-control-panel">
+                <div class="widget" id="control-panel-controller">
+                    <div class="controller">
+                        <h2 style="color:#fff;"><i class="fa fa-desktop on-left"></i>Controller</h2>
+                        <h4 style="margin-top:30px;">Address</h4>
+                        <h3 ng-bind="controllerIp" id="controllerip" />
+                        <h6 style="cursor: pointer;" id="opencontrollersshbutton">Open SSH Console <i class="fa fa-share-square-o on-left" style="color:#007AFF;font-size: 1.5rem;"></i></h6>
 
-        <div id="wrap-control-panel">
-            <div class="widget" id="control-panel-controller">
-                <div class="controller">
-                    <h2 style="color:#fff;"><i class="fa fa-desktop on-left"></i>Controller</h2>
-                    <h4 style="margin-top:30px;">Address</h4>
-                    <h3 ng-bind="controllerIp" id="controllerip" />
-                    <h6 style="cursor: pointer;" id="opencontrollersshbutton"><i class="fa fa-share-square-o on-left" style="color:#37A8DF;"></i>Open SSH Console</h6>
+                        <h4 style="margin-top:30px;">Horizon Web Interface</h4>
+                        <a href="#"><h3 id="showhorizonbutton" ng-bind="horizonUrl"></h3></a>
+                        <h6 style="cursor: pointer;" ng-if="horizonUrl" id="showhorizonbutton2">Open in external browser <i class="fa fa-share-square-o on-left" style="color:#007AFF;font-size: 1.5rem;"></i></h6>
 
-                    <h4 style="margin-top:30px;">Horizon Web Interface</h4>
-                    <a href="#"><h3 id="showhorizonbutton" ng-bind="horizonUrl"></h3></a>
-
-                    <h4 style="margin-top:30px;">OpenStack Tenant Username</h4>
-                    <h3>demo</h3>
+                        <h4 style="margin-top:30px;">OpenStack Tenant Username</h4>
+                        <h3>demo</h3>
+                    </div>
                 </div>
-                <div class="buttons-wrap" align="auto">
-                    <button type="submit" formaction="" class="inputButton large" name="" id="removeopenstack">Remove</button>
-                    <button type="submit" formaction="" class="inputButton large" name="" id="redeployopenstack">Reinstall</button>
+                <div class="widget" id="control-panel-nodes">
+                    <div class="registered-nodes">
+                        <h2 style="color:#fff;"><i class="fa fa-cube on-left"></i>Compute Nodes</h2>
+                        <div class="compute-nodes-header">
+                            <ul class="clearfix">
+                                <li class="hostname-col">Hostname</li>
+                                <li class="hypervisor-col">Hypervisor Type</li>
+                                <li class="os-col">Operating System</li>
+                            </ul>
+                        </div>
+                        <div class="compute-nodes-list">
+                            <ul ng-repeat="computeNode in computeNodes" class="clearfix">
+                                <li class="hostname-col">{{computeNode.hostname}}</li>
+                                <li class="hypervisor-col">{{computeNode.hypervisor_type}}</li>
+                                <li class="os-col">{{computeNode.description}}</li>
+                            </ul>
+                        </div>
+                        <div class="support-links">
+                            <h2 style="color:#fff;"><i class="fa fa-info on-left"></i>Help and Support</h2>
+                            <p><a class="opengithuburlbutton">Github Repo <i class="fa fa-share-square-o on-left"></i></a></p>
+                            <p><a class="openissuesurlbutton">Bugs and Issues <i class="fa fa-share-square-o on-left"></i></a></p>
+                            <p><a class="openquestionsurlbutton">Questions <i class="fa fa-share-square-o on-left"></i></a></p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="widget" id="control-panel-nodes">
-                <div class="registered-nodes">
-                    <h2 style="color:#fff;"><i class="fa fa-cubes on-left"></i>Nodes</h2>
-                    <div class="compute-nodes-header">
-                        <ul>
-                            <li class="hostname-col">Hostname</li>
-                            <li class="hypervisor-col">Hypervisor Type</li>
-                            <li class="os-col">Operating System</li>
-                        </ul>
-                    </div>
-                    <div class="compute-nodes-list">
-                        <ul ng-repeat="computeNode in computeNodes">
-                            <li class="hostname-col">{{computeNode.hostname}}</li>
-                            <li class="hypervisor-col">{{computeNode.hypervisor_type}}</li>
-                            <li class="os-col">{{computeNode.description}}</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="buttons-wrap" align="auto">
-                    <button type="submit" formaction="" class="inputButton large" name="" id="add-edit">Add/Edit Nodes</button>
-                    <button type="submit" formaction="" class="inputButton large" name="" id="migrate">Migrate to Azure</button>
-                </div>
+            <div class="buttons" align="auto">
+                <button type="submit" formaction="" class="inputButton large" name="" id="removeopenstack">Remove</button>
+                <button type="submit" formaction="" class="inputButton large" name="" id="redeployopenstack">Reinstall</button>
+                <button type="submit" formaction="" class="inputButton large" name="" id="add-edit">Add/Edit Nodes</button>
+                <button type="submit" formaction="" class="inputButton large" name="" id="migrate">Migrate to Azure</button>
             </div>
         </div>
+
     </div>
 
     <div class="content-page dialogbackground" id="showDownload">
