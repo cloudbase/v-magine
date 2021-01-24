@@ -839,7 +839,7 @@ class Worker(object):
                      "fip_range_end": fip_range_end})
 
             LOG.debug("fip_name_servers: %s", fip_name_servers)
-            self._validate_name_servers(fip_name_servers)
+            self._validate_name_servers(fip_name_servers, 5)
 
             return True
         except Exception as ex:
