@@ -1,5 +1,6 @@
 Param(
-  [string]$SignX509Thumbprint
+  [string]$SignX509Thumbprint,
+  [string]$TimestampServer = "http://timestamp.globalsign.com/?signature=sha2"
 )
 $ErrorActionPreference = "Stop"
 
@@ -40,7 +41,7 @@ del -Recurse -Force "dist\v-magine\qml"
 if ($SignX509Thumbprint -ne "")
 {
     $path = "dist\v-magine\v-magine.exe"
-    & signtool.exe sign /sha1 $SignX509Thumbprint /t http://timestamp.verisign.com/scripts/timstamp.dll /v $path
+    & signtool.exe sign /sha1 $SignX509Thumbprint /t $TimestampServer /v $path
     if ($LastExitCode) { throw "signtool failed" }
 }
 
