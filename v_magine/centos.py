@@ -14,7 +14,7 @@ from v_magine import utils
 
 LOG = logging
 
-DEFAULT_CENTOS_RELEASE = "7.9.2009"
+DEFAULT_CENTOS_RELEASE = "8.4.2105"
 DEFAULT_CENTOS_MIRROR = "http://mirror.centos.org/centos/%s/os/%s"
 CENTOS_VAULT_RELEASE_URL = "http://vault.centos.org/%s/os/%s"
 
